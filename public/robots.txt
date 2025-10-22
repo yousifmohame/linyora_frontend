@@ -1,0 +1,14 @@
+# Block crawlers from accessing sensitive or non-public pages
+User-agent: *
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /api/
+Disallow: /payment/
+
+# Allow all other content
+Allow: /
+
+# Specify the location of the sitemap
+Sitemap: https://www.linyora.com/sitemap.xml

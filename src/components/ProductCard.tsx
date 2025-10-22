@@ -113,7 +113,7 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
     <Card className="flex flex-col gap-0 py-0 overflow-hidden group bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-lg max-w-[320px] font-sans">
       <CardHeader className="p-0 relative">
         <Link href={`/products/${product.id}`} className="block relative">
-          <div className="relative h-[200px] md:h-[270] sm:h-[230px] w-full overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50">
+          <div className="relative h-[220px] md:h-[280] sm:h-[240px] w-full overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50">
             {/* Loading shimmer effect */}
             {!imageLoaded && (
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -skew-x-12 animate-shimmer z-10" />

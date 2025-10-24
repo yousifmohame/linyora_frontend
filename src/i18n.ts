@@ -1187,6 +1187,7 @@ const resources = {
         "nav": {
           "overview": "Overview",
           "users": "Users",
+          "Footer":"Footer-setting",
           "main-banners": "Main Banners",
           "verification": "Verifications",
           "products": "Products",
@@ -4577,6 +4578,7 @@ const resources = {
           "overview": "نظرة عامة",
           "users": "المستخدمون",
           "main-banners": "البنرات الرئيسية",
+          "Footer":"إعدادات الفوتر",
           "verification": "التحقق",
           "products": "المنتجات",
           "categories": "التصنيفات",

@@ -345,3 +345,4 @@ export default function TrendCard({ product, compact = false }: TrendCardProps) 
     </Card>
   );
 }
+

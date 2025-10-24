@@ -51,6 +51,7 @@ export default function AdminNav() {
     { key: "Promotions", href: "/dashboard/admin/promotions",  icon: Megaphone },
     { key: "Manage-Subscriptions", href: "/dashboard/admin/manage_subscription", icon: Megaphone },
     { key: "Content", href: "/dashboard/admin/content", icon: FileText},
+    { key: "Footer", href: "/dashboard/admin/footer-settings", icon: FileText},
     { key: 'settings', href: '/dashboard/admin/settings', icon: Settings },
   ];
 

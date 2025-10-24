@@ -21,11 +21,16 @@ import {
   Sparkles,
   TrendingUp,
   Eye,
-  Hash
+  Hash,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 import { Product } from './page';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 interface VariantState {
     id: number;
@@ -36,6 +41,26 @@ interface VariantState {
     images: string[];
     sku: string;
 }
+
+const PREDEFINED_COLORS = [
+  { name: 'red', value: '#FF0000' },
+  { name: 'blue', value: '#0000FF' },
+  { name: 'green', value: '#00FF00' },
+  { name: 'yellow', value: '#FFFF00' },
+  { name: 'black', value: '#000000' },
+  { name: 'white', value: '#FFFFFF' },
+  { name: 'gray', value: '#808080' },
+  { name: 'silver', value: '#C0C0C0' },
+  { name: 'gold', value: '#FFD700' },
+  { name: 'orange', value: '#FFA500' },
+  { name: 'purple', value: '#800080' },
+  { name: 'pink', value: '#FFC0CB' },
+  { name: 'brown', value: '#A52A2A' },
+  { name: 'turquoise', value: '#40E0D0' },
+  { name: 'olive', value: '#808000' },
+];
+
+
 
 interface ProductFormProps {
     product?: Product | null;
@@ -72,6 +97,7 @@ export default function ProductFormV2({ product, onSuccess }: ProductFormProps) 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+    const [categoriesOpen, setCategoriesOpen] = useState(false);
 
 
     useEffect(() => {
@@ -109,7 +135,7 @@ export default function ProductFormV2({ product, onSuccess }: ProductFormProps) 
             setStatus('active');
             setSelectedCategories([]);
             setVariants([{ 
-                id: Date.now(), color: '', price: '', compare_at_price: '', 
+                id: -Date.now(), color: '', price: '', compare_at_price: '', 
                 stock_quantity: '', images: [], sku: ''
             }]);
         }
@@ -123,7 +149,7 @@ export default function ProductFormV2({ product, onSuccess }: ProductFormProps) 
 
     const addVariant = () => {
         setVariants([...variants, { 
-            id: Date.now(), 
+            id: -Date.now(),
             color: '', 
             price: '', 
             compare_at_price: '', 
@@ -234,6 +260,70 @@ export default function ProductFormV2({ product, onSuccess }: ProductFormProps) 
         return options;
     };
 
+    const getCategoryName = (id: number): string => {
+        const findCategory = (cats: Category[]): Category | null => {
+            for (const cat of cats) {
+                if (cat.id === id) return cat;
+                if (cat.children) {
+                    const found = findCategory(cat.children);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+        
+        const category = findCategory(categories);
+        return category ? category.name : '';
+    };
+
+    // دالة مساعدة لعرض الفئات المختارة
+    const getSelectedCategoriesText = () => {
+        if (selectedCategories.length === 0) {
+            return 'اختر الفئات...';
+        }
+        return selectedCategories.map(id => getCategoryName(id)).join(', ');
+    };
+
+    // دالة مساعدة لعرض خيارات الفئات بشكل متداخل
+    const renderCategoryItems = (cats: Category[], level = 0): JSX.Element[] => {
+        let items: JSX.Element[] = [];
+        const prefix = '\u00A0\u00A0'.repeat(level);
+        
+        cats.forEach(cat => {
+            items.push(
+                <CommandItem
+                    key={cat.id}
+                    value={cat.id.toString()}
+                    onSelect={() => {
+                        setSelectedCategories(prev => 
+                            prev.includes(cat.id) 
+                                ? prev.filter(id => id !== cat.id)
+                                : [...prev, cat.id]
+                        );
+                    }}
+                    className="flex items-center"
+                >
+                    <div className={cn(
+                        "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                        selectedCategories.includes(cat.id)
+                            ? "bg-primary text-primary-foreground"
+                            : "opacity-50"
+                    )}>
+                        <Check className="h-3 w-3" />
+                    </div>
+                    <span>{prefix}{cat.name}</span>
+                </CommandItem>
+            );
+            
+            if (cat.children && cat.children.length > 0) {
+                items = items.concat(renderCategoryItems(cat.children, level + 1));
+            }
+        });
+        
+        return items;
+    };
+
+
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic Information Card */}
@@ -278,23 +368,55 @@ export default function ProductFormV2({ product, onSuccess }: ProductFormProps) 
                         </div>
                     </div>
                     
-                    <div>
-                        <Label htmlFor="categories">الفئات</Label>
-                        <select
-                            id="categories"
-                            multiple
-                            value={selectedCategories.map(String)}
-                            onChange={(e) => {
-                                const selected = Array.from(e.target.options)
-                                    .filter(option => option.selected)
-                                    .map(option => Number(option.value));
-                                setSelectedCategories(selected);
-                            }}
-                            className="w-full h-32 border rounded-md"
-                        >
-                            {renderCategoryOptions(categories)}
-                        </select>
-                        <p className="text-sm text-gray-500">يمكنك اختيار أكثر من فئة بالضغط على Ctrl (أو Cmd).</p>
+                    <div className="space-y-3">
+                        <Label className="flex items-center space-x-2 space-x-reverse text-sm font-semibold">
+                            <Package className="w-4 h-4 text-green-500" />
+                            <span>الفئات</span>
+                        </Label>
+                        <Popover open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={categoriesOpen}
+                                    className="w-full h-12 justify-between bg-white/80 border-gray-300 hover:bg-white/90 transition-all duration-200"
+                                >
+                                    <span className="truncate">{getSelectedCategoriesText()}</span>
+                                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0" align="start">
+                                <Command>
+                                    <CommandInput placeholder="ابحث في الفئات..." />
+                                    <CommandList>
+                                        <CommandEmpty>لم يتم العثور على فئات.</CommandEmpty>
+                                        <CommandGroup>
+                                            {renderCategoryItems(categories)}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                        {selectedCategories.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {selectedCategories.map(id => (
+                                    <Badge 
+                                        key={id} 
+                                        variant="secondary" 
+                                        className="flex items-center gap-1 bg-blue-100 text-blue-800"
+                                    >
+                                        {getCategoryName(id)}
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedCategories(prev => prev.filter(catId => catId !== id))}
+                                            className="hover:text-red-600 transition-colors"
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </Badge>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <div className="space-y-3">
                         <Label htmlFor="description" className="flex items-center space-x-2 space-x-reverse text-sm font-semibold">
@@ -376,13 +498,49 @@ export default function ProductFormV2({ product, onSuccess }: ProductFormProps) 
                                         <Palette className="w-4 h-4 text-amber-500" />
                                         <span>{t('ProductForm.variantFields.color')}</span>
                                     </Label>
-                                    <Input 
-                                        placeholder={t('ProductForm.placeholders.color')}
-                                        value={variant.color} 
-                                        onChange={e => handleVariantChange(index, 'color', e.target.value)} 
-                                        required 
-                                        className="h-12 bg-white border-gray-300 focus:ring-2 focus:ring-amber-200 focus:border-amber-400 transition-all duration-200"
-                                    />
+                                    <div className="space-y-3">
+                                        <Input 
+                                            placeholder={t('ProductForm.placeholders.color')}
+                                            value={variant.color} 
+                                            onChange={e => handleVariantChange(index, 'color', e.target.value)} 
+                                            required 
+                                            className="h-12 bg-white border-gray-300 focus:ring-2 focus:ring-amber-200 focus:border-amber-400 transition-all duration-200"
+                                        />
+                                        
+                                        {/* شبكة ألوان محددة مسبقاً */}
+                                        <div className="grid grid-cols-5 gap-2">
+                                            {PREDEFINED_COLORS.map((colorObj) => (
+                                                <button
+                                                    key={colorObj.value}
+                                                    type="button"
+                                                    onClick={() => handleVariantChange(index, 'color', colorObj.name)}
+                                                    className={cn(
+                                                        "w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110 hover:shadow-lg",
+                                                        variant.color === colorObj.name 
+                                                            ? "border-gray-800 ring-2 ring-offset-2 ring-amber-400" 
+                                                            : "border-gray-300"
+                                                    )}
+                                                    style={{ backgroundColor: colorObj.value }}
+                                                    title={colorObj.name}
+                                                />
+                                            ))}
+                                        </div>
+                                        
+                                        {/* معاينة اللون المختار */}
+                                        {variant.color && (
+                                            <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                                                <div 
+                                                    className="w-6 h-6 rounded border"
+                                                    style={{ 
+                                                        backgroundColor: PREDEFINED_COLORS.find(c => c.name === variant.color)?.value || '#ccc' 
+                                                    }}
+                                                />
+                                                <span className="text-sm text-gray-700">
+                                                    {variant.color}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="space-y-3">
                                     <Label className="flex items-center space-x-2 space-x-reverse text-sm font-semibold">

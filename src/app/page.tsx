@@ -1,21 +1,47 @@
-// frontend/src/app/page.tsx
+// linora-platform/frontend/src/app/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/axios';
-import ProductCard from '@/components/ProductCard';
-import { Product } from '@/types';
+import { Product, Reel } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import PromotedProductsSection from '@/components/promotions/PromotedProductsSection';
-import CategorySlider from '@/components/CategorySlider'; // <-- 1. استيراد المكون الجديد
+import CategorySlider from '@/components/CategorySlider';
 import Link from 'next/link';
 import { TrendingUp } from 'lucide-react';
+import { ReelsSlider } from '@/components/reels/ReelsSlider';
+import { ProductCarousel } from '@/components/products/ProductCarousel'; // استيراد المكون الجديد
+import { getRecentlyViewed } from '@/lib/viewHistory'; // استيراد دالة "المشاهدة مؤخراً"
+import { Skeleton } from '@/components/ui/skeleton'; // لاستخدامها أثناء التحميل
+
+// مكون Skeleton لتحسين تجربة التحميل
+const ProductCarouselSkeleton = () => (
+  <div className="container mx-auto px-4 py-8">
+    <Skeleton className="h-8 w-1/3 mb-4" />
+    <div className="flex space-x-4 overflow-hidden">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="min-w-[calc(50%-8px)] sm:min-w-[calc(33.33%-10px)] md:min-w-[calc(25%-12px)] lg:min-w-[calc(20%-12.8px)]">
+          <Skeleton className="h-[200px] w-full mb-2" />
+          <Skeleton className="h-4 w-full mb-1" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 export default function HomePage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [products, setProducts] = useState<Product[]>([]);
+  
+  // تقسيم البيانات إلى أقسام
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [bestSellers, setBestSellers] = useState<Product[]>([]);
+  const [topRated, setTopRated] = useState<Product[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
+  const [reels, setReels] = useState<Reel[]>([]);
+  
   const [wishlistStatus, setWishlistStatus] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
 
@@ -23,77 +49,119 @@ export default function HomePage() {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        // 1. جلب المنتجات
-        const productResponse = await api.get('/products');
-        // تأكد من هيكل البيانات الصحيح
-        const fetchedProducts: Product[] = productResponse.data.products || productResponse.data;
-        setProducts(fetchedProducts);
+        // جلب البيانات المنسقة من الـ API
+        const [
+          newArrivalsRes,
+          bestSellersRes,
+          topRatedRes,
+          reelsResponse
+        ] = await Promise.all([
+          api.get('/browse/new-arrivals'),
+          api.get('/browse/best-sellers'),
+          api.get('/browse/top-rated'),
+          api.get('/reels')
+        ]);
 
-        // 2. إذا كان المستخدم "عميل"، قم بجلب حالة قائمة الأمنيات
-        if (user && user.role_id === 5 && fetchedProducts.length > 0) {
-          const productIds = fetchedProducts.map(p => p.id);
-          try {
-            const wishlistResponse = await api.post('/customer/wishlist/status', { productIds });
-            setWishlistStatus(wishlistResponse.data);
-          } catch (wishlistError) {
-            console.error("Failed to fetch wishlist status:", wishlistError);
+        const fetchedNewArrivals = newArrivalsRes.data || [];
+        const fetchedBestSellers = bestSellersRes.data || [];
+        const fetchedTopRated = topRatedRes.data || [];
+        const fetchedReels = reelsResponse.data.reels || reelsResponse.data || [];
+
+        setNewArrivals(fetchedNewArrivals);
+        setBestSellers(fetchedBestSellers);
+        setTopRated(fetchedTopRated);
+        setReels(fetchedReels);
+
+        // جلب قائمة الأمنيات لجميع المنتجات المعروضة
+        if (user && user.role_id === 5) {
+          const allProductIds = [
+            ...fetchedNewArrivals.map((p: Product) => p.id),
+            ...fetchedBestSellers.map((p: Product) => p.id),
+            ...fetchedTopRated.map((p: Product) => p.id),
+          ].filter((id, index, self) => self.indexOf(id) === index); // إزالة التكرار
+
+          if (allProductIds.length > 0) {
+            try {
+              const wishlistResponse = await api.post('/customer/wishlist/status', { productIds: allProductIds });
+              setWishlistStatus(wishlistResponse.data || {});
+            } catch (wishlistError) {
+              console.error("Failed to fetch wishlist status:", wishlistError);
+            }
           }
         }
       } catch (error) {
-        console.error('Failed to fetch products', error);
+        console.error('Failed to fetch homepage data', error);
       } finally {
         setLoading(false);
       }
     };
+
+    // جلب "المشاهدة مؤخراً" من localStorage (يعمل فقط في client-side)
+    const fetchRecentlyViewed = () => {
+      setRecentlyViewed(getRecentlyViewed());
+    };
+
     fetchAllData();
+    fetchRecentlyViewed();
   }, [user]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-rose-50 to-white">
+    <main className="min-h-screen px-0 lg:px-20 bg-gray-100">
+      {/* الأقسام العلوية كما هي */}
       <PromotedProductsSection />
-      
-      {/* 2. إضافة قسم الفئات هنا */}
       <CategorySlider />
 
-      <div className="container mx-auto px-4 py-8">
-      <h5 className="text-3xl md:text-4xl font-bold mb-8 text-center">
-        <span className="bg-gradient-to-r from-rose-600 via-purple-600 to-pink-600 
-                        bg-clip-text text-transparent 
-                        bg-size-200 bg-pos-0
-                        hover:bg-pos-100
-                        transition-all duration-2000
-                        animate-gradient-x">
-          {t('HomePage.title')}
-        </span>
-      </h5>
-        {loading ? (
-           <div className="text-center">{t('HomePage.loading')}</div>
-        ) : products.length === 0 ? (
-          <p className="text-center text-gray-500">{t('HomePage.noProducts')}</p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
-            {products.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                isInitiallyWishlisted={wishlistStatus[product.id] || false} 
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {loading ? (
+        <>
+          <ProductCarouselSkeleton />
+          <ProductCarouselSkeleton />
+          <ProductCarouselSkeleton />
+        </>
+      ) : (
+        <>
+
+          {/* قسم الريلز للفصل بين أقسام المنتجات */}
+          <ReelsSlider reels={reels} />
+
+          {/* الأقسام الجديدة المنسقة */}
+          <ProductCarousel
+            title={t('HomePage.newArrivals', 'وصل حديثاً')}
+            products={newArrivals}
+            wishlistStatus={wishlistStatus}
+            viewAllLink="/products?sort=newest"
+          />
+          <ProductCarousel
+            title={t('HomePage.bestSellers', 'الأكثر مبيعاً')}
+            products={bestSellers}
+            wishlistStatus={wishlistStatus}
+            viewAllLink="/products?sort=best-selling"
+          />
+          <ProductCarousel
+            title={t('HomePage.topRated', 'الأعلى تقييماً')}
+            products={topRated}
+            wishlistStatus={wishlistStatus}
+            viewAllLink="/products?sort=top-rated"
+          />
+          <ProductCarousel
+            title={t('HomePage.recentlyViewed', 'ما شاهدته مؤخراً')}
+            products={recentlyViewed} // يتم جلبه من localStorage
+            wishlistStatus={wishlistStatus}
+          />
+        </>
+      )}
+
+      {/* زر عرض كل المنتجات */}
       <div className="mb-8 pb-6 border-b border-orange-200/50 flex justify-center">
         <Link
           href="/products"
           className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-500 
-                    hover:from-orange-700 hover:to-orange-600 text-white font-semibold rounded-full 
-                    shadow-md hover:shadow-lg transition-all duration-300 group"
+                     hover:from-orange-700 hover:to-orange-600 text-white font-semibold rounded-full 
+                     shadow-md hover:shadow-lg transition-all duration-300 group"
         >
-          عرض جميع المنتجات
+          {t('HomePage.viewAllProducts', 'تصفح كل المنتجات')}
           <TrendingUp className="w-5 h-5 transform group-hover:translate-x-1 group-hover:scale-110 transition-transform" />
         </Link>
       </div>
-
     </main>
   );
 }

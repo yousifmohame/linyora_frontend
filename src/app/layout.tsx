@@ -1,4 +1,3 @@
-// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
@@ -6,9 +5,10 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import TranslationsProvider from '@/components/layout/TranslationsProvider';
 import { SocketProvider } from '@/context/SocketContext';
-import Header from "@/components/layout/Header";
-import Footer from "@/components/Footer";
 import { Toaster } from "sonner";
+// 1. استيراد المكون الجديد
+import { PageWrapper } from "@/components/layout/PageWrapper";
+import { ReelAudioProvider } from "@/context/ReelAudioContext";
 
 export const metadata: Metadata = {
   title: {
@@ -31,18 +31,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // سنبدأ دائمًا باللغة العربية كافتراضي في الـ HTML
-    // وسيقوم الكود من جهة العميل بتصحيحه إذا كانت اللغة مختلفة
     <html lang="ar" dir="rtl">
       <body className={`${tajawal.variable} font-sans`}>
         <TranslationsProvider>
           <AuthProvider>
             <SocketProvider>
               <CartProvider>
-                <Header />
-                <main>{children}</main>
-                <Footer />
+                
+                {/* 2. استخدام المكون الجديد ليقوم بلف المحتوى */}
+                {/* هو الذي سيتولى إظهار/إخفاء الهيدر والفوتر */}
+                <ReelAudioProvider>
+                <PageWrapper>
+                  {children}
+                </PageWrapper>
+                </ReelAudioProvider>
+                {/* 3. إبقاء Toaster في الخارج ليعمل دائماً */}
                 <Toaster richColors position="top-right" />
+
               </CartProvider>
             </SocketProvider>
           </AuthProvider>

@@ -17,7 +17,8 @@ import {
   Wallet,
   ShoppingCart,
   CreditCard,
-  ShieldCheck // New icon for verification
+  ShieldCheck, // New icon for verification
+  Video
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -55,6 +56,7 @@ export default function ModelNav() {
     { key: 'offers', href: '/dashboard/models/modelsoffers', icon: Package },
     { key: 'requests', href: '/dashboard/models/requests', icon: Handshake },
     { key: 'wallet', href: '/dashboard/models/wallet', icon: Wallet },
+    { key: 'reels', href: '/dashboard/models/reels', icon: Video },
     { key: 'analytics', href: '/dashboard/models/analytics', icon: BarChart2 },
     { key: 'messages', href: '/dashboard/models/messages', icon: MessageCircleCode },
     { key: 'profile', href: '/dashboard/models/profile-settings', icon: User },

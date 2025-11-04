@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Order, RawOrder } from '@/types'; 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
@@ -36,23 +37,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-interface Order {
-  orderId: number;
-  customerName: string;
-  orderDate: string;
-  orderStatus: 'pending' | 'completed' | 'cancelled';
-  totalAmount: number;
-  products: string;
-}
-
-interface RawOrder {
-  orderId: number;
-  customerName: string;
-  orderDate: string;
-  orderStatus: Order['orderStatus'];
-  totalAmount: number | string;
-  products: string;
-}
 
 const statusStyles = {
   completed: 'bg-green-100 text-green-700 border-green-200',

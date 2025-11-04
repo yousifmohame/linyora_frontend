@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import api from '@/lib/axios';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types';
+import { BackButton } from '@/components/BackButton';
 
 export default function CategoryPage() {
     const params = useParams();
@@ -45,6 +46,9 @@ export default function CategoryPage() {
 
     return (
         <main className="container mx-auto p-8">
+            <div className="mb-4">
+                    <BackButton />
+                  </div>
             <h1 className="text-3xl text-center font-bold mb-8">
                 {/* استخدام اسم الفئة الديناميكي */}
                 {categoryName ? `منتجات قسم: ${categoryName}` : 'جاري تحميل القسم...'}

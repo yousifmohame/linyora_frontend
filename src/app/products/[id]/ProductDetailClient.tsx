@@ -412,6 +412,7 @@ export default function ProductDetailClient({ product: initialProduct }: { produ
                   <Users className="w-3 h-3" />
                   <span>{product.merchantName}</span>
                 </div>
+                
               </div>
 
               <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">

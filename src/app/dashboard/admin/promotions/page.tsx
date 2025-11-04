@@ -1,4 +1,3 @@
-// frontend/src/app/dashboard/admin/promotion-tiers/page.tsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -31,7 +30,6 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { t } from 'i18next';
 import AdminNav from '@/components/dashboards/AdminNav';
 
 interface PromotionTier {
@@ -66,21 +64,21 @@ const DEFAULT_COLORS = [
     '#06B6D4', // Cyan
 ];
 
-// دالة مساعدة للتحقق من القيم الرقمية
 const safeNumber = (value: any, defaultValue: number = 0): number => {
     if (value === null || value === undefined || value === '') return defaultValue;
     const num = Number(value);
     return isNaN(num) ? defaultValue : num;
 };
 
-// دالة مساعدة لتنسيق السعر
-const formatPrice = (price: any): string => {
+const formatPrice = (price: any, currency: string): string => {
     const num = safeNumber(price, 0);
-    return num.toFixed(2);
+    return new Intl.NumberFormat('en', { style: 'currency', currency }).format(num);
 };
 
 export default function PromotionTiersPage() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const currency = 'SAR'; // or extract from config
+
     const [tiers, setTiers] = useState<PromotionTier[]>([]);
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -96,15 +94,15 @@ export default function PromotionTiersPage() {
             const sortedTiers = response.data.sort((a: PromotionTier, b: PromotionTier) => {
                 if (sortBy === 'priority') return safeNumber(b.priority) - safeNumber(a.priority);
                 if (sortBy === 'price') return safeNumber(b.price) - safeNumber(a.price);
-                return (a.name || '').localeCompare(b.name || '');
+                return (a.name || '').localeCompare(b.name || '', i18n.language);
             });
             setTiers(sortedTiers);
         } catch (error) {
-            toast.error("Failed to fetch promotion tiers.");
+            toast.error(t('PromotionTiersPage.toast.fetchError'));
         } finally {
             setLoading(false);
         }
-    }, [sortBy]);
+    }, [sortBy, t, i18n.language]);
 
     useEffect(() => {
         fetchTiers();
@@ -126,10 +124,10 @@ export default function PromotionTiersPage() {
         
         try {
             await api.delete(`/admin/promotion-tiers/${tierToDelete.id}`);
-            toast.success("Tier deleted successfully!");
+            toast.success(t('PromotionTiersPage.toast.deleteSuccess'));
             fetchTiers();
         } catch (error) {
-            toast.error("Failed to delete tier.");
+            toast.error(t('PromotionTiersPage.toast.deleteError'));
         } finally {
             setIsDeleteDialogOpen(false);
             setTierToDelete(null);
@@ -142,10 +140,10 @@ export default function PromotionTiersPage() {
                 ...tier,
                 is_active: !tier.is_active
             });
-            toast.success(`Tier ${!tier.is_active ? 'activated' : 'deactivated'} successfully!`);
+            toast.success(t('PromotionTiersPage.toast.statusUpdated', { status: !tier.is_active ? t('common.active') : t('common.inactive') }));
             fetchTiers();
         } catch (error) {
-            toast.error("Failed to update tier status.");
+            toast.error(t('PromotionTiersPage.toast.statusError'));
         }
     };
 
@@ -158,7 +156,6 @@ export default function PromotionTiersPage() {
         return Crown;
     };
 
-    // حساب الإحصائيات بشكل آمن
     const totalTiers = tiers.length;
     const activeTiers = tiers.filter(t => t.is_active).length;
     const highestPrice = tiers.length > 0 ? Math.max(...tiers.map(t => safeNumber(t.price, 0))) : 0;
@@ -180,22 +177,22 @@ export default function PromotionTiersPage() {
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                        Manage Promotion Tiers
+                        {t('PromotionTiersPage.title')}
                     </h1>
                     <p className="text-muted-foreground mt-2">
-                        Create and manage product promotion packages with different priority levels.
+                        {t('PromotionTiersPage.subtitle')}
                     </p>
                 </div>
                 
                 <div className="flex items-center gap-3">
                     <Select value={sortBy} onValueChange={(value: 'priority' | 'name' | 'price') => setSortBy(value)}>
                         <SelectTrigger className="w-32">
-                            <SelectValue placeholder="Sort by" />
+                            <SelectValue placeholder={t('PromotionTiersPage.sort.placeholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="priority">Priority</SelectItem>
-                            <SelectItem value="name">Name</SelectItem>
-                            <SelectItem value="price">Price</SelectItem>
+                            <SelectItem value="priority">{t('PromotionTiersPage.sort.priority')}</SelectItem>
+                            <SelectItem value="name">{t('PromotionTiersPage.sort.name')}</SelectItem>
+                            <SelectItem value="price">{t('PromotionTiersPage.sort.price')}</SelectItem>
                         </SelectContent>
                     </Select>
 
@@ -206,7 +203,7 @@ export default function PromotionTiersPage() {
                             onClick={() => setViewMode('grid')}
                             className="h-9"
                         >
-                            Grid
+                            {t('PromotionTiersPage.view.grid')}
                         </Button>
                         <Button
                             variant={viewMode === 'table' ? 'default' : 'ghost'}
@@ -214,7 +211,7 @@ export default function PromotionTiersPage() {
                             onClick={() => setViewMode('table')}
                             className="h-9"
                         >
-                            Table
+                            {t('PromotionTiersPage.view.table')}
                         </Button>
                     </div>
 
@@ -223,7 +220,7 @@ export default function PromotionTiersPage() {
                         className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                     >
                         <PlusCircle className="mr-2 h-4 w-4" /> 
-                        Create Tier
+                        {t('PromotionTiersPage.actions.createTier')}
                     </Button>
                 </div>
             </header>
@@ -234,7 +231,7 @@ export default function PromotionTiersPage() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Total Tiers</p>
+                                <p className="text-sm font-medium text-muted-foreground">{t('PromotionTiersPage.stats.totalTiers')}</p>
                                 <p className="text-2xl font-bold">{totalTiers}</p>
                             </div>
                             <Crown className="h-8 w-8 text-purple-500" />
@@ -245,7 +242,7 @@ export default function PromotionTiersPage() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Active Tiers</p>
+                                <p className="text-sm font-medium text-muted-foreground">{t('PromotionTiersPage.stats.activeTiers')}</p>
                                 <p className="text-2xl font-bold">{activeTiers}</p>
                             </div>
                             <Eye className="h-8 w-8 text-green-500" />
@@ -256,9 +253,9 @@ export default function PromotionTiersPage() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Highest Price</p>
+                                <p className="text-sm font-medium text-muted-foreground">{t('PromotionTiersPage.stats.highestPrice')}</p>
                                 <p className="text-2xl font-bold">
-                                    {formatPrice(highestPrice)}
+                                    {formatPrice(highestPrice, currency)}
                                 </p>
                             </div>
                             <TrendingUp className="h-8 w-8 text-orange-500" />
@@ -269,7 +266,7 @@ export default function PromotionTiersPage() {
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">Max Priority</p>
+                                <p className="text-sm font-medium text-muted-foreground">{t('PromotionTiersPage.stats.maxPriority')}</p>
                                 <p className="text-2xl font-bold">
                                     {maxPriority}
                                 </p>
@@ -284,7 +281,7 @@ export default function PromotionTiersPage() {
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {tiers.map(tier => {
                         const TierIcon = getTierIcon(tier.name);
-                        const safePrice = formatPrice(tier.price);
+                        const safePrice = formatPrice(tier.price, currency);
                         const safePriority = safeNumber(tier.priority);
                         const safeDuration = safeNumber(tier.duration_days, 7);
 
@@ -296,17 +293,17 @@ export default function PromotionTiersPage() {
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="flex items-center gap-2">
                                             <TierIcon style={{ color: tier.badge_color }} className="h-5 w-5" />
-                                            <span style={{ color: tier.badge_color }}>{tier.name || 'Unnamed Tier'}</span>
+                                            <span style={{ color: tier.badge_color }}>{tier.name || t('PromotionTiersPage.common.unnamed')}</span>
                                         </CardTitle>
                                         <Badge 
                                             variant={tier.is_active ? "default" : "secondary"}
                                             style={{ backgroundColor: tier.is_active ? tier.badge_color : undefined }}
                                         >
-                                            {tier.is_active ? 'Active' : 'Inactive'}
+                                            {tier.is_active ? t('common.active') : t('common.inactive')}
                                         </Badge>
                                     </div>
                                     <CardDescription>
-                                        Priority: <strong>{safePriority}</strong>
+                                        {t('PromotionTiersPage.tier.priority')}: <strong>{safePriority}</strong>
                                         {tier.description && (
                                             <p className="mt-2 text-sm">{tier.description}</p>
                                         )}
@@ -316,23 +313,23 @@ export default function PromotionTiersPage() {
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="flex items-center gap-2">
                                             <Calendar className="h-4 w-4" />
-                                            Duration:
+                                            {t('PromotionTiersPage.tier.duration')}:
                                         </span>
-                                        <strong>{safeDuration} days</strong>
+                                        <strong>{safeDuration} {t('PromotionTiersPage.tier.days', { count: safeDuration })}</strong>
                                     </div>
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="flex items-center gap-2">
                                             <CreditCard className="h-4 w-4" />
-                                            Price:
+                                            {t('PromotionTiersPage.tier.price')}:
                                         </span>
                                         <strong className="text-lg">
-                                            {safePrice} {t('currency')}
+                                            {safePrice}
                                         </strong>
                                     </div>
                                     
                                     {tier.features && tier.features.length > 0 && (
                                         <div className="mt-4">
-                                            <p className="text-sm font-medium mb-2">Features:</p>
+                                            <p className="text-sm font-medium mb-2">{t('PromotionTiersPage.tier.features')}</p>
                                             <ul className="text-xs space-y-1">
                                                 {tier.features.map((feature, index) => (
                                                     <li key={index} className="flex items-center gap-2">
@@ -350,7 +347,7 @@ export default function PromotionTiersPage() {
                                 <div className="p-4 border-t space-y-2">
                                     <div className="flex items-center justify-between">
                                         <Label htmlFor={`toggle-${tier.id}`} className="text-sm">
-                                            {tier.is_active ? 'Active' : 'Inactive'}
+                                            {tier.is_active ? t('common.active') : t('common.inactive')}
                                         </Label>
                                         <Switch
                                             id={`toggle-${tier.id}`}
@@ -365,7 +362,7 @@ export default function PromotionTiersPage() {
                                             onClick={() => { setTierToEdit(tier); setIsDialogOpen(true); }}
                                             className="flex-1"
                                         >
-                                            <Edit className="mr-2 h-3 w-3" /> Edit
+                                            <Edit className="mr-2 h-3 w-3" /> {t('common.edit')}
                                         </Button>
                                         <Button 
                                             variant="outline" 
@@ -386,19 +383,19 @@ export default function PromotionTiersPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Duration</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Priority</TableHead>
-                                <TableHead>Color</TableHead>
-                                <TableHead>Actions</TableHead>
+                                <TableHead>{t('PromotionTiersPage.table.name')}</TableHead>
+                                <TableHead>{t('PromotionTiersPage.table.status')}</TableHead>
+                                <TableHead>{t('PromotionTiersPage.table.duration')}</TableHead>
+                                <TableHead>{t('PromotionTiersPage.table.price')}</TableHead>
+                                <TableHead>{t('PromotionTiersPage.table.priority')}</TableHead>
+                                <TableHead>{t('PromotionTiersPage.table.color')}</TableHead>
+                                <TableHead>{t('PromotionTiersPage.table.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {tiers.map(tier => {
                                 const TierIcon = getTierIcon(tier.name);
-                                const safePrice = formatPrice(tier.price);
+                                const safePrice = formatPrice(tier.price, currency);
                                 const safeDuration = safeNumber(tier.duration_days, 7);
                                 const safePriority = safeNumber(tier.priority);
 
@@ -407,7 +404,7 @@ export default function PromotionTiersPage() {
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <TierIcon style={{ color: tier.badge_color }} className="h-4 w-4" />
-                                                <span className="font-medium">{tier.name || 'Unnamed Tier'}</span>
+                                                <span className="font-medium">{tier.name || t('PromotionTiersPage.common.unnamed')}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -415,12 +412,12 @@ export default function PromotionTiersPage() {
                                                 variant={tier.is_active ? "default" : "secondary"}
                                                 style={{ backgroundColor: tier.is_active ? tier.badge_color : undefined }}
                                             >
-                                                {tier.is_active ? 'Active' : 'Inactive'}
+                                                {tier.is_active ? t('common.active') : t('common.inactive')}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{safeDuration} days</TableCell>
+                                        <TableCell>{safeDuration} {t('PromotionTiersPage.tier.days', { count: safeDuration })}</TableCell>
                                         <TableCell>
-                                            <strong>{safePrice} {t('currency')}</strong>
+                                            <strong>{safePrice}</strong>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline">{safePriority}</Badge>
@@ -467,24 +464,24 @@ export default function PromotionTiersPage() {
                 onOpenChange={setIsDialogOpen}
                 onSuccess={handleSuccess}
                 tier={tierToEdit}
+                currency={currency}
             />
 
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('PromotionTiersPage.confirmDelete.title')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the 
-                            <strong> "{tierToDelete?.name || 'Unnamed Tier'}"</strong> promotion tier and remove all associated data.
+                            {t('PromotionTiersPage.confirmDelete.description', { name: tierToDelete?.name || t('PromotionTiersPage.common.unnamed') })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                         <AlertDialogAction 
                             onClick={handleDeleteConfirm}
                             className="bg-red-600 hover:bg-red-700"
                         >
-                            Delete Tier
+                            {t('PromotionTiersPage.confirmDelete.confirm')}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -499,9 +496,11 @@ interface TierFormDialogProps {
     onOpenChange: (open: boolean) => void;
     onSuccess: () => void;
     tier: PromotionTier | null;
+    currency: string;
 }
 
-function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialogProps) {
+function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: TierFormDialogProps) {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState<Partial<PromotionTier>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [featureInput, setFeatureInput] = useState('');
@@ -511,7 +510,7 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
             setFormData({
                 ...tier,
                 features: tier.features || [],
-                price: formatPrice(tier.price),
+                price: safeNumber(tier.price, 0),
                 duration_days: safeNumber(tier.duration_days, 7),
                 priority: safeNumber(tier.priority, 1)
             });
@@ -519,7 +518,7 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
             setFormData({ 
                 name: '', 
                 duration_days: 7, 
-                price: '', 
+                price: 0, 
                 priority: 1, 
                 is_active: true, 
                 badge_color: DEFAULT_COLORS[0],
@@ -569,7 +568,6 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // التحقق من البيانات قبل الإرسال
             const submitData = {
                 ...formData,
                 price: safeNumber(formData.price, 0),
@@ -579,14 +577,14 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
 
             if (tier) {
                 await api.put(`/admin/promotion-tiers/${tier.id}`, submitData);
-                toast.success("Tier updated successfully!");
+                toast.success(t('PromotionTiersPage.toast.updateSuccess'));
             } else {
                 await api.post('/admin/promotion-tiers', submitData);
-                toast.success("Tier created successfully!");
+                toast.success(t('PromotionTiersPage.toast.createSuccess'));
             }
             onSuccess();
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "An error occurred.");
+            toast.error(error.response?.data?.message || t('PromotionTiersPage.toast.saveError'));
         } finally {
             setIsSubmitting(false);
         }
@@ -598,29 +596,29 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         {tier ? <Edit className="h-5 w-5" /> : <PlusCircle className="h-5 w-5" />}
-                        {tier ? 'Edit' : 'Create'} Promotion Tier
+                        {tier ? t('PromotionTiersPage.form.editTitle') : t('PromotionTiersPage.form.createTitle')}
                     </DialogTitle>
                     <DialogDescription>
-                        {tier ? 'Update the promotion tier details.' : 'Create a new promotion tier for product boosting.'}
+                        {tier ? t('PromotionTiersPage.form.editSubtitle') : t('PromotionTiersPage.form.createSubtitle')}
                     </DialogDescription>
                 </DialogHeader>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Tier Name *</Label>
+                            <Label htmlFor="name">{t('PromotionTiersPage.form.nameLabel')} *</Label>
                             <Input 
                                 id="name" 
                                 name="name" 
                                 value={formData.name || ''} 
                                 onChange={handleChange} 
-                                placeholder="e.g., Gold Tier, Premium Boost"
+                                placeholder={t('PromotionTiersPage.form.namePlaceholder')}
                                 required 
                             />
                         </div>
                         
                         <div className="space-y-2">
-                            <Label htmlFor="duration_days">Duration (days) *</Label>
+                            <Label htmlFor="duration_days">{t('PromotionTiersPage.form.durationLabel')} *</Label>
                             <Input 
                                 id="duration_days" 
                                 name="duration_days" 
@@ -635,7 +633,7 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="price">Price ({t('currency')}) *</Label>
+                            <Label htmlFor="price">{t('PromotionTiersPage.form.priceLabel', { currency })} *</Label>
                             <Input 
                                 id="price" 
                                 name="price" 
@@ -649,7 +647,7 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
                         </div>
                         
                         <div className="space-y-2">
-                            <Label htmlFor="priority">Priority *</Label>
+                            <Label htmlFor="priority">{t('PromotionTiersPage.form.priorityLabel')} *</Label>
                             <Input 
                                 id="priority" 
                                 name="priority" 
@@ -660,30 +658,30 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
                                 required 
                             />
                             <p className="text-xs text-muted-foreground">
-                                Higher number means higher visibility in promotions
+                                {t('PromotionTiersPage.form.priorityHint')}
                             </p>
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
+                        <Label htmlFor="description">{t('PromotionTiersPage.form.descriptionLabel')}</Label>
                         <textarea
                             id="description"
                             name="description"
                             value={formData.description || ''}
                             onChange={handleChange}
                             className="w-full min-h-[80px] p-3 border rounded-lg resize-none"
-                            placeholder="Brief description of this tier's benefits..."
+                            placeholder={t('PromotionTiersPage.form.descriptionPlaceholder')}
                         />
                     </div>
 
                     <div className="space-y-3">
-                        <Label>Features</Label>
+                        <Label>{t('PromotionTiersPage.form.featuresLabel')}</Label>
                         <div className="flex gap-2">
                             <Input
                                 value={featureInput}
                                 onChange={(e) => setFeatureInput(e.target.value)}
-                                placeholder="Add a feature..."
+                                placeholder={t('PromotionTiersPage.form.featurePlaceholder')}
                                 onKeyPress={(e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
@@ -692,7 +690,7 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
                                 }}
                             />
                             <Button type="button" onClick={handleAddFeature} variant="outline">
-                                Add
+                                {t('common.add')}
                             </Button>
                         </div>
                         
@@ -718,7 +716,7 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-3">
-                            <Label htmlFor="badge_color">Badge Color</Label>
+                            <Label htmlFor="badge_color">{t('PromotionTiersPage.form.badgeColorLabel')}</Label>
                             <div className="flex items-center gap-3">
                                 <Input 
                                     id="badge_color" 
@@ -749,23 +747,23 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier }: TierFormDialo
                                 onCheckedChange={(checked) => setFormData({...formData, is_active: checked})} 
                             />
                             <Label htmlFor="is_active" className="cursor-pointer">
-                                Active Tier
+                                {t('PromotionTiersPage.form.activeLabel')}
                             </Label>
                         </div>
                     </div>
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button type="submit" disabled={isSubmitting} className="min-w-24">
                             {isSubmitting ? (
                                 <div className="flex items-center gap-2">
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                    Saving...
+                                    {t('PromotionTiersPage.actions.saving')}
                                 </div>
                             ) : (
-                                tier ? 'Update Tier' : 'Create Tier'
+                                tier ? t('PromotionTiersPage.actions.updateTier') : t('PromotionTiersPage.actions.createTier')
                             )}
                         </Button>
                     </DialogFooter>

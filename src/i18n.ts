@@ -1188,6 +1188,7 @@ const resources = {
           "overview": "Overview",
           "users": "Users",
           "Footer":"Footer-setting",
+          "marquee-bar":"marquee Bar",
           "main-banners": "Main Banners",
           "verification": "Verifications",
           "products": "Products",
@@ -1207,6 +1208,7 @@ const resources = {
       "common": {
       "currency": "SAR",
       "retry": "Retry",
+      "active":"Active",
       "refresh": "Refresh",
       "visible": "Visible",
       "preview": "Preview",
@@ -1378,11 +1380,90 @@ const resources = {
         }
       }
     },
+    "PromotionTiersPage": {
+    "title": "Manage Promotion Tiers",
+    "subtitle": "Create and manage product promotion packages with different priority levels.",
+    "sort": {
+      "placeholder": "Sort by",
+      "priority": "Priority",
+      "name": "Name",
+      "price": "Price"
+    },
+    "view": {
+      "grid": "Grid",
+      "table": "Table"
+    },
+    "actions": {
+      "createTier": "Create Tier",
+      "saving": "Saving...",
+      "updateTier": "Update Tier"
+    },
+    "stats": {
+      "totalTiers": "Total Tiers",
+      "activeTiers": "Active Tiers",
+      "highestPrice": "Highest Price",
+      "maxPriority": "Max Priority"
+    },
+    "common": {
+      "unnamed": "Unnamed Tier"
+    },
+    "tier": {
+      "priority": "Priority",
+      "duration": "Duration",
+      "price": "Price",
+      "features": "Features",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days"
+    },
+    "table": {
+      "name": "Name",
+      "status": "Status",
+      "duration": "Duration",
+      "price": "Price",
+      "priority": "Priority",
+      "color": "Color",
+      "actions": "Actions"
+    },
+    "form": {
+      "createTitle": "Create Promotion Tier",
+      "editTitle": "Edit Promotion Tier",
+      "createSubtitle": "Create a new promotion tier for product boosting.",
+      "editSubtitle": "Update the promotion tier details.",
+      "nameLabel": "Tier Name",
+      "namePlaceholder": "e.g., Gold Tier, Premium Boost",
+      "durationLabel": "Duration (days)",
+      "priceLabel": "Price ({{currency}})",
+      "priorityLabel": "Priority",
+      "priorityHint": "Higher number means higher visibility in promotions",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Brief description of this tier's benefits...",
+      "featuresLabel": "Features",
+      "featurePlaceholder": "Add a feature...",
+      "badgeColorLabel": "Badge Color",
+      "activeLabel": "Active Tier"
+    },
+    "confirmDelete": {
+      "title": "Are you sure?",
+      "description": "This action cannot be undone. This will permanently delete the \"{{name}}\" promotion tier and remove all associated data.",
+      "confirm": "Delete Tier"
+    },
+    "toast": {
+      "fetchError": "Failed to fetch promotion tiers.",
+      "deleteSuccess": "Tier deleted successfully!",
+      "deleteError": "Failed to delete tier.",
+      "statusUpdated": "Tier {{status}}",
+      "statusError": "Failed to update tier status.",
+      "updateSuccess": "Tier updated successfully!",
+      "createSuccess": "Tier created successfully!",
+      "saveError": "An error occurred."
+    }
+  },
     "ModelNav": {
         "nav": {
           "overview": "Overview",
           "offers": "My Offers",
           "requests": "Requests",
+          "reels":"Reels",
           "wallet": "Wallet",
           "verification": "Verification",
           "mySubscription": "My Subscription",
@@ -1498,6 +1579,41 @@ const resources = {
       "exporting": "Preparing export data..."
     }
   },
+  "TrendsPage": {
+    "search": {
+      "placeholder": "Search trends...",
+      "clear": "Clear search"
+    },
+    "filters": {
+      "title": "Filters & Sort",
+      "quick": "Quick Filters"
+    },
+    "sort": {
+      "title": "Sort By",
+      "placeholder": "Sort by",
+      "popular": "Most Popular",
+      "newest": "New Arrivals",
+      "priceLow": "Price: Low to High",
+      "priceHigh": "Price: High to Low"
+    },
+    "view": {
+      "title": "View Mode"
+    },
+    "badges": {
+      "newArrivals": "New Arrivals",
+      "under50": "Under 50 ر.س"
+    },
+    "results": {
+      "showing": "Showing {{current}} of {{total}} products",
+      "footer": "Showing {{current}} of {{total}} trending products"
+    },
+    "empty": {
+      "title": "No products found",
+      "noResults": "No results for \"{{query}}\". Try adjusting your search.",
+      "noTrends": "No trending products available at the moment."
+    },
+    "loadMore": "Load More Trends"
+  },
   "MessagesPage": {
     "title": "Messages",
     "conversations": "Conversations",
@@ -1517,6 +1633,110 @@ const resources = {
     "attachmentFile": "Attached file",
     "selectConversation": "Select a conversation",
     "selectConversationHint": "to view messages or start a new chat."
+  },
+  "ModelReelsPage": {
+    "title": "My Reels",
+    "subtitle": "Manage and showcase your video content with beautiful reels",
+    "loading": "Loading your reels...",
+    "stats": {
+      "totalReels": "{{count}} {{count, plural, one {Reel} other {Reels}}} Total",
+      "activeReels": "{{count}} Active"
+    },
+    "actions": {
+      "uploadNew": "Upload New Reel"
+    },
+    "manage": {
+      "title": "Manage Your Videos",
+      "subtitle": "View, edit, and manage all your uploaded reels in one place"
+    },
+    "empty": {
+      "title": "No Reels Yet",
+      "subtitle": "You haven't uploaded any reels yet. Start creating amazing content to share with your audience!",
+      "uploadFirst": "Upload Your First Reel"
+    },
+    "table": {
+      "preview": "Preview",
+      "details": "Caption & Details",
+      "performance": "Performance",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "reel": {
+      "thumbnailAlt": "Reel thumbnail",
+      "noCaption": "(No caption)"
+    },
+    "performance": {
+      "views": "views",
+      "likes": "likes"
+    },
+    "confirmDelete": {
+      "title": "Delete Reel?",
+      "description": "This action cannot be undone. This will permanently delete your reel and all its data from our servers.",
+      "confirm": "Delete Reel"
+    },
+    "editReel": {
+      "title": "Edit Reel"
+    },
+    "toast": {
+      "fetchError": "Failed to fetch your reels.",
+      "deleteSuccess": "Reel deleted successfully",
+      "deleteError": "Failed to delete reel",
+      "updateSuccess": "Reel updated successfully!"
+    }
+  },
+  "MarqueeBarPage": {
+    "title": "Marquee Bar Manager",
+    "subtitle": "Create and manage scrolling announcements for your platform",
+    
+    "toast": {
+      "fetchError": "Failed to fetch messages",
+      "emptyMessage": "Please enter a message",
+      "tooLong": "Message must be under 200 characters",
+      "addSuccess": "Message added successfully",
+      "addError": "Failed to add message",
+      "statusUpdated": "Message {{status}}",
+      "updateError": "Failed to update status",
+      "deleteSuccess": "Message deleted successfully",
+      "deleteError": "Failed to delete message"
+    },
+    "confirm": {
+      "delete": "Are you sure you want to delete this message? This action cannot be undone."
+    },
+    "stats": {
+      "total": "Total Messages",
+      "active": "Active Messages",
+      "inactive": "Inactive Messages"
+    },
+    "speedCard":{
+      "title":"Animation Speed",
+      "subtitle": "Control the duration of the scroll (in seconds). Lower is faster.",
+      "hint":"Recommended: 15-30 seconds. Minimum: 5 seconds.",
+    },
+    "addCard": {
+      "title": "Add New Message",
+      "subtitle": "Create engaging announcements that will scroll across the platform",
+      "placeholder": "✨ New Summer Collection! Shop now and get 20% off...",
+      "hint": "Use emojis to make it engaging",
+      "adding": "Adding...",
+      "add": "Add Message"
+    },
+    "listCard": {
+      "title": "Current Messages",
+      "subtitle": "{{count}} message{{count, plural, one {} other {s}}} in total",
+      "activeBadge": "{{count}} Active",
+      "empty": {
+        "title": "No Messages Yet",
+        "subtitle": "Start by creating your first marquee message to engage with your audience."
+      },
+      "chars": "{{count}} characters"
+    },
+    "bestPractices": {
+      "title": "Best Practices",
+      "bullet1": "Keep messages short and engaging (under 100 characters)",
+      "bullet2": "Use emojis to grab attention",
+      "bullet3": "Activate only 2-3 messages at a time for better readability",
+      "bullet4": "Update messages regularly to keep content fresh"
+    }
   },
   "AdminProductsPage": {
     "title": "Product Management",
@@ -1657,6 +1877,40 @@ const resources = {
       "detailsError": "Failed to load request details.",
       "updateSuccess": "Request #{{id}} updated successfully.",
       "updateError": "Failed to update request #{{id}}."
+    }
+  },
+  "EditReelForm": {
+    "preview": {
+      "title": "Reel Preview",
+      "alt": "Reel thumbnail",
+      "views": "{{count}} views",
+      "noCaption": "No caption yet..."
+    },
+    "caption": {
+      "label": "Caption",
+      "placeholder": "Share your story, describe your style, or add a catchy caption...",
+      "chars": "{{current}}/{{max}} characters"
+    },
+    "taggedProducts": {
+      "title": "Tagged Products",
+      "count": "{{count}}",
+      "tagProducts": "Tag Products",
+      "manageProducts": "Manage Tagged Products",
+      "activeAgreements": "Active Agreements",
+      "fromMerchant": "From: {{store}}",
+      "allProducts": "All Products"
+    },
+    "validation": {
+      "maxCaption": "Caption must be at most 1000 characters"
+    },
+    "actions": {
+      "saving": "Saving Changes...",
+      "saveChanges": "Save Changes"
+    },
+    "toast": {
+      "fetchError": "Could not load products or agreements.",
+      "updateSuccess": "Reel updated successfully!",
+      "updateError": "Update failed"
     }
   },
   "AdminSubscriptions": {
@@ -2071,6 +2325,54 @@ const resources = {
       "conversationError": "❌ Failed to start conversation",
       "comingSoon": "🚀 Direct booking feature coming soon!",
       "linkCopied": "✅ Profile link copied"
+    }
+  },
+  "UploadReelPage": {
+    "title": "Upload New Reel",
+    "subtitle": "Share your style with the world through beautiful video content",
+    "form": {
+      "title": "Create New Reel",
+      "subtitle": "Upload your video and add engaging details"
+    },
+    "video": {
+      "label": "Video File",
+      "selectPrompt": "Select a video file",
+      "supportedFormats": "MP4, MOV, MKV, AVI supported"
+    },
+    "preview": {
+      "title": "Preview",
+      "placeholder": "Video preview will appear here"
+    },
+    "caption": {
+      "label": "Caption",
+      "placeholder": "Share your story, describe your style, or add a catchy caption...",
+      "chars": "{{current}}/{{max}} characters"
+    },
+    "taggedProducts": {
+      "title": "Tagged Products",
+      "count": "{{count}} Products",
+      "tagProducts": "Tag Products",
+      "manageProducts": "Manage Tagged Products",
+      "activeAgreements": "Active Agreements",
+      "fromMerchant": "From: {{store}}",
+      "allProducts": "All Products"
+    },
+    "agreement": {
+      "linked": "Linked to Active Agreement",
+      "id": "This reel will be associated with Agreement ID: {{id}}"
+    },
+    "actions": {
+      "uploading": "Uploading...",
+      "uploadReel": "Upload Reel"
+    },
+    "validation": {
+      "videoRequired": "Video file is required.",
+      "maxCaption": "Caption must be at most 1000 characters"
+    },
+    "toast": {
+      "fetchError": "Could not load products or active agreements.",
+      "uploadSuccess": "Video uploaded successfully!",
+      "uploadError": "Upload failed"
     }
   },
   "ShippingPage": {
@@ -3307,6 +3609,36 @@ const resources = {
 
     "currency": "SAR"
   },
+  "CategoriesPage": {
+    "search": {
+      "placeholder": "Search categories...",
+      "clear": "Clear search"
+    },
+    "filters": {
+      "all": "All",
+      "featured": "Featured",
+      "trending": "Trending"
+    },
+    "badges": {
+      "featured": "Featured",
+      "trending": "Trending"
+    },
+    "category": {
+      "products_one": "{{count}} product",
+      "products_other": "{{count}} products",
+      "subcategories_one": "{{count}} subcategory",
+      "subcategories_other": "{{count}} subcategories"
+    },
+    "results": {
+      "count": "Showing {{current}} of {{total}} categories"
+    },
+    "empty": {
+      "title": "No categories found",
+      "noResults": "No results for \"{{query}}\". Try different search terms.",
+      "noCategories": "No categories available at the moment.",
+      "viewAll": "View all categories"
+    }
+  },
   "supplierproducts": {
     "pageTitle": "Manage Products",
     "pageSubtitle": "Add and edit your dropshipping products",
@@ -3521,6 +3853,132 @@ const resources = {
         "areYouAPartner": "هل أنت شركة أو مورّد؟",
         "joinHere": "انضم إلينا من هنا"
       },
+      "MarqueeBarPage": {
+    "title": "إدارة شريط الرسائل المتحركة",
+    "subtitle": "أنشئ وأدر الإعلانات المتحركة على منصتك",
+    "toast": {
+      "fetchError": "فشل تحميل الرسائل",
+      "emptyMessage": "يرجى إدخال رسالة",
+      "tooLong": "يجب أن تكون الرسالة أقل من 200 حرف",
+      "addSuccess": "تمت إضافة الرسالة بنجاح",
+      "addError": "فشل في إضافة الرسالة",
+      "statusUpdated": "الرسالة {{status}}",
+      "updateError": "فشل في تحديث الحالة",
+      "deleteSuccess": "تم حذف الرسالة بنجاح",
+      "deleteError": "فشل في حذف الرسالة"
+    },
+    "confirm": {
+      "delete": "هل أنت متأكد أنك تريد حذف هذه الرسالة؟ لا يمكن التراجع عن هذا الإجراء."
+    },
+    "stats": {
+      "total": "إجمالي الرسائل",
+      "active": "الرسائل النشطة",
+      "inactive": "الرسائل غير النشطة"
+    },
+    "speedCard": {
+      "title": "سرعة التحريك",
+      "subtitle": "تحكم في مدة التمرير (بالثواني). القيمة الأقل تعني سرعة أكبر.",
+      "hint": "القيمة الموصى بها: من 15 إلى 30 ثانية. الحد الأدنى: 5 ثوانٍ."
+    },
+    "addCard": {
+      "title": "إضافة رسالة جديدة",
+      "subtitle": "أنشئ إعلانات جذابة ستتحرك عبر المنصة",
+      "placeholder": "✨ مجموعة الصيف الجديدة! تسوق الآن واحصل على خصم 20%...",
+      "hint": "استخدم الرموز التعبيرية لجذب الانتباه",
+      "adding": "جاري الإضافة...",
+      "add": "إضافة رسالة"
+    },
+    "listCard": {
+      "title": "الرسائل الحالية",
+      "subtitle": "{{count}} رسالة{{count, plural, zero {} one {} two {} few {} many {} other {ات}}}",
+      "activeBadge": "{{count}} نشطة",
+      "empty": {
+        "title": "لا توجد رسائل بعد",
+        "subtitle": "ابدأ بإنشاء أول رسالة متحركة لجذب جمهورك."
+      },
+      "chars": "{{count}} حرف"
+    },
+    "bestPractices": {
+      "title": "أفضل الممارسات",
+      "bullet1": "اجعل الرسائل قصيرة وجذابة (أقل من 100 حرف)",
+      "bullet2": "استخدم الرموز التعبيرية لجذب الانتباه",
+      "bullet3": "فعّل 2-3 رسائل فقط في نفس الوقت لتحسين القراءة",
+      "bullet4": "حدّث الرسائل بانتظام للحفاظ على محتوى جديد"
+    }
+  },
+  "CategoriesPage": {
+    "search": {
+      "placeholder": "ابحث في الفئات...",
+      "clear": "مسح البحث"
+    },
+    "filters": {
+      "all": "الكل",
+      "featured": "مميزة",
+      "trending": "رائجة"
+    },
+    "badges": {
+      "featured": "مميزة",
+      "trending": "رائجة"
+    },
+    "category": {
+      "products_zero": "{{count}} منتج",
+      "products_one": "{{count}} منتج",
+      "products_two": "{{count}} منتجين",
+      "products_few": "{{count}} منتجات",
+      "products_many": "{{count}} منتجًا",
+      "products_other": "{{count}} منتج",
+      "subcategories_zero": "{{count}} فئة فرعية",
+      "subcategories_one": "{{count}} فئة فرعية",
+      "subcategories_two": "{{count}} فئتين فرعيتين",
+      "subcategories_few": "{{count}} فئات فرعية",
+      "subcategories_many": "{{count}} فئة فرعية",
+      "subcategories_other": "{{count}} فئة فرعية"
+    },
+    "results": {
+      "count": "عرض {{current}} من {{total}} فئة"
+    },
+    "empty": {
+      "title": "لم يتم العثور على فئات",
+      "noResults": "لا توجد نتائج لـ \"{{query}}\". جرّب مصطلحات بحث أخرى.",
+      "noCategories": "لا توجد فئات متاحة حاليًا.",
+      "viewAll": "عرض كل الفئات"
+    }
+  },
+  "TrendsPage": {
+    "search": {
+      "placeholder": "البحث في الصيحات...",
+      "clear": "مسح البحث"
+    },
+    "filters": {
+      "title": "التصفية والفرز",
+      "quick": "تصفية سريعة"
+    },
+    "sort": {
+      "title": "الفرز حسب",
+      "placeholder": "الفرز حسب",
+      "popular": "الأكثر رواجًا",
+      "newest": "الوصول حديثًا",
+      "priceLow": "السعر: من الأقل إلى الأعلى",
+      "priceHigh": "السعر: من الأعلى إلى الأقل"
+    },
+    "view": {
+      "title": "وضع العرض"
+    },
+    "badges": {
+      "newArrivals": "الوصول حديثًا",
+      "under50": "أقل من 50 ر.س"
+    },
+    "results": {
+      "showing": "عرض {{current}} من أصل {{total}} منتج",
+      "footer": "عرض {{current}} من أصل {{total}} منتج رائج"
+    },
+    "empty": {
+      "title": "لم يتم العثور على منتجات",
+      "noResults": "لا توجد نتائج لـ \"{{query}}\". جرّب تعديل بحثك.",
+      "noTrends": "لا توجد منتجات رائجة حاليًا."
+    },
+    "loadMore": "عرض مزيد من الصيحات"
+  },
       "AdminDashboard": {
         "header": {
           "title": "لوحة التحكم الإدارية",
@@ -3903,6 +4361,56 @@ const resources = {
           }
         }
       },
+      "ModelReelsPage": {
+    "title": "رييلاتي",
+    "subtitle": "أدر واعرض محتوى الفيديو الخاص بك عبر الرييلات الجميلة",
+    "loading": "جارٍ تحميل رييلاتك...",
+    "stats": {
+      "totalReels": "إجمالي {{count}} ريل{{count, plural, zero {} one {} two {} few {} many {} other {ات}}}",
+      "activeReels": "{{count}} نشط{{count, plural, zero {} one {} two {} few {} many {} other {ة}}}"
+    },
+    "actions": {
+      "uploadNew": "رفع ريل جديد"
+    },
+    "manage": {
+      "title": "إدارة مقاطع الفيديو الخاصة بك",
+      "subtitle": "عرض وتعديل وإدارة جميع الرييلات التي قمت برفعها في مكان واحد"
+    },
+    "empty": {
+      "title": "لا توجد رييلات بعد",
+      "subtitle": "لم تقم برفع أي رييلات بعد. ابدأ بإنشاء محتوى رائع لمشاركته مع جمهورك!",
+      "uploadFirst": "ارفع أول ريل لك"
+    },
+    "table": {
+      "preview": "معاينة",
+      "details": "الوصف والتفاصيل",
+      "performance": "الأداء",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "reel": {
+      "thumbnailAlt": "صورة مصغرة للريل",
+      "noCaption": "(بدون وصف)"
+    },
+    "performance": {
+      "views": "مشاهدات",
+      "likes": "إعجابات"
+    },
+    "confirmDelete": {
+      "title": "حذف الريل؟",
+      "description": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف الريل وجميع بياناته بشكل دائم من خوادمنا.",
+      "confirm": "حذف الريل"
+    },
+    "editReel": {
+      "title": "تعديل الريل"
+    },
+    "toast": {
+      "fetchError": "فشل تحميل رييلاتك.",
+      "deleteSuccess": "تم حذف الريل بنجاح",
+      "deleteError": "فشل في حذف الريل",
+      "updateSuccess": "تم تحديث الريل بنجاح!"
+    }
+  },
       "ManageProducts": {
         "title": "إدارة المنتجات",
         "subtitle": "إدارة جميع منتجات المنصة، مراجعة حالتها، وتحديث معلوماتها",
@@ -4573,12 +5081,95 @@ const resources = {
           "profile": "ملفي"
         }
       },
+       "PromotionTiersPage": {
+    "title": "إدارة مستويات الترويج",
+    "subtitle": "أنشئ وأدر حزم الترويج للمنتجات ذات مستويات الأولوية المختلفة.",
+    "sort": {
+      "placeholder": "الترتيب حسب",
+      "priority": "الأولوية",
+      "name": "الاسم",
+      "price": "السعر"
+    },
+    "view": {
+      "grid": "شبكة",
+      "table": "جدول"
+    },
+    "actions": {
+      "createTier": "إنشاء مستوى",
+      "saving": "جارٍ الحفظ...",
+      "updateTier": "تحديث المستوى"
+    },
+    "stats": {
+      "totalTiers": "إجمالي المستويات",
+      "activeTiers": "المستويات النشطة",
+      "highestPrice": "أعلى سعر",
+      "maxPriority": "أعلى أولوية"
+    },
+    "common": {
+      "unnamed": "مستوى غير مسمّى"
+    },
+    "tier": {
+      "priority": "الأولوية",
+      "duration": "المدة",
+      "price": "السعر",
+      "features": "المزايا",
+      "days_zero": "{{count}} يوم",
+      "days_one": "{{count}} يوم",
+      "days_two": "{{count}} يومين",
+      "days_few": "{{count}} أيام",
+      "days_many": "{{count}} يومًا",
+      "days_other": "{{count}} يوم"
+    },
+    "table": {
+      "name": "الاسم",
+      "status": "الحالة",
+      "duration": "المدة",
+      "price": "السعر",
+      "priority": "الأولوية",
+      "color": "اللون",
+      "actions": "الإجراءات"
+    },
+    "form": {
+      "createTitle": "إنشاء مستوى ترويج",
+      "editTitle": "تعديل مستوى ترويج",
+      "createSubtitle": "أنشئ مستوى ترويج جديد لترويج المنتجات.",
+      "editSubtitle": "قم بتحديث تفاصيل مستوى الترويج.",
+      "nameLabel": "اسم المستوى",
+      "namePlaceholder": "مثال: المستوى الذهبي، ترويج مميز",
+      "durationLabel": "المدة (أيام)",
+      "priceLabel": "السعر ({{currency}})",
+      "priorityLabel": "الأولوية",
+      "priorityHint": "كلما زاد الرقم زادت ظهوره في الترويج",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "وصف موجز لمزايا هذا المستوى...",
+      "featuresLabel": "المزايا",
+      "featurePlaceholder": "أضف ميزة...",
+      "badgeColorLabel": "لون الشارة",
+      "activeLabel": "مستوى نشط"
+    },
+    "confirmDelete": {
+      "title": "هل أنت متأكد؟",
+      "description": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف مستوى الترويج \"{{name}}\" بشكل دائم وحذف جميع بياناته المرتبطة.",
+      "confirm": "حذف المستوى"
+    },
+    "toast": {
+      "fetchError": "فشل في جلب مستويات الترويج.",
+      "deleteSuccess": "تم حذف المستوى بنجاح!",
+      "deleteError": "فشل في حذف المستوى.",
+      "statusUpdated": "تم {{status}} المستوى",
+      "statusError": "فشل في تحديث حالة المستوى.",
+      "updateSuccess": "تم تحديث المستوى بنجاح!",
+      "createSuccess": "تم إنشاء المستوى بنجاح!",
+      "saveError": "حدث خطأ."
+    }
+  },
       "AdminNav": {
         "nav": {
           "overview": "نظرة عامة",
           "users": "المستخدمون",
           "main-banners": "البنرات الرئيسية",
           "Footer":"إعدادات الفوتر",
+          "marquee-bar":"الشريط الإعلاني",
           "verification": "التحقق",
           "products": "المنتجات",
           "categories": "التصنيفات",
@@ -4597,6 +5188,7 @@ const resources = {
       "common": {
         "currency": "ريال",
         "locale": "ar-SA",
+        "active":"نشط",
         "uploading": "جاري الرفع...",
         "saving": "جاري الحفظ...",
         "retry": "إعادة المحاولة",
@@ -4704,6 +5296,7 @@ const resources = {
           "overview": "نظرة عامة",
           "offers": "عروضي",
           "wallet": "محفظتي",
+          "reels":"ريلز",
           "mySubscription": "إشتراكي",
           "verification": "التحقق",
           "subscribe":"إشترك",
@@ -5159,6 +5752,54 @@ const resources = {
     "statusUpdateFailed": "فشل تحديث حالة المنتج.",
     "deleteFailed": "فشل حذف المنتج."
   },
+  "UploadReelPage": {
+    "title": "رفع ريل جديد",
+    "subtitle": "شارك أسلوبك مع العالم من خلال محتوى فيديو جميل",
+    "form": {
+      "title": "إنشاء ريل جديد",
+      "subtitle": "قم برفع الفيديو الخاص بك وأضف تفاصيل جذابة"
+    },
+    "video": {
+      "label": "ملف الفيديو",
+      "selectPrompt": "اختر ملف فيديو",
+      "supportedFormats": "التنسيقات المدعومة: MP4، MOV، MKV، AVI"
+    },
+    "preview": {
+      "title": "معاينة",
+      "placeholder": "ستظهر معاينة الفيديو هنا"
+    },
+    "caption": {
+      "label": "الوصف",
+      "placeholder": "شارك قصتك، أو صف أسلوبك، أو أضف وصفًا جذابًا...",
+      "chars": "{{current}}/{{max}} حرف"
+    },
+    "taggedProducts": {
+      "title": "المنتجات المُوسومة",
+      "count": "{{count}} منتج{{count, plural, zero {} one {} two {} few {} many {} other {ات}}}",
+      "tagProducts": "وسّم منتجات",
+      "manageProducts": "إدارة المنتجات المُوسومة",
+      "activeAgreements": "الاتفاقيات النشطة",
+      "fromMerchant": "من: {{store}}",
+      "allProducts": "جميع المنتجات"
+    },
+    "agreement": {
+      "linked": "مرتبط باتفاقية نشطة",
+      "id": "سيتم ربط هذا الريل بمعرف الاتفاقية: {{id}}"
+    },
+    "actions": {
+      "uploading": "جارٍ الرفع...",
+      "uploadReel": "رفع الريل"
+    },
+    "validation": {
+      "videoRequired": "ملف الفيديو مطلوب.",
+      "maxCaption": "يجب أن يكون الوصف 1000 حرف كحد أقصى"
+    },
+    "toast": {
+      "fetchError": "تعذر تحميل المنتجات أو الاتفاقيات النشطة.",
+      "uploadSuccess": "تم رفع الفيديو بنجاح!",
+      "uploadError": "فشل الرفع"
+    }
+  },
   "AdminOrdersPage": {
     "title": "إدارة الطلبات",
     "subtitle": "مراقبة جميع الطلبات والمعاملات في المنصة.",
@@ -5605,6 +6246,40 @@ const resources = {
       },
       "saveError": "❌ فشل الحفظ: {{message}}",
       "categoriesError": "❌ فشل في تحميل قائمة الفئات."
+    }
+  },
+  "EditReelForm": {
+    "preview": {
+      "title": "معاينة الريل",
+      "alt": "صورة مصغرة للريل",
+      "views": "{{count}} مشاهدة{{count, plural, zero {} one {} two {} few {} many {} other {ات}}}",
+      "noCaption": "لا يوجد وصف بعد..."
+    },
+    "caption": {
+      "label": "الوصف",
+      "placeholder": "شارك قصتك، أو صف أسلوبك، أو أضف وصفًا جذابًا...",
+      "chars": "{{current}}/{{max}} حرف"
+    },
+    "taggedProducts": {
+      "title": "المنتجات المُوسومة",
+      "count": "{{count}}",
+      "tagProducts": "وسّم منتجات",
+      "manageProducts": "إدارة المنتجات المُوسومة",
+      "activeAgreements": "الاتفاقيات النشطة",
+      "fromMerchant": "من: {{store}}",
+      "allProducts": "جميع المنتجات"
+    },
+    "validation": {
+      "maxCaption": "يجب أن يكون الوصف 1000 حرف كحد أقصى"
+    },
+    "actions": {
+      "saving": "جارٍ الحفظ...",
+      "saveChanges": "حفظ التغييرات"
+    },
+    "toast": {
+      "fetchError": "تعذر تحميل المنتجات أو الاتفاقيات.",
+      "updateSuccess": "تم تحديث الريل بنجاح!",
+      "updateError": "فشل التحديث"
     }
   },
   "ContentManagement": {

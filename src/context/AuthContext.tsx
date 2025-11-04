@@ -3,6 +3,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import api from '@/lib/axios';
+import Cookies from 'js-cookie';
 
 // ================== Interface Definitions ==================
 export interface SubscriptionState {
@@ -23,6 +24,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  profile_picture_url: string;
   role_id: number;
   verification_status: 'not_submitted' | 'pending' | 'approved' | 'rejected';
   has_accepted_agreement: boolean;
@@ -69,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
+    Cookies.remove('token');
     setToken(null);
     setUser(null);
     delete api.defaults.headers.common['Authorization'];
@@ -126,6 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = (newToken: string) => {
     localStorage.setItem('token', newToken);
+    Cookies.set('token', newToken, { expires: 7 });
     setToken(newToken);
   };
 

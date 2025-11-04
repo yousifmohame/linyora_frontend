@@ -12,6 +12,8 @@ import { useState, useEffect } from 'react';
 import api from '@/lib/axios';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useCart } from '@/context/CartContext';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
   product: Product;
@@ -21,7 +23,7 @@ interface ProductCardProps {
 // Skeleton Loader Component
 export function ProductCardSkeleton() {
   return (
-    <Card className="flex flex-col gap-0 py-0 overflow-hidden bg-white border border-gray-100 shadow-sm rounded-lg max-w-[320px] animate-pulse">
+    <Card className="flex flex-col gap-0 py-0 overflow-hidden bg-white border border-gray-100 shadow-sm rounded-lg max-w-[370px] animate-pulse">
       <CardHeader className="p-0 relative">
         <div className="relative h-[140px] w-full bg-gradient-to-br from-pink-50 to-purple-50 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -skew-x-12 animate-shimmer" />
@@ -59,7 +61,7 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
-
+  const { addToCart } = useCart();
   const [isWishlisted, setIsWishlisted] = useState(isInitiallyWishlisted);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -110,7 +112,7 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
   };
 
   return (
-    <Card className="flex flex-col gap-0 py-0 overflow-hidden group bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-lg max-w-[320px] font-sans">
+    <Card className="flex flex-col gap-0 py-0 overflow-hidden group bg-white border border-transparent shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-lg max-w-[320px] font-sans">
       <CardHeader className="p-0 relative">
         <Link href={`/products/${product.id}`} className="block relative">
           <div className="relative h-[220px] md:h-[280] sm:h-[240px] w-full overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50">
@@ -160,45 +162,28 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
             </Button>
 
             {/* Premium Badge */}
-            {product.isPremium && (
+            
               <div className="absolute bottom-2 left-2 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
                 <Sparkles className="w-2.5 h-2.5 text-amber-500" />
-                <span className="text-[10px] font-medium text-gray-700">{t('ProductCard.premium')}</span>
+                <p className="text-[10px] font-medium text-rose-500 mb-1 uppercase tracking-wide">
+          {product.merchantName}
+        </p>
               </div>
-            )}
+            
           </div>
         </Link>
       </CardHeader>
 
       <CardContent className="p-2 flex-1 justify-center items-center flex flex-col">
-        {/* Merchant Name */}
-        <p className="text-[10px] font-medium text-rose-500 mb-1 uppercase tracking-wide">
-          {product.merchantName}
-        </p>
-
         {/* Product Name */}
         <CardTitle className="text-[13px] font-semibold text-gray-900 leading-tight line-clamp-2 mb-2 font-serif">
           {product.name}
         </CardTitle>
-
-        {/* Rating */}
-        <div className="flex items-center gap-1 mb-2">
-          <div className="flex items-center gap-0.5">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <Star
-                key={star}
-                className={`w-3 h-3 ${
-                  star <= (product.rating || 0)
-                    ? 'text-amber-400 fill-amber-400'
-                    : 'text-gray-200'
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-[10px] font-medium text-gray-600">
-            ({product.reviewCount || 0})
-          </span>
-        </div>
+        
+        {/* Merchant Name */}
+        {/* <p className="text-[10px] font-medium text-rose-500 mb-1 uppercase tracking-wide">
+          {product.merchantName}
+        </p> */}
 
         {/* Price Section */}
         <div className="mt-auto">
@@ -213,25 +198,51 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
             )}
           </div>
           
-          {product.variants.length > 1 && (
+          {product?.variants?.length > 1 && (
             <p className="text-[10px] text-gray-500 font-medium">
-              +{product.variants.length - 1} {t('ProductCard.variants')}
+              +{product?.variants?.length - 1} {t('ProductCard.variants')}
             </p>
           )}
         </div>
-      </CardContent>
 
-      {/* <CardFooter className="p-2 pt-0">
-        <Link href={`/products/${product.id}`} className="w-full">
+
+        <div className="w-full flex items-center justify-between mt-2">
+          {/* Add to Cart */}
           <Button 
-            size="sm" 
-            className="w-full h-9 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold text-[12px] rounded-lg transition-all duration-200 hover:scale-[1.02] group/btn"
+            size="sm"
+            className="h-7 bg-[#00A500] hover:bg-[#009000] text-white text-[13px] font-medium px-3 rounded-xl transition-colors duration-200"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (cheapestVariant) {
+                addToCart(product, cheapestVariant, 1);
+                toast.success(t('productDetail.toast.addToCartSuccess', 'Added to cart!'));
+              }
+            }}
           >
-            <ShoppingBag className="w-3 h-3 ml-1 transition-transform duration-200 group-hover/btn:scale-105" />
-            {t('ProductCard.viewDetails')}
+            {t('ProductCard.add', 'Add')}
           </Button>
-        </Link>
-      </CardFooter> */}
+
+          {/* Rating */}
+          <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-3 h-3 ${
+                    star <= (product.rating || 0)
+                      ? 'text-amber-400 fill-amber-400'
+                      : 'text-gray-200'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-[10px] font-medium text-gray-500">
+              ({product.reviewCount || 0})
+            </span>
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }

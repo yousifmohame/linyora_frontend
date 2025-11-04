@@ -102,7 +102,7 @@ export default function CartPage() {
                             {t('CartPage.byMerchant', { merchant: item.merchantName })}
                           </p>
                           <p className="text-md font-bold text-purple-600 mt-1">
-                            {item.price.toFixed(2)} {t('common.currency')}
+                            {(typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0).toFixed(2)} {t('common.currency')}
                           </p>
                         </div>
                         <div className="flex items-center gap-4">

@@ -1,14 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import Image from 'next/image';
 import api from '@/lib/axios';
-import { Card } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Skeleton } from '@/components/ui/skeleton';
-import Autoplay from 'embla-carousel-autoplay';
+
+// Import Swiper
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, FreeMode, Grid } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/free-mode';
+import 'swiper/css/grid';
 
 interface Category {
   id: number;
@@ -18,17 +26,18 @@ interface Category {
 }
 
 const CategorySkeleton = () => (
-  <div className="flex flex-col items-center gap-2 p-1">
-    <Skeleton className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 rounded-xl bg-gradient-to-br from-pink-50 to-purple-50" />
-    <Skeleton className="h-2 w-12 sm:w-14 md:w-16 bg-gray-200 rounded-full" />
+  <div className="flex flex-col items-center gap-3 p-3">
+    <Skeleton className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200" />
+    <Skeleton className="h-4 w-24 md:w-28 bg-gray-200 rounded-full" />
   </div>
 );
 
-export default function CategorySlider() {
-  const { t, i18n } = useTranslation();
+export default function CategorySwiper() {
+  const { t } = useTranslation('home');
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState<{[key: number]: boolean}>({});
+  const swiperRef = useRef<SwiperType | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -49,117 +58,213 @@ export default function CategorySlider() {
     setImageLoaded(prev => ({ ...prev, [categoryId]: true }));
   };
 
-  const isRTL = i18n.language === 'ar';
+  // إعدادات Swiper مع Grid للصفوف
+  const swiperConfig = {
+    slidesPerView: 8, // 3 أعمدة للكمبيوتر
+    grid: {
+      rows: 3, // 3 صفوف للكمبيوتر
+      fill: 'row' as const
+    },
+    spaceBetween: 16,
+    freeMode: true,
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+    breakpoints: {
+      // للهاتف: 4 صفوف
+      320: {
+        slidesPerView: 4,
+        grid: {
+          rows: 4,
+          fill: 'row'
+        },
+        spaceBetween: 4,
+      },
+      // للتابلت: 3 صفوف
+      768: {
+        slidesPerView: 6,
+        grid: {
+          rows: 3,
+          fill: 'row'
+        },
+        spaceBetween: 12,
+      },
+      // للكمبيوتر: 3 صفوف
+      1124: {
+        slidesPerView: 8,
+        grid: {
+          rows: 3,
+          fill: 'row'
+        },
+        spaceBetween: 16,
+      },
+    },
+  };
 
   return (
-    <section className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
-      {/* العنوان */}
-      <div className="flex justify-center items-center mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl md:text-2xl text-rose-700 font-bold text-center font-serif">
-          {t('CategorySlider.title')}
-        </h2>
+    <section className="relative py-2 mb-3 lg:py-4 bg-white w-full">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        
+        {loading ? (
+          <div className="grid grid-cols-3 gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <Skeleton className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200" />
+                <Skeleton className="h-4 w-20 mt-2 bg-gray-200 rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="relative">
+            {/* Swiper Container */}
+            <Swiper
+              {...swiperConfig}
+              modules={[Navigation, FreeMode, Grid]}
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
+              }}
+              className="category-recommend-dynamic__swiper linear-mode"
+            >
+              {categories.map((category, index) => (
+                <SwiperSlide 
+                  key={category.id}
+                  className="category-recommend-dynamic__slide"
+                >
+                  <div className="category-recommend-dynamic__img_wrapper h-full">
+                    <Link 
+                      href={`/categories/${category.slug}`}
+                      className="group flex flex-col items-center text-center p-3 rounded-2xl hover:bg-gray-50 transition-all duration-300 hover:scale-105 h-full"
+                    >
+                      {/* Image Container */}
+                      <div className="base-img category-recommend-dynamic__img relative aspect-square w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 mb-3 bg-gray-100 rounded-2xl overflow-hidden">
+                        {!imageLoaded[category.id] && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent -skew-x-12 animate-shimmer z-10" />
+                        )}
+                        <Image
+                          src={category.image_url || '/placeholder-category.svg'}
+                          alt={category.name}
+                          fill
+                          sizes="(max-width: 640px) 80px, (max-width: 768px) 96px, (max-width: 1024px) 112px, 128px"
+                          className={`base-img__cover object-cover transition-opacity duration-300 ${
+                            imageLoaded[category.id] ? 'opacity-100' : 'opacity-0'
+                          }`}
+                          onLoad={() => handleImageLoad(category.id)}
+                        />
+                      </div>
+
+                      {/* Category Name */}
+                      <div 
+                        style={{ color: '#000000' }} 
+                        className="category-recommend-dynamic__name font-semibold text-sm text-gray-800 line-clamp-2 group-hover:text-rose-700 transition-colors duration-200 leading-tight flex items-center justify-center flex-1"
+                      >
+                        {category.name}
+                      </div>
+                    </Link>
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+
+            {/* Navigation Buttons */}
+            <div className="swiper-button-prev !hidden md:!flex after:!text-xl after:!text-gray-600 hover:after:!text-rose-600 !w-10 !h-10 !bg-white !rounded-full !shadow-lg hover:!shadow-xl transition-all duration-200"></div>
+            <div className="swiper-button-next !hidden md:!flex after:!text-xl after:!text-gray-600 hover:after:!text-rose-600 !w-10 !h-10 !bg-white !rounded-full !shadow-lg hover:!shadow-xl transition-all duration-200"></div>
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
-          {Array.from({ length: 8 }).map((_, i) => <CategorySkeleton key={i} />)}
-        </div>
-      ) : (
-        <Carousel
-          plugins={[
-            Autoplay({
-              delay: 3000,
-              stopOnInteraction: false,
-              stopOnMouseEnter: true,
-            })
-          ]}
-          opts={{
-            align: "start",
-            direction: isRTL ? "rtl" : "ltr",
-            dragFree: true,
-            skipSnaps: false,
-            loop: true,
-          }}
-          className="w-full relative"
-        >
-          <CarouselContent className="-ml-2">
-            {categories.map((category) => (
-              <CarouselItem 
-                key={category.id} 
-                className="basis-1/4 sm:basis-1/5 md:basis-1/6 lg:basis-1/8 pl-2"
-              >
-                <Link 
-                  href={`/categories/${category.slug}`} 
-                  className="group block"
-                >
-                  <div className="flex flex-col items-center gap-2 p-1 sm:p-2">
-                    {/* الصورة */}
-                    <Card className="relative aspect-square w-full max-w-[70px] sm:max-w-[80px] md:max-w-[90px] rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:border-rose-200 hover:shadow-lg transition-all duration-300 group-hover:scale-105 bg-gradient-to-br from-pink-50 to-purple-50">
-                      {!imageLoaded[category.id] && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -skew-x-12 animate-shimmer z-10" />
-                      )}
-                      <Image
-                        src={category.image_url || '/placeholder-category.svg'}
-                        alt={category.name}
-                        fill
-                        sizes="(max-width: 640px) 70px, (max-width: 768px) 80px, 90px"
-                        className={`object-cover transition-opacity duration-300 ${
-                          imageLoaded[category.id] ? 'opacity-100' : 'opacity-0'
-                        }`}
-                        onLoad={() => handleImageLoad(category.id)}
-                      />
-                      
-                      {/* Overlay effect */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded-xl sm:rounded-2xl" />
-                    </Card>
+      <style jsx>{`
+        .category-recommend-dynamic__swiper {
+          padding: 8px 4px;
+          height: auto;
+        }
+        
+        .category-recommend-dynamic__slide {
+          height: auto;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .category-recommend-dynamic__img_wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          height: 100%;
+        }
+        
+        .base-img {
+          position: relative;
+          border-radius: 16px;
+          overflow: hidden;
+          background-color: #F0EEEC;
+        }
+        
+        .base-img__cover {
+          object-fit: cover;
+          object-position: initial;
+        }
+        
+        .category-recommend-dynamic__name {
+          font-weight: 600;
+          text-align: center;
+          margin-top: 8px;
+          color: #000000;
+        }
 
-                    {/* الاسم */}
-                    <p className="font-medium text-center text-xs sm:text-sm text-gray-700 line-clamp-2 group-hover:text-rose-700 transition-colors duration-200 leading-tight min-h-[32px] flex items-center justify-center">
-                      {category.name}
-                    </p>
-                  </div>
-                </Link>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
+        /* Swiper Navigation Styles */
+        .swiper-button-prev,
+        .swiper-button-next {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 10;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          background: white;
+          border-radius: 50%;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          width: 40px;
+          height: 40px;
+        }
 
-          {/* أزرار التنقل - تظهر فقط على الشاشات المتوسطة فما فوق */}
-          <CarouselPrevious 
-            className={`left-0 sm:left-2 md:left-4 disabled:opacity-30 hidden md:flex size-8 md:size-10 bg-white/90 hover:bg-white border-rose-200 text-rose-700 shadow-lg hover:shadow-xl transition-all duration-200 ${
-              isRTL ? 'rotate-180' : ''
-            }`}
-          />
-          <CarouselNext 
-            className={`right-0 sm:right-2 md:right-4 disabled:opacity-30 hidden md:flex size-8 md:size-10 bg-white/90 hover:bg-white border-rose-200 text-rose-700 shadow-lg hover:shadow-xl transition-all duration-200 ${
-              isRTL ? 'rotate-180' : ''
-            }`}
-          />
+        .swiper-button-prev:after,
+        .swiper-button-next:after {
+          font-size: 18px;
+          font-weight: bold;
+          color: #666;
+        }
 
-          {/* مؤشر التمرير للنقال */}
-          <div className="flex justify-center mt-4 md:hidden">
-            <div className="flex gap-1.5">
-              {categories.slice(0, 4).map((_, index) => (
-                <div 
-                  key={index}
-                  className="w-1.5 h-1.5 rounded-full bg-gray-300"
-                />
-              ))}
-            </div>
-          </div>
-        </Carousel>
-      )}
+        .swiper-button-prev {
+          left: -20px;
+        }
 
-      {/* زر عرض الكل */}
-      {!loading && categories.length > 0 && (
-        <div className="flex justify-center mt-6">
-          <Link 
-            href="/categories"
-            className="px-6 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-sm font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-          >
-            {t('CategorySlider.viewAll')}
-          </Link>
-        </div>
-      )}
+        .swiper-button-next {
+          right: -20px;
+        }
+
+        .swiper-button-prev:hover,
+        .swiper-button-next:hover {
+          background: #f8fafc;
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (min-width: 768px) {
+          .swiper-button-prev,
+          .swiper-button-next {
+            display: flex;
+          }
+        }
+
+        /* تحسينات للشبكة */
+        .swiper-grid-3 .swiper-slide {
+          height: calc((100% - 32px) / 3) !important;
+        }
+
+        .swiper-grid-4 .swiper-slide {
+          height: calc((100% - 20px) / 4) !important;
+        }
+      `}</style>
     </section>
   );
 }

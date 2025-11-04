@@ -37,9 +37,9 @@ interface MainPromotion {
 
 // --- Desktop Components ---
 const DesktopPromotedColumn = ({ products, t }: { products: PromotedProduct[]; t: any }) => (
-  <div className="bg-white/90 backdrop-blur-sm border border-rose-200/50 rounded-2xl p-4 shadow-xl h-full flex flex-col">
+  <div className="bg-gradient-to-b from-rose-100 to-pink-50  backdrop-blur-sm border border-rose-100 rounded p-4 shadow-xl h-full flex flex-col">
     <div className="flex items-center gap-3 mb-4">
-      <div className="w-10 h-10 bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl flex items-center justify-center">
+      <div className="w-10 h-10 bg-gradient-to-r from-rose-500 to-pink-500 rounded flex items-center justify-center">
         <Crown className="w-5 h-5 text-white" />
       </div>
       <div>
@@ -47,28 +47,25 @@ const DesktopPromotedColumn = ({ products, t }: { products: PromotedProduct[]; t
         <p className="text-xs text-rose-600">{t('PromotedProducts.featured.subtitle')}</p>
       </div>
     </div>
-    <div className="space-y-3 flex-1">
+    <div className="grid grid-cols-3 gap-1">
       {products.slice(0, 3).map((product) => (
         <Link 
           key={product.id} 
           href={`/products/${product.id}`} 
-          className="flex items-center gap-3 p-2 rounded-xl group hover:bg-rose-50 transition-colors"
+          className="block relative group"
         >
-          <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-md bg-gray-100">
+          <div className="relative w-full h-32 rounded overflow-hidden shadow-md bg-gray-100">
             <Image 
               src={product.image_url} 
               alt={product.name} 
               fill 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300" 
             />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-rose-600 leading-tight">
-              {product.name}
-            </p>
-            <p className="text-base font-bold text-rose-700 mt-1">
+            {/* عرض السعر فقط في الصورة */}
+            <div className="absolute bottom-2 left-2 bg-white text-orange-500 px-2 py-1 rounded-lg text-[12px] font-bold backdrop-blur-sm">
               {product.price.toFixed(2)} ر.س
-            </p>
+            </div>
           </div>
         </Link>
       ))}
@@ -77,9 +74,9 @@ const DesktopPromotedColumn = ({ products, t }: { products: PromotedProduct[]; t
 );
 
 const DesktopHighDiscountColumn = ({ products, t }: { products: PromotedProduct[]; t: any }) => (
-  <div className="bg-white/90 backdrop-blur-sm border border-orange-200/50 rounded-2xl p-4 shadow-xl h-full flex flex-col">
+  <div className="bg-gradient-to-b from-orange-100 to-red-50 backdrop-blur-sm border border-orange-100 rounded p-4 shadow-xl h-full flex flex-col">
     <div className="flex items-center gap-3 mb-4">
-      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded flex items-center justify-center">
         <Zap className="w-5 h-5 text-white" />
       </div>
       <div>
@@ -87,36 +84,31 @@ const DesktopHighDiscountColumn = ({ products, t }: { products: PromotedProduct[
         <p className="text-xs text-orange-600">{t('PromotedProducts.discounts.subtitle')}</p>
       </div>
     </div>
-    <div className="space-y-3 flex-1">
+    <div className="grid grid-cols-3 gap-1">
       {products.slice(0, 3).map((product) => (
         <Link 
           key={product.id} 
           href={`/products/${product.id}`} 
-          className="flex items-center gap-3 p-2 rounded-xl group hover:bg-orange-50 transition-colors"
+          className="block relative group"
         >
-          <div className="relative w-14 h-14 rounded-lg overflow-hidden shrink-0 shadow-md bg-gray-100">
+          <div className="relative w-full h-32 rounded overflow-hidden shadow-md bg-gray-100">
             <Image 
               src={product.image_url} 
               alt={product.name} 
               fill 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300" 
             />
+            {/* عرض السعر فقط في الصورة */}
+            <div className="absolute bottom-2 left-2 bg-white text-orange-500 px-2 py-1 rounded-lg text-[12px] font-bold backdrop-blur-sm">
+              {product.price.toFixed(2)} ر.س
+            </div>
+            {/* عرض نسبة الخصم إذا كانت متوفرة */}
             {product.discount_percentage && (
-              <Badge className="absolute top-1 right-1 bg-red-500 text-white border-0 text-[10px] px-1 py-0.5">
+              <Badge className="absolute top-2 right-2 bg-red-500 text-white border-0 text-xs px-2 py-1">
                 {Math.round(product.discount_percentage)}%
               </Badge>
             )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-800 line-clamp-2 group-hover:text-orange-600 leading-tight">
-              {product.name}
-            </p>
-            <div className="flex items-baseline gap-2 mt-1">
-              <p className="text-base font-bold text-orange-700">{product.price.toFixed(2)} ر.س</p>
-              {product.original_price && (
-                <p className="text-xs text-gray-500 line-through">{product.original_price.toFixed(2)} ر.س</p>
-              )}
-            </div>
           </div>
         </Link>
       ))}
@@ -126,9 +118,9 @@ const DesktopHighDiscountColumn = ({ products, t }: { products: PromotedProduct[
 
 // --- Mobile Components ---
 const MobilePromotedColumn = ({ products, t, showViewAll = false }: { products: PromotedProduct[]; t: any; showViewAll?: boolean }) => (
-  <div className="bg-white/90 backdrop-blur-sm border border-rose-200/50 lg:rounded-2xl p-4 shadow-xl h-full flex flex-col min-h-[200px]">
+  <div className="bg-gradient-to-b from-rose-100 to-pink-50 backdrop-blur-sm border border-rose-100 lg:rounded p-4 shadow-xl h-full flex flex-col min-h-[200px]">
     <div className="flex items-center gap-3 mb-3">
-      <div className="w-8 h-8 bg-gradient-to-r from-rose-500 to-pink-500 rounded-lg flex items-center justify-center">
+      <div className="w-8 h-8 bg-gradient-to-r from-rose-500 to-pink-500 rounded flex items-center justify-center">
         <Crown className="w-4 h-4 text-white" />
       </div>
       <div className="flex-1">
@@ -136,28 +128,25 @@ const MobilePromotedColumn = ({ products, t, showViewAll = false }: { products: 
         <p className="text-xs text-rose-600">{t('PromotedProducts.featured.subtitle')}</p>
       </div>
     </div>
-    <div className="space-y-2 flex-1">
+    <div className="grid grid-cols-3 gap-1">
       {products.slice(0, 1).map((product) => (
         <Link 
           key={product.id} 
           href={`/products/${product.id}`} 
-          className="flex items-center gap-2 p-2 rounded-lg group hover:bg-rose-50 transition-colors"
+          className="block relative group"
         >
-          <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow-sm bg-gray-100">
+          <div className="relative w-full h-28 rounded-lg overflow-hidden shadow-sm bg-gray-100">
             <Image 
               src={product.image_url} 
               alt={product.name} 
               fill 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300" 
             />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-gray-800 line-clamp-1 group-hover:text-rose-600 leading-tight">
-              {product.name}
-            </p>
-            <p className="text-sm font-bold text-rose-700 mt-0.5">
+            {/* عرض السعر فقط في الصورة */}
+            <div className="absolute bottom-1 left-1 bg-black/70 text-white px-2 py-1 rounded-md text-xs font-bold backdrop-blur-sm">
               {product.price.toFixed(2)} ر.س
-            </p>
+            </div>
           </div>
         </Link>
       ))}
@@ -177,7 +166,7 @@ const MobilePromotedColumn = ({ products, t, showViewAll = false }: { products: 
 );
 
 const MobileHighDiscountColumn = ({ products, t, showViewAll = false }: { products: PromotedProduct[]; t: any; showViewAll?: boolean }) => (
-  <div className="bg-white/90 backdrop-blur-sm border border-orange-200/50 lg:rounded-2xl p-4 shadow-xl h-full flex flex-col min-h-[200px]">
+  <div className="bg-gradient-to-b from-orange-100 to-red-50 backdrop-blur-sm border border-orange-100 lg:rounded-2xl p-4 shadow-xl h-full flex flex-col min-h-[200px]">
     <div className="flex items-center gap-3 mb-3">
       <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
         <Zap className="w-4 h-4 text-white" />
@@ -187,36 +176,31 @@ const MobileHighDiscountColumn = ({ products, t, showViewAll = false }: { produc
         <p className="text-xs text-orange-600">{t('PromotedProducts.discounts.subtitle')}</p>
       </div>
     </div>
-    <div className="space-y-2 flex-1">
+    <div className="grid grid-cols-3 gap-1">
       {products.slice(0, 1).map((product) => (
         <Link 
           key={product.id} 
           href={`/products/${product.id}`} 
-          className="flex items-center gap-2 p-2 rounded-lg group hover:bg-orange-50 transition-colors"
+          className="block relative group"
         >
-          <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow-sm bg-gray-100">
+          <div className="relative w-full h-28 rounded-lg overflow-hidden shadow-sm bg-gray-100">
             <Image 
               src={product.image_url} 
               alt={product.name} 
               fill 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300" 
             />
+            {/* عرض السعر فقط في الصورة */}
+            <div className="absolute bottom-1 left-1 bg-black/70 text-white px-2 py-1 rounded-md text-xs font-bold backdrop-blur-sm">
+              {product.price.toFixed(2)} ر.س
+            </div>
+            {/* عرض نسبة الخصم إذا كانت متوفرة */}
             {product.discount_percentage && (
-              <Badge className="absolute top-0 right-0 bg-red-500 text-white border-0 text-[8px] px-1 py-0 min-h-0 h-3">
+              <Badge className="absolute top-1 right-1 bg-red-500 text-white border-0 text-[10px] px-1 py-0.5">
                 {Math.round(product.discount_percentage)}%
               </Badge>
             )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-gray-800 line-clamp-1 group-hover:text-orange-600 leading-tight">
-              {product.name}
-            </p>
-            <div className="flex items-baseline gap-1 mt-0.5">
-              <p className="text-sm font-bold text-orange-700">{product.price.toFixed(2)} ر.س</p>
-              {product.original_price && (
-                <p className="text-xs text-gray-500 line-through">{product.original_price.toFixed(2)} ر.س</p>
-              )}
-            </div>
           </div>
         </Link>
       ))}
@@ -237,29 +221,82 @@ const MobileHighDiscountColumn = ({ products, t, showViewAll = false }: { produc
 
 // Mobile Banner Component with fixed height
 const MobileBannerSlide = ({ promo }: { promo: MainPromotion }) => (
-  <div className="relative w-full h-[200px] lg:rounded-2xl overflow-hidden shadow-lg">
+  <Link href={promo.link_url}>
+  <div className="relative w-full h-[200px] lg:rounded-2xl overflow-hidden">
     <Image 
       src={promo.image_url} 
       alt={promo.title} 
       fill 
-      className="object-cover" 
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      className="object-cover object-[initial] absolute h-full align-top w-full" 
       priority 
     />
-    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-    <div className="absolute bottom-4 left-4 right-4 text-white">
-      <h3 className="text-lg font-bold line-clamp-1">{promo.title}</h3>
-      <p className="text-sm opacity-90 line-clamp-1 mt-1">{promo.subtitle}</p>
-      <Button 
-        asChild 
-        size="sm" 
-        className="mt-2 bg-white text-black hover:bg-gray-100 rounded-full px-4 text-xs h-8"
-      >
-        <Link href={promo.link_url}>
-          {promo.button_text}
-        </Link>
-      </Button>
-    </div>
   </div>
+  </Link>
+);
+
+const PromotedProductsSkeleton = () => (
+  <section className="relative py-6 lg:py-8 bg-gray-50">
+    <div className="container mx-auto px-4 lg:px-6">
+      <div className="hidden lg:grid grid-cols-4 gap-6 min-h-[400px]">
+        {/* Left Column Skeleton */}
+        <div className="bg-white/80 rounded-3xl p-6 shadow-xl animate-pulse">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 bg-gray-300 rounded-2xl"></div>
+            <div className="space-y-2 flex-1">
+              <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 p-3">
+                <div className="w-16 h-16 bg-gray-300 rounded-2xl"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-3 bg-gray-300 rounded w-full"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/3"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Center Column Skeleton */}
+        <div className="col-span-2 bg-gray-300 rounded-3xl animate-pulse"></div>
+        
+        {/* Right Column Skeleton */}
+        <div className="bg-white/80 rounded-3xl p-6 shadow-xl animate-pulse">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 bg-gray-300 rounded-2xl"></div>
+            <div className="space-y-2 flex-1">
+              <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 p-3">
+                <div className="w-16 h-16 bg-gray-300 rounded-2xl"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-3 bg-gray-300 rounded w-full"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/3"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* Mobile Skeleton */}
+      <div className="lg:hidden space-y-4">
+        <div className="bg-gray-300 rounded h-[220px] animate-pulse"></div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white/80 rounded p-5 shadow-xl animate-pulse h-[200px]"></div>
+          <div className="bg-white/80 rounded p-5 shadow-xl animate-pulse h-[200px]"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 );
 
 // --- Helper Functions ---
@@ -332,11 +369,12 @@ export default function PromotedProductsSection() {
   const highDiscountIds = new Set(highDiscountProducts.map((p) => p.id));
   const otherPromotedProducts = promotedProducts.filter((p) => !highDiscountIds.has(p.id));
 
-  if (loading || (!promotedProducts.length && !mainPromotions.length)) return null;
+  if (loading) return <PromotedProductsSkeleton />;
+  if (!promotedProducts.length && !mainPromotions.length) return null;
 
   return (
-    <section className="relative py-0 lg:py-6 bg-gray-50">
-      <div className="container mx-auto px-0 lg:px-3 md:px-4">
+    <section className="relative py-3 bg-transparent">
+      <div className="container max-w-fit px-0">
 
         {/* ✅ Mobile View - تصميم منفصل للهواتف */}
         <div className="lg:hidden">
@@ -380,7 +418,7 @@ export default function PromotedProductsSection() {
         </div>
 
         {/* ✅ Desktop View - التصميم الأصلي للكمبيوتر */}
-        <div className="hidden lg:grid grid-cols-4 gap-4 min-h-[320px]">
+        <div className="hidden w-full lg:grid grid-cols-4 gap-3 min-h-[320px]">
           {/* Left Column - Featured Products */}
           {otherPromotedProducts.length > 0 && (
             <div className="col-span-1">
@@ -396,32 +434,22 @@ export default function PromotedProductsSection() {
                 effect="fade"
                 autoplay={{ delay: 5000 }}
                 loop
-                className="w-full h-full rounded-2xl overflow-hidden shadow-xl"
+                className="w-full h-full rounded overflow-hidden shadow-xl"
               >
                 {mainPromotions.map((promo) => (
                   <SwiperSlide key={`d-main-${promo.id}`}>
-                    <div className="relative w-full h-full flex items-end overflow-hidden rounded-2xl">
+                    <Link href={promo.link_url}>
+                    <div className="relative w-full h-full flex items-end overflow-hidden rounded">
                       <Image 
                         src={promo.image_url} 
                         alt={promo.title} 
                         fill 
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover" 
                         priority 
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-                      <div className="relative z-10 p-6 w-full">
-                        <h2 className="text-2xl font-bold text-white mb-2">{promo.title}</h2>
-                        <p className="text-gray-200 text-sm mb-4">{promo.subtitle}</p>
-                        <Button 
-                          asChild 
-                          className="bg-white text-black hover:bg-gray-100 font-semibold rounded-full px-6"
-                        >
-                          <Link href={promo.link_url}>
-                            {promo.button_text}
-                          </Link>
-                        </Button>
-                      </div>
                     </div>
+                    </Link>
                   </SwiperSlide>
                 ))}
               </Swiper>

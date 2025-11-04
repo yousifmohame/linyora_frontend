@@ -29,9 +29,18 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
+  Heart,
+  Sparkles,
+  Link,
+  Users,
+  Mail,
+  Phone,
+  MapPin,
+  Copyright,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import AdminNav from '@/components/dashboards/AdminNav';
+import { Badge } from '@/components/ui/badge';
 
 // --- 1. تعريف هياكل البيانات ---
 
@@ -220,7 +229,7 @@ export default function FooterSettingsPage() {
         newItem = {
           id: newId,
           icon: 'Sparkles',
-          color: 'bg-blue-400',
+          color: 'bg-pink-400',
           title_ar: 'ميزة جديدة',
           title_en: 'New Feature',
           desc_ar: '',
@@ -289,54 +298,55 @@ export default function FooterSettingsPage() {
 
   // --- 8. واجهة الصفحة الرئيسية ---
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-3 sm:p-4 lg:p-6">
+      {/* Background decorations */}
+      <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+      <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 relative">
         <AdminNav />
         
-        <Card className="shadow-sm border-gray-200">
-          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 p-4 sm:p-6">
-            <div className="space-y-1.5">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl lg:text-2xl">
-                <Settings className="h-5 w-5 sm:h-6 sm:w-6" />
-                إدارة محتوى الفوتر
-              </CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
-                تحكم في جميع العناصر التي تظهر في الفوتر الخاص بالموقع.
-              </CardDescription>
+        {/* Header Card */}
+        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-3xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white pb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0">
+              <div className="space-y-1.5">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl lg:text-2xl">
+                  <Settings className="h-5 w-5 sm:h-6 sm:w-6 text-pink-200" />
+                  إدارة محتوى الفوتر
+                </CardTitle>
+                <CardDescription className="text-pink-100 text-sm">
+                  تحكم في جميع العناصر التي تظهر في الفوتر الخاص بالموقع
+                </CardDescription>
+              </div>
+              <Badge variant="secondary" className="bg-white/20 text-white border-0 self-start sm:self-center">
+                {content.features.length + content.quickLinks.length + content.discoverLinks.length} عنصر
+              </Badge>
             </div>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={saving}
-              className="w-full sm:w-auto h-9 sm:h-10 text-sm sm:text-base"
-            >
-              {saving ? (
-                <Loader2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              )}
-              حفظ التغييرات
-            </Button>
           </CardHeader>
           
           <CardContent className="p-4 sm:p-6">
             {/* Mobile Accordion View */}
-            <div className="lg:hidden space-y-3">
+            <div className="lg:hidden space-y-4">
               {/* Features Section */}
-              <Card className="border-gray-200">
+              <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
                 <CardHeader 
-                  className="p-4 cursor-pointer"
+                  className="p-4 cursor-pointer bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg"
                   onClick={() => toggleSection('features')}
                 >
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">المزايا</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2 text-rose-900">
+                      <Sparkles className="h-4 w-4 text-rose-600" />
+                      المزايا
+                    </CardTitle>
                     {expandedSections.has('features') ? 
-                      <ChevronUp className="h-4 w-4" /> : 
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4 text-rose-600" /> : 
+                      <ChevronDown className="h-4 w-4 text-rose-600" />
                     }
                   </div>
                 </CardHeader>
                 {expandedSections.has('features') && (
-                  <CardContent className="p-4 pt-0 space-y-3">
+                  <CardContent className="p-4 pt-0 space-y-4">
                     {content.features.map((feature, index) => (
                       <FeatureEditor
                         key={feature.id}
@@ -349,31 +359,34 @@ export default function FooterSettingsPage() {
                     ))}
                     <Button
                       variant="outline"
-                      className="w-full h-9 text-sm"
+                      className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-10"
                       onClick={() => addArrayItem('features')}
                     >
-                      <PlusCircle className="mr-2 h-3.5 w-3.5" /> إضافة ميزة جديدة
+                      <PlusCircle className="mr-2 h-4 w-4" /> إضافة ميزة جديدة
                     </Button>
                   </CardContent>
                 )}
               </Card>
 
               {/* Quick Links Section */}
-              <Card className="border-gray-200">
+              <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
                 <CardHeader 
-                  className="p-4 cursor-pointer"
+                  className="p-4 cursor-pointer bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg"
                   onClick={() => toggleSection('quickLinks')}
                 >
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">الروابط السريعة</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2 text-rose-900">
+                      <Link className="h-4 w-4 text-rose-600" />
+                      الروابط السريعة
+                    </CardTitle>
                     {expandedSections.has('quickLinks') ? 
-                      <ChevronUp className="h-4 w-4" /> : 
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4 text-rose-600" /> : 
+                      <ChevronDown className="h-4 w-4 text-rose-600" />
                     }
                   </div>
                 </CardHeader>
                 {expandedSections.has('quickLinks') && (
-                  <CardContent className="p-4 pt-0 space-y-3">
+                  <CardContent className="p-4 pt-0 space-y-4">
                     {content.quickLinks.map((link, index) => (
                       <LinkEditor
                         key={link.id}
@@ -386,31 +399,34 @@ export default function FooterSettingsPage() {
                     ))}
                     <Button
                       variant="outline"
-                      className="w-full h-9 text-sm"
+                      className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-10"
                       onClick={() => addArrayItem('quickLinks')}
                     >
-                      <PlusCircle className="mr-2 h-3.5 w-3.5" /> إضافة رابط سريع
+                      <PlusCircle className="mr-2 h-4 w-4" /> إضافة رابط سريع
                     </Button>
                   </CardContent>
                 )}
               </Card>
 
               {/* Discover Links Section */}
-              <Card className="border-gray-200">
+              <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
                 <CardHeader 
-                  className="p-4 cursor-pointer"
+                  className="p-4 cursor-pointer bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg"
                   onClick={() => toggleSection('discoverLinks')}
                 >
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">روابط الاكتشاف</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2 text-rose-900">
+                      <Heart className="h-4 w-4 text-rose-600" />
+                      روابط الاكتشاف
+                    </CardTitle>
                     {expandedSections.has('discoverLinks') ? 
-                      <ChevronUp className="h-4 w-4" /> : 
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4 text-rose-600" /> : 
+                      <ChevronDown className="h-4 w-4 text-rose-600" />
                     }
                   </div>
                 </CardHeader>
                 {expandedSections.has('discoverLinks') && (
-                  <CardContent className="p-4 pt-0 space-y-3">
+                  <CardContent className="p-4 pt-0 space-y-4">
                     {content.discoverLinks.map((link, index) => (
                       <LinkEditor
                         key={link.id}
@@ -423,66 +439,72 @@ export default function FooterSettingsPage() {
                     ))}
                     <Button
                       variant="outline"
-                      className="w-full h-9 text-sm"
+                      className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-10"
                       onClick={() => addArrayItem('discoverLinks')}
                     >
-                      <PlusCircle className="mr-2 h-3.5 w-3.5" /> إضافة رابط اكتشاف
+                      <PlusCircle className="mr-2 h-4 w-4" /> إضافة رابط اكتشاف
                     </Button>
                   </CardContent>
                 )}
               </Card>
 
               {/* Contact & Social Section */}
-              <Card className="border-gray-200">
+              <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
                 <CardHeader 
-                  className="p-4 cursor-pointer"
+                  className="p-4 cursor-pointer bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg"
                   onClick={() => toggleSection('contact')}
                 >
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">التواصل والاجتماعي</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2 text-rose-900">
+                      <Users className="h-4 w-4 text-rose-600" />
+                      التواصل والاجتماعي
+                    </CardTitle>
                     {expandedSections.has('contact') ? 
-                      <ChevronUp className="h-4 w-4" /> : 
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4 text-rose-600" /> : 
+                      <ChevronDown className="h-4 w-4 text-rose-600" />
                     }
                   </div>
                 </CardHeader>
                 {expandedSections.has('contact') && (
                   <CardContent className="p-4 pt-0 space-y-4">
                     <div className="space-y-3">
-                      <Label>البريد الإلكتروني</Label>
+                      <Label className="text-rose-900">البريد الإلكتروني</Label>
                       <Input
                         value={content.contact.email}
                         onChange={(e) => handleTextChange('contact', 'email', e.target.value)}
-                        className="text-sm"
+                        className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label>رقم الهاتف</Label>
+                      <Label className="text-rose-900">رقم الهاتف</Label>
                       <Input
                         value={content.contact.phone}
                         onChange={(e) => handleTextChange('contact', 'phone', e.target.value)}
-                        className="text-sm"
+                        className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label>العنوان (عربي)</Label>
+                      <Label className="text-rose-900">العنوان (عربي)</Label>
                       <Input
                         value={content.contact.address_ar}
                         onChange={(e) => handleTextChange('contact', 'address_ar', e.target.value)}
-                        className="text-sm"
+                        className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label>العنوان (إنجليزي)</Label>
+                      <Label className="text-rose-900">العنوان (إنجليزي)</Label>
                       <Input
                         value={content.contact.address_en}
                         onChange={(e) => handleTextChange('contact', 'address_en', e.target.value)}
-                        className="text-sm"
+                        className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                       />
                     </div>
 
-                    <div className="pt-4 border-t">
-                      <h4 className="font-semibold mb-3 text-sm">روابط التواصل الاجتماعي</h4>
+                    <div className="pt-4 border-t border-rose-100">
+                      <h4 className="font-semibold mb-3 text-rose-900 flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        روابط التواصل الاجتماعي
+                      </h4>
                       {content.socials.map((social, index) => (
                         <SocialEditor
                           key={social.id}
@@ -495,10 +517,10 @@ export default function FooterSettingsPage() {
                       ))}
                       <Button
                         variant="outline"
-                        className="w-full h-9 text-sm mt-2"
+                        className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-10 mt-2"
                         onClick={() => addArrayItem('socials')}
                       >
-                        <PlusCircle className="mr-2 h-3.5 w-3.5" /> إضافة رابط اجتماعي
+                        <PlusCircle className="mr-2 h-4 w-4" /> إضافة رابط اجتماعي
                       </Button>
                     </div>
                   </CardContent>
@@ -506,70 +528,76 @@ export default function FooterSettingsPage() {
               </Card>
 
               {/* Company & Legal Section */}
-              <Card className="border-gray-200">
+              <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
                 <CardHeader 
-                  className="p-4 cursor-pointer"
+                  className="p-4 cursor-pointer bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg"
                   onClick={() => toggleSection('company')}
                 >
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">الشركة والقانونية</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2 text-rose-900">
+                      <Copyright className="h-4 w-4 text-rose-600" />
+                      الشركة والقانونية
+                    </CardTitle>
                     {expandedSections.has('company') ? 
-                      <ChevronUp className="h-4 w-4" /> : 
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4 text-rose-600" /> : 
+                      <ChevronDown className="h-4 w-4 text-rose-600" />
                     }
                   </div>
                 </CardHeader>
                 {expandedSections.has('company') && (
                   <CardContent className="p-4 pt-0 space-y-4">
                     <div className="space-y-3">
-                      <Label>الوصف (عربي)</Label>
+                      <Label className="text-rose-900">الوصف (عربي)</Label>
                       <Textarea
                         value={content.company.desc_ar}
                         onChange={(e) => handleTextChange('company', 'desc_ar', e.target.value)}
-                        className="text-sm min-h-20"
+                        className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl min-h-20"
                       />
                     </div>
                     <div className="space-y-3">
-                      <Label>الوصف (إنجليزي)</Label>
+                      <Label className="text-rose-900">الوصف (إنجليزي)</Label>
                       <Textarea
                         value={content.company.desc_en}
                         onChange={(e) => handleTextChange('company', 'desc_en', e.target.value)}
-                        className="text-sm min-h-20"
+                        className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl min-h-20"
                       />
                     </div>
 
-                    <div className="pt-4 border-t">
-                      <h4 className="font-semibold mb-3 text-sm">المعلومات القانونية</h4>
+                    <div className="pt-4 border-t border-rose-100">
+                      <h4 className="font-semibold mb-3 text-rose-900 flex items-center gap-2">
+                        <Copyright className="h-4 w-4" />
+                        المعلومات القانونية
+                      </h4>
                       <div className="space-y-3">
-                        <Label>نص الحقوق (عربي)</Label>
+                        <Label className="text-rose-900">نص الحقوق (عربي)</Label>
                         <Input
                           value={content.legal.copyright_ar}
                           onChange={(e) => handleTextChange('legal', 'copyright_ar', e.target.value)}
-                          className="text-sm"
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-3">
-                        <Label>نص الحقوق (إنجليزي)</Label>
+                        <Label className="text-rose-900">نص الحقوق (إنجليزي)</Label>
                         <Input
                           value={content.legal.copyright_en}
                           onChange={(e) => handleTextChange('legal', 'copyright_en', e.target.value)}
-                          className="text-sm"
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-3">
-                        <Label>رابط سياسة الخصوصية</Label>
+                        <Label className="text-rose-900">رابط سياسة الخصوصية</Label>
                         <Input
                           value={content.legal.privacyHref}
                           onChange={(e) => handleTextChange('legal', 'privacyHref', e.target.value)}
-                          className="text-sm"
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-3">
-                        <Label>رابط الشروط والأحكام</Label>
+                        <Label className="text-rose-900">رابط الشروط والأحكام</Label>
                         <Input
                           value={content.legal.termsHref}
                           onChange={(e) => handleTextChange('legal', 'termsHref', e.target.value)}
-                          className="text-sm"
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                     </div>
@@ -581,12 +609,27 @@ export default function FooterSettingsPage() {
             {/* Desktop Tabs View */}
             <div className="hidden lg:block">
               <Tabs defaultValue="features" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="features" className="text-sm">المزايا</TabsTrigger>
-                  <TabsTrigger value="links" className="text-sm">الروابط السريعة</TabsTrigger>
-                  <TabsTrigger value="discover" className="text-sm">روابط الاكتشاف</TabsTrigger>
-                  <TabsTrigger value="contact" className="text-sm">التواصل والاجتماعي</TabsTrigger>
-                  <TabsTrigger value="company" className="text-sm">الشركة والقانونية</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-5 bg-rose-50/50 border border-rose-200 rounded-2xl p-1">
+                  <TabsTrigger value="features" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-xl">
+                    <Sparkles className="h-4 w-4" />
+                    المزايا
+                  </TabsTrigger>
+                  <TabsTrigger value="links" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-xl">
+                    <Link className="h-4 w-4" />
+                    الروابط
+                  </TabsTrigger>
+                  <TabsTrigger value="discover" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-xl">
+                    <Heart className="h-4 w-4" />
+                    الاكتشاف
+                  </TabsTrigger>
+                  <TabsTrigger value="contact" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-xl">
+                    <Users className="h-4 w-4" />
+                    التواصل
+                  </TabsTrigger>
+                  <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-pink-500 data-[state=active]:text-white rounded-xl">
+                    <Copyright className="h-4 w-4" />
+                    الشركة
+                  </TabsTrigger>
                 </TabsList>
 
                 {/* تبويب المزايا */}
@@ -603,7 +646,7 @@ export default function FooterSettingsPage() {
                   ))}
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-12"
                     onClick={() => addArrayItem('features')}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" /> إضافة ميزة جديدة
@@ -624,7 +667,7 @@ export default function FooterSettingsPage() {
                   ))}
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-12"
                     onClick={() => addArrayItem('quickLinks')}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" /> إضافة رابط سريع
@@ -645,7 +688,7 @@ export default function FooterSettingsPage() {
                   ))}
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-12"
                     onClick={() => addArrayItem('discoverLinks')}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" /> إضافة رابط اكتشاف
@@ -654,46 +697,56 @@ export default function FooterSettingsPage() {
 
                 {/* تبويب التواصل والاجتماعي */}
                 <TabsContent value="contact" className="space-y-6 pt-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">معلومات التواصل</CardTitle>
+                  <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
+                    <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg">
+                      <CardTitle className="text-lg flex items-center gap-2 text-rose-900">
+                        <Mail className="h-5 w-5 text-rose-600" />
+                        معلومات التواصل
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-4">
+                    <CardContent className="grid grid-cols-2 gap-4 p-6">
                       <div className="space-y-2">
-                        <Label>البريد الإلكتروني</Label>
+                        <Label className="text-rose-900">البريد الإلكتروني</Label>
                         <Input
                           value={content.contact.email}
                           onChange={(e) => handleTextChange('contact', 'email', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>رقم الهاتف</Label>
+                        <Label className="text-rose-900">رقم الهاتف</Label>
                         <Input
                           value={content.contact.phone}
                           onChange={(e) => handleTextChange('contact', 'phone', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>العنوان (عربي)</Label>
+                        <Label className="text-rose-900">العنوان (عربي)</Label>
                         <Input
                           value={content.contact.address_ar}
                           onChange={(e) => handleTextChange('contact', 'address_ar', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>العنوان (إنجليزي)</Label>
+                        <Label className="text-rose-900">العنوان (إنجليزي)</Label>
                         <Input
                           value={content.contact.address_en}
                           onChange={(e) => handleTextChange('contact', 'address_en', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">روابط التواصل الاجتماعي</CardTitle>
+                  <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
+                    <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg">
+                      <CardTitle className="text-lg flex items-center gap-2 text-rose-900">
+                        <Users className="h-5 w-5 text-rose-600" />
+                        روابط التواصل الاجتماعي
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 p-6">
                       {content.socials.map((social, index) => (
                         <SocialEditor
                           key={social.id}
@@ -706,7 +759,7 @@ export default function FooterSettingsPage() {
                       ))}
                       <Button
                         variant="outline"
-                        className="w-full"
+                        className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-12"
                         onClick={() => addArrayItem('socials')}
                       >
                         <PlusCircle className="mr-2 h-4 w-4" /> إضافة رابط اجتماعي
@@ -717,58 +770,70 @@ export default function FooterSettingsPage() {
 
                 {/* تبويب الشركة والقانونية */}
                 <TabsContent value="company" className="space-y-6 pt-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">عن الشركة</CardTitle>
+                  <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
+                    <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg">
+                      <CardTitle className="text-lg flex items-center gap-2 text-rose-900">
+                        <Users className="h-5 w-5 text-rose-600" />
+                        عن الشركة
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-4">
+                    <CardContent className="grid grid-cols-2 gap-4 p-6">
                       <div className="space-y-2">
-                        <Label>الوصف (عربي)</Label>
+                        <Label className="text-rose-900">الوصف (عربي)</Label>
                         <Textarea
                           value={content.company.desc_ar}
                           onChange={(e) => handleTextChange('company', 'desc_ar', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl min-h-24"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>الوصف (إنجليزي)</Label>
+                        <Label className="text-rose-900">الوصف (إنجليزي)</Label>
                         <Textarea
                           value={content.company.desc_en}
                           onChange={(e) => handleTextChange('company', 'desc_en', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl min-h-24"
                         />
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">المعلومات القانونية</CardTitle>
+                  <Card className="border-rose-200 bg-white/60 backdrop-blur-sm">
+                    <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-t-lg">
+                      <CardTitle className="text-lg flex items-center gap-2 text-rose-900">
+                        <Copyright className="h-5 w-5 text-rose-600" />
+                        المعلومات القانونية
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 gap-4">
+                    <CardContent className="grid grid-cols-2 gap-4 p-6">
                       <div className="space-y-2">
-                        <Label>نص الحقوق (عربي)</Label>
+                        <Label className="text-rose-900">نص الحقوق (عربي)</Label>
                         <Input
                           value={content.legal.copyright_ar}
                           onChange={(e) => handleTextChange('legal', 'copyright_ar', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>نص الحقوق (إنجليزي)</Label>
+                        <Label className="text-rose-900">نص الحقوق (إنجليزي)</Label>
                         <Input
                           value={content.legal.copyright_en}
                           onChange={(e) => handleTextChange('legal', 'copyright_en', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>رابط سياسة الخصوصية</Label>
+                        <Label className="text-rose-900">رابط سياسة الخصوصية</Label>
                         <Input
                           value={content.legal.privacyHref}
                           onChange={(e) => handleTextChange('legal', 'privacyHref', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>رابط الشروط والأحكام</Label>
+                        <Label className="text-rose-900">رابط الشروط والأحكام</Label>
                         <Input
                           value={content.legal.termsHref}
                           onChange={(e) => handleTextChange('legal', 'termsHref', e.target.value)}
+                          className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl"
                         />
                       </div>
                     </CardContent>
@@ -778,18 +843,23 @@ export default function FooterSettingsPage() {
             </div>
           </CardContent>
           
-          <CardFooter className="flex justify-end p-4 sm:p-6">
+          <CardFooter className="flex justify-end p-4 sm:p-6 border-t border-rose-100">
             <Button 
               onClick={handleSubmit} 
               disabled={saving}
-              className="w-full sm:w-auto h-9 sm:h-10 text-sm sm:text-base"
+              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg rounded-2xl h-12 px-8 font-bold"
             >
               {saving ? (
-                <Loader2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  جاري الحفظ...
+                </>
               ) : (
-                <Save className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  حفظ التغييرات
+                </>
               )}
-              حفظ التغييرات
             </Button>
           </CardFooter>
         </Card>
@@ -811,25 +881,25 @@ function FeatureEditor({
   onDelete: () => void;
 }) {
   return (
-    <Card className="bg-gray-50/50 border-gray-200">
-      <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+    <Card className="bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200 rounded-2xl">
+      <CardContent className="p-4 space-y-4">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
             <div className="space-y-2">
-              <Label className="text-xs sm:text-sm">اسم الأيقونة</Label>
+              <Label className="text-rose-900 text-sm">اسم الأيقونة</Label>
               <Input
                 value={item.icon}
                 onChange={(e) => onChange('icon', e.target.value)}
-                className="text-sm h-8 sm:h-9"
+                className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
                 placeholder="مثال: Heart"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs sm:text-sm">كلاس اللون</Label>
+              <Label className="text-rose-900 text-sm">كلاس اللون</Label>
               <Input
                 value={item.color}
                 onChange={(e) => onChange('color', e.target.value)}
-                className="text-sm h-8 sm:h-9"
+                className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
                 placeholder="مثال: bg-pink-400"
               />
             </div>
@@ -838,42 +908,42 @@ function FeatureEditor({
             variant="ghost" 
             size="sm" 
             onClick={onDelete} 
-            className="text-red-500 self-end sm:self-center h-8 w-8 sm:h-9 sm:w-9 p-0"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50 self-end sm:self-center h-9 w-9 p-0 rounded-xl"
           >
-            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">العنوان (عربي)</Label>
+            <Label className="text-rose-900 text-sm">العنوان (عربي)</Label>
             <Input
               value={item.title_ar}
               onChange={(e) => onChange('title_ar', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">العنوان (إنجليزي)</Label>
+            <Label className="text-rose-900 text-sm">العنوان (إنجليزي)</Label>
             <Input
               value={item.title_en}
               onChange={(e) => onChange('title_en', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label className="text-xs sm:text-sm">الوصف (عربي)</Label>
+            <Label className="text-rose-900 text-sm">الوصف (عربي)</Label>
             <Textarea
               value={item.desc_ar}
               onChange={(e) => onChange('desc_ar', e.target.value)}
-              className="text-sm min-h-16"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl min-h-16 text-sm"
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label className="text-xs sm:text-sm">الوصف (إنجليزي)</Label>
+            <Label className="text-rose-900 text-sm">الوصف (إنجليزي)</Label>
             <Textarea
               value={item.desc_en}
               onChange={(e) => onChange('desc_en', e.target.value)}
-              className="text-sm min-h-16"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl min-h-16 text-sm"
             />
           </div>
         </div>
@@ -893,31 +963,31 @@ function LinkEditor({
   onDelete: () => void;
 }) {
   return (
-    <Card className="bg-gray-50/50 border-gray-200">
-      <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+    <Card className="bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200 rounded-2xl">
+      <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">النص (عربي)</Label>
+            <Label className="text-rose-900 text-sm">النص (عربي)</Label>
             <Input
               value={item.label_ar}
               onChange={(e) => onChange('label_ar', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">النص (إنجليزي)</Label>
+            <Label className="text-rose-900 text-sm">النص (إنجليزي)</Label>
             <Input
               value={item.label_en}
               onChange={(e) => onChange('label_en', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">الرابط</Label>
+            <Label className="text-rose-900 text-sm">الرابط</Label>
             <Input
               value={item.href}
               onChange={(e) => onChange('href', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
             />
           </div>
         </div>
@@ -925,9 +995,9 @@ function LinkEditor({
           variant="ghost" 
           size="sm" 
           onClick={onDelete} 
-          className="text-red-500 self-end sm:self-center h-8 w-8 sm:h-9 sm:w-9 p-0 mt-2 sm:mt-0"
+          className="text-red-500 hover:text-red-600 hover:bg-red-50 self-end sm:self-center h-9 w-9 p-0 rounded-xl mt-2 sm:mt-0"
         >
-          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <Trash2 className="h-4 w-4" />
         </Button>
       </CardContent>
     </Card>
@@ -945,41 +1015,41 @@ function SocialEditor({
   onDelete: () => void;
 }) {
   return (
-    <Card className="bg-gray-50/50 border-gray-200">
-      <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+    <Card className="bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200 rounded-2xl">
+      <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 w-full">
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">الاسم</Label>
+            <Label className="text-rose-900 text-sm">الاسم</Label>
             <Input
               value={item.name}
               onChange={(e) => onChange('name', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
               placeholder="مثال: Instagram"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">الأيقونة</Label>
+            <Label className="text-rose-900 text-sm">الأيقونة</Label>
             <Input
               value={item.icon}
               onChange={(e) => onChange('icon', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
               placeholder="مثال: Instagram"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">الرابط</Label>
+            <Label className="text-rose-900 text-sm">الرابط</Label>
             <Input
               value={item.href}
               onChange={(e) => onChange('href', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs sm:text-sm">كلاس اللون</Label>
+            <Label className="text-rose-900 text-sm">كلاس اللون</Label>
             <Input
               value={item.color}
               onChange={(e) => onChange('color', e.target.value)}
-              className="text-sm h-8 sm:h-9"
+              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-xl h-9 text-sm"
               placeholder="مثال: bg-pink-400"
             />
           </div>
@@ -988,9 +1058,9 @@ function SocialEditor({
           variant="ghost" 
           size="sm" 
           onClick={onDelete} 
-          className="text-red-500 self-end sm:self-center h-8 w-8 sm:h-9 sm:w-9 p-0 mt-2 sm:mt-0"
+          className="text-red-500 hover:text-red-600 hover:bg-red-50 self-end sm:self-center h-9 w-9 p-0 rounded-xl mt-2 sm:mt-0"
         >
-          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <Trash2 className="h-4 w-4" />
         </Button>
       </CardContent>
     </Card>
@@ -1000,22 +1070,22 @@ function SocialEditor({
 // --- 10. مكون واجهة التحميل ---
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 lg:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-3 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-        <Card>
+        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 rounded-3xl">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-3 sm:space-y-0 p-4 sm:p-6">
             <div className="space-y-2">
-              <Skeleton className="h-7 w-64" />
-              <Skeleton className="h-4 w-96" />
+              <Skeleton className="h-7 w-64 bg-rose-100" />
+              <Skeleton className="h-4 w-96 bg-rose-100" />
             </div>
-            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32 bg-rose-100" />
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
-            <Skeleton className="h-10 w-full mb-4" />
+            <Skeleton className="h-10 w-full bg-rose-100 mb-4" />
             <div className="space-y-4 pt-4">
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-24 w-full" />
-              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-24 w-full bg-rose-100" />
+              <Skeleton className="h-24 w-full bg-rose-100" />
+              <Skeleton className="h-10 w-full bg-rose-100" />
             </div>
           </CardContent>
         </Card>

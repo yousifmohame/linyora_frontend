@@ -39,6 +39,7 @@ export default function AdminNav() {
     { key: 'overview', href: '/dashboard', icon: Home },
     { key: 'users', href: '/dashboard/admin/users', icon: Users },
     { key: 'main-banners', href: '/dashboard/admin/main-banners', icon: PickaxeIcon },
+    { key: 'marquee-bar', href: '/dashboard/admin/marquee-bar', icon: PickaxeIcon },
     { key: 'verification', href: '/dashboard/admin/verifications', icon: Users },
     { key: 'products', href: '/dashboard/admin/products', icon: Package },
     { key: 'categories', href: '/dashboard/admin/categories', icon: List },

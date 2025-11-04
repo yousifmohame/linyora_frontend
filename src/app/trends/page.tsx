@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { BackButton } from '@/components/BackButton';
 
 interface PromotedProduct {
   id: number;
@@ -31,7 +32,10 @@ interface PromotedProduct {
 }
 
 export default function TrendsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+  const currencySymbol = 'ر.س'; // can be dynamic if needed
+
   const [products, setProducts] = useState<PromotedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
@@ -48,6 +52,7 @@ export default function TrendsPage() {
         setProducts(response.data);
       } catch (error) {
         console.error("Failed to fetch promoted products:", error);
+        // Optional: show toast
       } finally {
         setLoading(false);
       }
@@ -55,11 +60,10 @@ export default function TrendsPage() {
     fetchPromotedProducts();
   }, []);
 
-  // Filter and sort products
   const filteredProducts = products
     .filter(product => 
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.brand?.toLowerCase().includes(searchQuery.toLowerCase())
+      (product.brand && product.brand.toLowerCase().includes(searchQuery.toLowerCase()))
     )
     .filter(product => 
       product.price >= priceRange[0] && product.price <= priceRange[1]
@@ -78,296 +82,270 @@ export default function TrendsPage() {
       }
     });
 
-  const trendingCount = products.filter(p => p.promotion_tier_name?.includes('Trending')).length;
-  const newArrivalsCount = products.filter(p => p.is_new).length;
+  const formatPrice = (price: number): string => {
+    return new Intl.NumberFormat(i18n.language, {
+      style: 'currency',
+      currency: 'SAR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price);
+  };
 
   return (
     <>
-      <main className="min-h-screen bg-gradient-to-b from-rose-50 to-white pb-20">
-        
-
-        {/* Mobile Search Bar */}
-        <section className="sticky top-0 z-30 bg-white border-b border-rose-200 py-3 px-3 lg:hidden">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search trends..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 h-10 bg-gray-100 border-0 rounded-xl text-sm"
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
-                >
-                  <X className="w-4 h-4 text-gray-400" />
-                </button>
-              )}
-            </div>
-            
-            {/* Mobile Filter Button */}
-            <Sheet open={showFilters} onOpenChange={setShowFilters}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-rose-200">
-                  <Filter className="w-4 h-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl">
-                <SheetHeader className="mb-4">
-                  <SheetTitle className="text-left">Filters & Sort</SheetTitle>
-                </SheetHeader>
-                
-                <ScrollArea className="h-full pb-4">
-                  <div className="space-y-6">
-                    {/* Sort Options */}
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">Sort By</h3>
-                      <div className="space-y-2">
-                        {[
-                          { value: 'popular', label: 'Most Popular' },
-                          { value: 'newest', label: 'New Arrivals' },
-                          { value: 'price-low', label: 'Price: Low to High' },
-                          { value: 'price-high', label: 'Price: High to Low' }
-                        ].map((option) => (
-                          <button
-                            key={option.value}
-                            onClick={() => {
-                              setSortBy(option.value as any);
-                              setShowFilters(false);
-                            }}
-                            className={`w-full text-left p-3 rounded-xl border transition-colors ${
-                              sortBy === option.value
-                                ? 'border-rose-500 bg-rose-50 text-rose-700'
-                                : 'border-gray-200 hover:border-rose-300'
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Quick Filters */}
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">Quick Filters</h3>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge 
-                          variant="secondary" 
-                          className="cursor-pointer hover:bg-rose-100 rounded-full px-3 py-1 text-sm"
-                          onClick={() => {
-                            setSortBy('newest');
-                            setShowFilters(false);
-                          }}
-                        >
-                          New Arrivals
-                        </Badge>
-                        <Badge 
-                          variant="secondary" 
-                          className="cursor-pointer hover:bg-rose-100 rounded-full px-3 py-1 text-sm"
-                          onClick={() => {
-                            setPriceRange([0, 50]);
-                            setShowFilters(false);
-                          }}
-                        >
-                          Under 50 ر.س
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* View Mode */}
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3">View Mode</h3>
-                      <div className="flex border rounded-lg p-1 bg-gray-100 w-fit">
-                        <Button
-                          variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                          size="sm"
-                          onClick={() => setViewMode('grid')}
-                          className="h-8 w-8 p-0 rounded-md"
-                        >
-                          <Grid3X3 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant={viewMode === 'compact' ? 'default' : 'ghost'}
-                          size="sm"
-                          onClick={() => setViewMode('compact')}
-                          className="h-8 w-8 p-0 rounded-md"
-                        >
-                          <List className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </ScrollArea>
-              </SheetContent>
-            </Sheet>
+      <main className="min-h-screen bg-gradient-to-b from-white to-gray-50/30">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-4">
+            <BackButton />
           </div>
-        </section>
 
-        {/* Desktop Filters and Controls */}
-        <section className="hidden lg:block bg-white border-b border-rose-200 py-4">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-              {/* Search Bar */}
-              <div className="w-full lg:w-64">
+          {/* Mobile Search & Filter */}
+          <section className="sticky top-0 z-30 bg-white border-b border-rose-200 py-3 px-3 lg:hidden">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="Search trends..."
+                  placeholder={t('TrendsPage.search.placeholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-gray-100 border-0 rounded-full"
+                  className="w-full pl-10 pr-4 h-10 bg-gray-100 border-0 rounded-xl text-sm"
                 />
-              </div>
-
-              {/* Filters */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* View Toggle */}
-                <div className="flex border rounded-lg p-1 bg-gray-100">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="h-8 w-8 p-0 rounded-md"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'compact' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('compact')}
-                    className="h-8 w-8 p-0 rounded-md"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Sort */}
-                <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                  <SelectTrigger className="w-32 h-9 rounded-full bg-gray-100 border-0">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="popular">Most Popular</SelectItem>
-                    <SelectItem value="newest">New Arrivals</SelectItem>
-                    <SelectItem value="price-low">Price: Low to High</SelectItem>
-                    <SelectItem value="price-high">Price: High to Low</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {/* Quick Filters */}
-                <div className="flex gap-2">
-                  <Badge 
-                    variant="secondary" 
-                    className="cursor-pointer hover:bg-rose-100 rounded-full px-3 py-1"
-                    onClick={() => setSortBy('newest')}
-                  >
-                    New Arrivals
-                  </Badge>
-                  <Badge 
-                    variant="secondary" 
-                    className="cursor-pointer hover:bg-rose-100 rounded-full px-3 py-1"
-                    onClick={() => setPriceRange([0, 50])}
-                  >
-                    Under 50 ر.س
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Products Grid */}
-        <section className="container mx-auto px-3 py-6">
-          {loading ? (
-            <div className={`grid gap-3 ${
-              viewMode === 'compact' 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-            }`}>
-              {Array.from({ length: 12 }).map((_, index) => (
-                <div key={index} className="flex flex-col gap-2">
-                  <Skeleton className={`${
-                    viewMode === 'compact' ? 'h-40' : 'h-32 sm:h-36'
-                  } w-full rounded-lg`} />
-                  <Skeleton className="h-3 w-3/4 rounded" />
-                  <Skeleton className="h-3 w-1/2 rounded" />
-                </div>
-              ))}
-            </div>
-          ) : filteredProducts.length > 0 ? (
-            <>
-              {/* Results Count */}
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-gray-600">
-                  Showing {filteredProducts.length} of {products.length} products
-                </p>
                 {searchQuery && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button 
                     onClick={() => setSearchQuery('')}
-                    className="text-gray-500 hover:text-gray-700 text-xs h-8"
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
                   >
-                    Clear search
-                  </Button>
+                    <X className="w-4 h-4 text-gray-400" />
+                  </button>
                 )}
               </div>
 
-              {/* Products Grid */}
-              <div className={`gap-3 ${
-                viewMode === 'compact' 
-                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                  : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-              }`}>
-                {filteredProducts.map(product => (
-                  <TrendCard 
-                    key={product.id} 
-                    product={product} 
-                    compact={viewMode === 'compact'}
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-3 bg-rose-100 rounded-full flex items-center justify-center">
-                <Sparkles className="h-8 w-8 text-rose-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No products found
-              </h3>
-              <p className="text-gray-500 text-sm mb-6">
-                {searchQuery 
-                  ? `No results for "${searchQuery}". Try adjusting your search.`
-                  : 'No trending products available at the moment.'
-                }
-              </p>
-              {searchQuery && (
-                <Button 
-                  onClick={() => setSearchQuery('')}
-                  size="sm"
-                  className="rounded-full"
-                >
-                  Clear search
-                </Button>
-              )}
-            </div>
-          )}
-        </section>
+              <Sheet open={showFilters} onOpenChange={setShowFilters}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-rose-200">
+                    <Filter className="w-4 h-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl">
+                  <SheetHeader className="mb-4">
+                    <SheetTitle className="text-left">{t('TrendsPage.filters.title')}</SheetTitle>
+                  </SheetHeader>
+                  <ScrollArea className="h-full pb-4">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-3">{t('TrendsPage.sort.title')}</h3>
+                        <div className="space-y-2">
+                          {[
+                            { value: 'popular', label: t('TrendsPage.sort.popular') },
+                            { value: 'newest', label: t('TrendsPage.sort.newest') },
+                            { value: 'price-low', label: t('TrendsPage.sort.priceLow') },
+                            { value: 'price-high', label: t('TrendsPage.sort.priceHigh') }
+                          ].map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => {
+                                setSortBy(option.value as any);
+                                setShowFilters(false);
+                              }}
+                              className={`w-full text-left p-3 rounded-xl border transition-colors ${
+                                sortBy === option.value
+                                  ? 'border-rose-500 bg-rose-50 text-rose-700'
+                                  : 'border-gray-200 hover:border-rose-300'
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-        {/* Load More Section */}
-        {!loading && filteredProducts.length > 0 && (
-          <section className="container mx-auto px-3 py-6 border-t border-rose-200">
-            <div className="text-center">
-              <Button variant="outline" className="rounded-full px-6 text-sm h-10">
-                Load More Trends
-              </Button>
-              <p className="text-xs text-gray-500 mt-2">
-                Showing {filteredProducts.length} of {products.length} trending products
-              </p>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-3">{t('TrendsPage.filters.quick')}</h3>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge 
+                            variant="secondary" 
+                            className="cursor-pointer hover:bg-rose-100 rounded-full px-3 py-1 text-sm"
+                            onClick={() => {
+                              setSortBy('newest');
+                              setShowFilters(false);
+                            }}
+                          >
+                            {t('TrendsPage.badges.newArrivals')}
+                          </Badge>
+                          <Badge 
+                            variant="secondary" 
+                            className="cursor-pointer hover:bg-rose-100 rounded-full px-3 py-1 text-sm"
+                            onClick={() => {
+                              setPriceRange([0, 50]);
+                              setShowFilters(false);
+                            }}
+                          >
+                            {t('TrendsPage.badges.under50')}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-3">{t('TrendsPage.view.title')}</h3>
+                        <div className="flex border rounded-lg p-1 bg-gray-100 w-fit">
+                          <Button
+                            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setViewMode('grid')}
+                            className="h-8 w-8 p-0 rounded-md"
+                          >
+                            <Grid3X3 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant={viewMode === 'compact' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setViewMode('compact')}
+                            className="h-8 w-8 p-0 rounded-md"
+                          >
+                            <List className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </SheetContent>
+              </Sheet>
             </div>
           </section>
-        )}
+
+          {/* Desktop Controls */}
+          <section className="hidden lg:block bg-white border-b border-rose-200 py-4">
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                <div className="w-full lg:w-64">
+                  <Input
+                    placeholder={t('TrendsPage.search.placeholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-gray-100 border-0 rounded-full"
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex border rounded-lg p-1 bg-gray-100">
+                    <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} className="h-8 w-8 p-0 rounded-md">
+                      <Grid3X3 className="h-4 w-4" />
+                    </Button>
+                    <Button variant={viewMode === 'compact' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('compact')} className="h-8 w-8 p-0 rounded-md">
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <Select value={sortBy} onValueChange={(val) => setSortBy(val as any)}>
+                    <SelectTrigger className="w-32 h-9 rounded-full bg-gray-100 border-0">
+                      <SelectValue placeholder={t('TrendsPage.sort.placeholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="popular">{t('TrendsPage.sort.popular')}</SelectItem>
+                      <SelectItem value="newest">{t('TrendsPage.sort.newest')}</SelectItem>
+                      <SelectItem value="price-low">{t('TrendsPage.sort.priceLow')}</SelectItem>
+                      <SelectItem value="price-high">{t('TrendsPage.sort.priceHigh')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex gap-2">
+                    <Badge 
+                      variant="secondary" 
+                      className="cursor-pointer hover:bg-rose-100 rounded-full px-3 py-1"
+                      onClick={() => setSortBy('newest')}
+                    >
+                      {t('TrendsPage.badges.newArrivals')}
+                    </Badge>
+                    <Badge 
+                      variant="secondary" 
+                      className="cursor-pointer hover:bg-rose-100 rounded-full px-3 py-1"
+                      onClick={() => setPriceRange([0, 50])}
+                    >
+                      {t('TrendsPage.badges.under50')}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Products Grid */}
+          <section className="container mx-auto px-3 py-6">
+            {loading ? (
+              <div className={`grid gap-3 ${viewMode === 'compact' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'}`}>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-2">
+                    <Skeleton className={`${viewMode === 'compact' ? 'h-40' : 'h-32 sm:h-36'} w-full rounded-lg`} />
+                    <Skeleton className="h-3 w-3/4 rounded" />
+                    <Skeleton className="h-3 w-1/2 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredProducts.length > 0 ? (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs text-gray-600">
+                    {t('TrendsPage.results.showing', { 
+                      current: filteredProducts.length, 
+                      total: products.length 
+                    })}
+                  </p>
+                  {searchQuery && (
+                    <Button variant="ghost" size="sm" onClick={() => setSearchQuery('')} className="text-gray-500 hover:text-gray-700 text-xs h-8">
+                      {t('TrendsPage.search.clear')}
+                    </Button>
+                  )}
+                </div>
+
+                <div className={`gap-3 ${viewMode === 'compact' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'}`}>
+                  {filteredProducts.map(product => (
+                    <TrendCard 
+                      key={product.id} 
+                      product={product} 
+                      compact={viewMode === 'compact'}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-3 bg-rose-100 rounded-full flex items-center justify-center">
+                  <Sparkles className="h-8 w-8 text-rose-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {t('TrendsPage.empty.title')}
+                </h3>
+                <p className="text-gray-500 text-sm mb-6">
+                  {searchQuery 
+                    ? t('TrendsPage.empty.noResults', { query: searchQuery })
+                    : t('TrendsPage.empty.noTrends')
+                  }
+                </p>
+                {searchQuery && (
+                  <Button onClick={() => setSearchQuery('')} size="sm" className="rounded-full">
+                    {t('TrendsPage.search.clear')}
+                  </Button>
+                )}
+              </div>
+            )}
+          </section>
+
+          {!loading && filteredProducts.length > 0 && (
+            <section className="container mx-auto px-3 py-6 border-t border-rose-200">
+              <div className="text-center">
+                <Button variant="outline" className="rounded-full px-6 text-sm h-10">
+                  {t('TrendsPage.loadMore')}
+                </Button>
+                <p className="text-xs text-gray-500 mt-2">
+                  {t('TrendsPage.results.footer', { 
+                    current: filteredProducts.length, 
+                    total: products.length 
+                  })}
+                </p>
+              </div>
+            </section>
+          )}
+        </div>
       </main>
     </>
   );

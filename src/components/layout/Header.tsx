@@ -467,6 +467,7 @@ export default function Header() {
   };
 
   const isCustomer = user?.role_id === 5;
+  const shouldShowMobileBottomNav = user === null || user.role_id === 5;
 
   // Close menus on resize
   useEffect(() => {
@@ -534,14 +535,7 @@ export default function Header() {
                   priority
                 />
               </div>
-              <div className="hidden sm:flex flex-col mr-2">
-                <span className="text-xl font-bold bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent">
-                  Linyora
-                </span>
-                <span className="text-xs text-gray-500 -mt-0.5">
-                  {i18n.language === 'ar' ? 'سوق فاخر' : 'Luxury Marketplace'}
-                </span>
-              </div>
+              
             </Link>
 
             {isCustomer && (
@@ -905,7 +899,7 @@ export default function Header() {
         </nav>
       </header>
 
-      {isCustomer && (
+      {shouldShowMobileBottomNav && (
         <MobileBottomNav 
           user={user} 
           cartCount={cartCount}

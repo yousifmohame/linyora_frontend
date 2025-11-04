@@ -1,0 +1,350 @@
+// src/components/reels/ReelCommentsSheet.tsx
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { Reel, Comment } from '@/types';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+} from '@/components/ui/sheet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { SendHorizonal, Heart, MoreHorizontal, X, UserPlus, MessageCircle } from 'lucide-react';
+import api from '@/lib/axios';
+import { useAuth } from '@/context/AuthContext';
+import { formatDistanceToNow } from 'date-fns';
+import { arSA } from 'date-fns/locale';
+import { toast } from 'sonner';
+import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+interface ReelCommentsSheetProps {
+  reel: Reel;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
+  reel,
+  isOpen,
+  onOpenChange,
+}) => {
+  const { user } = useAuth();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
+  const [likedComments, setLikedComments] = useState<Set<number>>(new Set());
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      if (isOpen && reel.id) {
+        setIsLoading(true);
+        try {
+          const response = await api.get(`/reels/${reel.id}/comments`);
+          setComments(response.data || []);
+        } catch (error) {
+          console.error('Failed to fetch comments:', error);
+          setComments([]);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchComments();
+  }, [isOpen, reel.id]);
+
+  // التمرير التلقائي للأسفل
+  useEffect(() => {
+    if (scrollAreaRef.current && comments.length > 0) {
+      setTimeout(() => {
+        if (scrollAreaRef.current) {
+          scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+        }
+      }, 150);
+    }
+  }, [comments.length]);
+
+  const handlePostComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || newComment.trim() === '') return;
+
+    setIsPosting(true);
+    try {
+      const response = await api.post(`/reels/${reel.id}/comment`, {
+        comment: newComment,
+      });
+      setComments((prev) => [response.data, ...prev]);
+      setNewComment('');
+      toast.success('Comment posted');
+    } catch (error: any) {
+      console.error('Failed to post comment:', error);
+      toast.error('Failed to post comment', {
+        description: error.response?.data?.message || 'Please try again.',
+      });
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  const handleLikeComment = async (commentId: number) => {
+    if (!user) {
+      toast.error('Please login to like comments');
+      return;
+    }
+
+    const isCurrentlyLiked = likedComments.has(commentId);
+    const newLikedStatus = new Set(likedComments);
+
+    try {
+      if (isCurrentlyLiked) {
+        await api.delete(`/comments/${commentId}/like`);
+        newLikedStatus.delete(commentId);
+      } else {
+        await api.post(`/comments/${commentId}/like`);
+        newLikedStatus.add(commentId);
+      }
+      setLikedComments(newLikedStatus);
+    } catch (error) {
+      console.error('Failed to like comment:', error);
+      toast.error('Failed to like comment');
+    }
+  };
+
+  const handleFollowUser = async (userId: number, userName: string) => {
+    try {
+      await api.post(`/users/${userId}/follow`);
+      toast.success(`Following ${userName}`);
+    } catch (error) {
+      console.error('Failed to follow user:', error);
+      toast.error('Failed to follow user');
+    }
+  };
+
+  const handleReportComment = async (commentId: number) => {
+    try {
+      await api.post(`/comments/${commentId}/report`);
+      toast.success('Comment reported');
+    } catch (error) {
+      console.error('Failed to report comment:', error);
+      toast.error('Failed to report comment');
+    }
+  };
+
+  return (
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
+      <SheetContent 
+        side="bottom" 
+        className="h-[65vh] rounded-t-3xl border-0 bg-gradient-to-b from-gray-900/95 via-gray-900/90 to-black/95 backdrop-blur-2xl"
+      >
+        {/* Header مع تأثير الزجاج */}
+        <SheetHeader className="flex-row items-center justify-between pb-4 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+              <MessageCircle className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Comments</h2>
+              <p className="text-sm text-white/60">{comments.length} comments</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            className="h-9 w-9 text-white hover:bg-white/20 rounded-full"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </SheetHeader>
+
+        {/* منطقة التعليقات */}
+        <ScrollArea 
+          className="flex-grow my-4 pr-4"
+          ref={scrollAreaRef}
+        >
+          <div className="space-y-4 px-1">
+            {isLoading && (
+              <div className="flex justify-center py-8">
+                <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              </div>
+            )}
+            
+            {!isLoading && comments.length === 0 && (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="w-8 h-8 text-white/40" />
+                </div>
+                <p className="text-white/60 text-lg mb-2">No comments yet</p>
+                <p className="text-white/40 text-sm">Be the first to comment!</p>
+              </div>
+            )}
+
+            {!isLoading && comments.map((comment) => (
+              <div 
+                key={comment.id} 
+                className="flex items-start gap-3 group hover:bg-white/5 rounded-2xl p-3 transition-all duration-200"
+              >
+                {/* صورة المستخدم */}
+                <Link href={`/models/${comment.userId}`}>
+                  <Avatar className="w-10 h-10 border-2 border-white/20 hover:border-primary transition-all cursor-pointer">
+                    <AvatarImage src={comment.userAvatar || ''} alt={comment.userName} />
+                    <AvatarFallback className="bg-gradient-to-r from-primary to-purple-600 text-white font-semibold">
+                      {comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+
+                {/* محتوى التعليق */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Link href={`/models/${comment.userId}`}>
+                      <span className="text-white font-semibold text-sm hover:text-primary transition-colors cursor-pointer">
+                        {comment.userName}
+                      </span>
+                    </Link>
+                    <span className="text-white/40 text-xs">
+                      {formatDistanceToNow(new Date(comment.created_at), { 
+                        addSuffix: true, 
+                        locale: arSA 
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-white/90 text-sm leading-relaxed break-words">
+                    {comment.comment}
+                  </p>
+                  
+                  {/* إجراءات التعليق */}
+                  <div className="flex items-center gap-4 mt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-white/60 hover:text-red-400 hover:bg-transparent"
+                      onClick={() => handleLikeComment(comment.id)}
+                    >
+                      <Heart 
+                        className={`w-3 h-3 mr-1 transition-all ${
+                          likedComments.has(comment.id) 
+                            ? 'fill-red-500 text-red-500 scale-110' 
+                            : ''
+                        }`} 
+                      />
+                      <span className="text-xs">Like</span>
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-white/60 hover:text-primary hover:bg-transparent text-xs"
+                      onClick={() => handleFollowUser(comment.userId, comment.userName)}
+                    >
+                      <UserPlus className="w-3 h-3 mr-1" />
+                      Follow
+                    </Button>
+                  </div>
+                </div>
+
+                {/* القائمة المنسدلة */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-white/40 opacity-0 group-hover:opacity-100 hover:bg-white/20 hover:text-white rounded-full transition-all"
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="bg-black/90 backdrop-blur-xl border-white/10 text-white"
+                  >
+                    <DropdownMenuItem 
+                      className="cursor-pointer hover:bg-white/10"
+                      onClick={() => navigator.clipboard.writeText(comment.comment)}
+                    >
+                      Copy text
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="cursor-pointer hover:bg-white/10 text-red-400"
+                      onClick={() => handleReportComment(comment.id)}
+                    >
+                      Report
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+
+        {/* منطقة إضافة تعليق */}
+        <div className="border-t border-white/10 pt-4">
+          {user ? (
+            <form onSubmit={handlePostComment} className="flex items-center gap-3">
+              <Avatar className="w-9 h-9 border-2 border-primary/50">
+                <AvatarImage src={user.profile_picture_url || ''} alt={user.name} />
+                <AvatarFallback className="bg-gradient-to-r from-primary to-purple-600 text-white font-semibold">
+                  {user.name ? user.name.charAt(0).toUpperCase() : 'Me'}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="flex-1 relative">
+                <Input
+                  placeholder="Add a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  disabled={isPosting}
+                  className="bg-white/10 border-0 text-white placeholder:text-white/40 rounded-2xl px-4 py-6 pr-12 backdrop-blur-sm focus:bg-white/15 transition-all"
+                />
+                <Button 
+                  type="submit" 
+                  size="icon" 
+                  disabled={isPosting || newComment.trim() === ''}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-primary hover:bg-primary/90 rounded-full transition-all duration-200 hover:scale-110"
+                >
+                  {isPosting ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <SendHorizonal className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-white/60 text-sm mb-3">
+                Join the conversation
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Link href="/login">
+                  <Button 
+                    variant="outline" 
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 rounded-full"
+                  >
+                    Log in
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="bg-primary hover:bg-primary/90 text-white rounded-full">
+                    Sign up
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+};

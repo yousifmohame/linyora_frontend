@@ -293,16 +293,16 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-6 sm:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-4 sm:p-6">
         <AdminNav />
-        <header className="mb-8 text-center">
-          <Skeleton className="h-12 w-80 mx-auto mb-4" />
-          <Skeleton className="h-6 w-96 mx-auto" />
+        <header className="mb-6 text-center">
+          <Skeleton className="h-10 w-64 mx-auto mb-3 sm:h-12 sm:w-80" />
+          <Skeleton className="h-4 w-80 mx-auto sm:h-6 sm:w-96" />
         </header>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-3 md:grid-cols-4 sm:gap-6">
           {[...Array(8)].map((_, i) => <StatCardSkeleton key={i} />)}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 gap-6 mb-6">
           <ChartSkeleton />
           <ChartSkeleton />
         </div>
@@ -313,17 +313,17 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-6 sm:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-4 sm:p-6">
         <AdminNav />
         <div className="flex flex-col items-center justify-center h-96 text-center">
           <div className="p-4 bg-rose-100 rounded-2xl mb-4">
-            <Bell className="h-12 w-12 text-rose-500" />
+            <Bell className="h-10 w-10 text-rose-500 sm:h-12 sm:w-12" />
           </div>
-          <h3 className="text-2xl font-bold text-rose-800 mb-2">{t('AdminDashboard.error.title')}</h3>
-          <p className="text-rose-600 mb-6">{t('AdminDashboard.error.message')}</p>
+          <h3 className="text-xl font-bold text-rose-800 mb-2 sm:text-2xl">{t('AdminDashboard.error.title')}</h3>
+          <p className="text-rose-600 mb-6 px-4">{t('AdminDashboard.error.message')}</p>
           <Button 
             onClick={handleRetry}
-            className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl"
+            className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl px-6 py-2"
           >
             {t('AdminDashboard.error.retry')}
           </Button>
@@ -352,21 +352,21 @@ export default function AdminDashboard() {
     className?: string;
   }) => (
     <Card className={`bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 ${className}`}>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className={`p-3 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 text-white`}>
-            <Icon className="h-6 w-6" />
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-center justify-between mb-2 sm:mb-4">
+          <div className={`p-2 sm:p-3 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 text-white`}>
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           {trend && (
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-              <TrendingUp className="h-3 w-3 ml-1" />
+            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 text-xs py-1 px-2">
+              <TrendingUp className="h-2.5 w-2.5 ml-1" />
               {trend}
             </Badge>
           )}
         </div>
-        <div className="space-y-2">
-          <h3 className="text-rose-700 text-sm font-medium">{title}</h3>
-          <div className="text-2xl font-bold text-rose-900">{value}</div>
+        <div className="space-y-1">
+          <h3 className="text-rose-700 text-xs font-medium sm:text-sm">{title}</h3>
+          <div className="text-lg font-bold text-rose-900 sm:text-2xl">{value}</div>
           {description && (
             <p className="text-rose-600 text-xs">{description}</p>
           )}
@@ -376,7 +376,7 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-6 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-4 sm:p-6">
       {/* Background Decorations */}
       <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
@@ -384,57 +384,57 @@ export default function AdminDashboard() {
       <AdminNav />
       
       {/* Header Section */}
-      <header className="mb-8 text-center relative">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="p-3 bg-white rounded-2xl shadow-lg">
-            <BarChart2 className="h-8 w-8 text-rose-500" />
+      <header className="mb-6 text-center relative">
+        <div className="flex items-center justify-center gap-2 mb-3 sm:gap-3 sm:mb-4">
+          <div className="p-2 bg-white rounded-2xl shadow-lg sm:p-3">
+            <BarChart2 className="h-6 w-6 text-rose-500 sm:h-8 sm:w-8" />
           </div>
-          <Sparkles className="h-6 w-6 text-rose-300" />
-          <Crown className="h-6 w-6 text-rose-300" />
+          <Sparkles className="h-4 w-4 text-rose-300 sm:h-6 sm:w-6" />
+          <Crown className="h-4 w-4 text-rose-300 sm:h-6 sm:w-6" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-3">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-2 sm:text-3xl sm:mb-3">
           {t('AdminDashboard.header.title')}
         </h1>
-        <p className="text-rose-700 text-lg max-w-2xl mx-auto">
+        <p className="text-rose-700 text-base max-w-2xl mx-auto sm:text-lg">
           {t('AdminDashboard.header.subtitle')}
         </p>
-        <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
+        <div className="w-20 h-0.5 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-3 sm:w-24 sm:h-1 sm:mt-4"></div>
       </header>
 
       {/* Quick Actions */}
-      <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl mb-8">
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-rose-100 rounded-xl">
-                <Activity className="h-5 w-5 text-rose-600" />
+      <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl mb-6">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-2 bg-rose-100 rounded-xl sm:p-3">
+                <Activity className="h-4 w-4 text-rose-600 sm:h-5 sm:w-5" />
               </div>
               <div>
-                <h3 className="font-semibold text-rose-800">{t('AdminDashboard.actions.liveView')}</h3>
-                <p className="text-rose-600 text-sm">{t('AdminDashboard.actions.lastUpdate')}</p>
+                <h3 className="font-semibold text-rose-800 text-sm sm:text-base">{t('AdminDashboard.actions.liveView')}</h3>
+                <p className="text-rose-600 text-xs sm:text-sm">{t('AdminDashboard.actions.lastUpdate')}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
               <Button 
                 variant="outline" 
                 onClick={exportReport}
-                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
               >
-                <Download className="w-4 h-4 ml-2" />
+                <Download className="w-3 h-3 ml-1 sm:w-4 sm:h-4" />
                 {t('AdminDashboard.actions.exportReport')}
               </Button>
               <Button 
                 variant="outline" 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2"
               >
-                <RefreshCw className={`w-4 h-4 ml-2 ${refreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3 h-3 ml-1 sm:w-4 sm:h-4 ${refreshing ? 'animate-spin' : ''}`} />
                 {t('AdminDashboard.actions.refreshData')}
               </Button>
-              <Button className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl">
-                <Eye className="w-4 h-4 ml-2" />
+              <Button className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2">
+                <Eye className="w-3 h-3 ml-1 sm:w-4 sm:h-4" />
                 {t('AdminDashboard.actions.viewDetails')}
               </Button>
             </div>
@@ -443,7 +443,7 @@ export default function AdminDashboard() {
       </Card>
 
       {/* Main Statistics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-3 md:grid-cols-4 sm:gap-6">
         <StatCard
           title={t('AdminDashboard.stats.platformRevenue')}
           value={formatCurrency(analytics.platformRevenue)}
@@ -501,60 +501,62 @@ export default function AdminDashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="space-y-6 mb-6">
         {/* Sales Chart */}
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-t-3xl">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <BarChart2 className="w-5 h-5" /> {t('AdminDashboard.charts.salesTitle')}
+        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-4 sm:p-6">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 sm:w-5 sm:h-5" /> 
+                <CardTitle className="text-lg font-bold sm:text-xl">
+                  {t('AdminDashboard.charts.salesTitle')}
                 </CardTitle>
-                <CardDescription className="text-pink-100">
-                  {t('AdminDashboard.charts.salesSubtitle')}
-                </CardDescription>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <div className="flex bg-white/20 p-1 rounded-lg">
-                  <Button 
-                    size="sm" 
-                    variant={chartType === 'bar' ? 'default' : 'ghost'} 
-                    onClick={() => setChartType('bar')}
-                    className="text-white hover:text-white"
-                  >
-                    {t('AdminDashboard.charts.bar')}
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant={chartType === 'area' ? 'default' : 'ghost'} 
-                    onClick={() => setChartType('area')}
-                    className="text-white hover:text-white"
-                  >
-                    {t('AdminDashboard.charts.area')}
-                  </Button>
-                </div>
-                <div className="flex bg-white/20 p-1 rounded-lg">
-                  <Button 
-                    size="sm" 
-                    variant={chartPeriod === 'week' ? 'default' : 'ghost'} 
-                    onClick={() => setChartPeriod('week')}
-                    className="text-white hover:text-white"
-                  >
-                    {t('AdminDashboard.charts.last7Days')}
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant={chartPeriod === 'month' ? 'default' : 'ghost'} 
-                    onClick={() => setChartPeriod('month')}
-                    className="text-white hover:text-white"
-                  >
-                    {t('AdminDashboard.charts.last30Days')}
-                  </Button>
-                </div>
+              <CardDescription className="text-pink-100 text-xs sm:text-sm">
+                {t('AdminDashboard.charts.salesSubtitle')}
+              </CardDescription>
+            </div>
+            
+            <div className="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex bg-white/20 p-1 rounded-lg">
+                <Button 
+                  size="sm" 
+                  variant={chartType === 'bar' ? 'default' : 'ghost'} 
+                  onClick={() => setChartType('bar')}
+                  className="text-white hover:text-white text-xs px-2 py-1 h-7 sm:text-sm sm:px-3 sm:py-1.5 sm:h-8"
+                >
+                  {t('AdminDashboard.charts.bar')}
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant={chartType === 'area' ? 'default' : 'ghost'} 
+                  onClick={() => setChartType('area')}
+                  className="text-white hover:text-white text-xs px-2 py-1 h-7 sm:text-sm sm:px-3 sm:py-1.5 sm:h-8"
+                >
+                  {t('AdminDashboard.charts.area')}
+                </Button>
+              </div>
+              <div className="flex bg-white/20 p-1 rounded-lg">
+                <Button 
+                  size="sm" 
+                  variant={chartPeriod === 'week' ? 'default' : 'ghost'} 
+                  onClick={() => setChartPeriod('week')}
+                  className="text-white hover:text-white text-xs px-2 py-1 h-7 sm:text-sm sm:px-3 sm:py-1.5 sm:h-8"
+                >
+                  {t('AdminDashboard.charts.last7Days')}
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant={chartPeriod === 'month' ? 'default' : 'ghost'} 
+                  onClick={() => setChartPeriod('month')}
+                  className="text-white hover:text-white text-xs px-2 py-1 h-7 sm:text-sm sm:px-3 sm:py-1.5 sm:h-8"
+                >
+                  {t('AdminDashboard.charts.last30Days')}
+                </Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             {chartType === 'bar' ? (
               <SalesBarChart data={chartData} currency={currency} />
             ) : (
@@ -564,52 +566,58 @@ export default function AdminDashboard() {
         </Card>
 
         {/* User Distribution */}
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl">
-          <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-t-3xl">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Users className="w-5 h-5" /> {t('AdminDashboard.charts.userDistribution')}
-            </CardTitle>
-            <CardDescription className="text-pink-100">
+        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-4 sm:p-6">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" /> 
+              <CardTitle className="text-lg font-bold sm:text-xl">
+                {t('AdminDashboard.charts.userDistribution')}
+              </CardTitle>
+            </div>
+            <CardDescription className="text-pink-100 text-xs sm:text-sm">
               {t('AdminDashboard.charts.userDistributionSubtitle')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <UserDistributionPie data={userDistData} />
           </CardContent>
         </Card>
       </div>
 
       {/* Recent Activity & Goals */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="space-y-6">
         {/* Recent Activity */}
         <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-t-3xl">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Activity className="w-5 h-5" /> {t('AdminDashboard.activity.title')}
-            </CardTitle>
-            <CardDescription className="text-pink-100">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-4 sm:p-6 rounded-t-3xl">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5" /> 
+              <CardTitle className="text-lg font-bold sm:text-xl">
+                {t('AdminDashboard.activity.title')}
+              </CardTitle>
+            </div>
+            <CardDescription className="text-pink-100 text-xs sm:text-sm">
               {t('AdminDashboard.activity.subtitle')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-3">
               {(analytics.recentActivity || [
                 { id: '1', user: 'أحمد محمد', action: 'قام بتسجيل الدخول', time: 'منذ 5 دقائق', type: 'info' as const },
                 { id: '2', user: 'شركة الأمل', action: 'أنشأت منتج جديد', time: 'منذ 15 دقيقة', type: 'success' as const },
                 { id: '3', user: 'سارة أحمد', action: 'أكملت طلب شراء', time: 'منذ ساعة', type: 'success' as const },
                 { id: '4', user: 'محمد علي', action: 'طلب يحتاج مراجعة', time: 'منذ ساعتين', type: 'warning' as const },
               ]).map((activity) => (
-                <div key={activity.id} className="flex items-center gap-3 p-4 bg-rose-50 rounded-xl border border-rose-200">
-                  <div className={`w-3 h-3 rounded-full ${
+                <div key={activity.id} className="flex items-start gap-3 p-3 bg-rose-50 rounded-xl border border-rose-200">
+                  <div className={`mt-1 w-2 h-2 rounded-full sm:w-3 sm:h-3 ${
                     activity.type === 'success' ? 'bg-green-500' : 
                     activity.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
                   }`}></div>
                   <div className="flex-1">
-                    <p className="text-rose-800 font-medium text-sm">{activity.user}</p>
+                    <p className="text-rose-800 font-medium text-xs sm:text-sm">{activity.user}</p>
                     <p className="text-rose-600 text-xs">{activity.action}</p>
                     <p className="text-rose-500 text-xs mt-1">{activity.time}</p>
                   </div>
-                  <ArrowUpRight className="h-4 w-4 text-rose-400" />
+                  <ArrowUpRight className="h-3 w-3 text-rose-400 sm:h-4 sm:w-4" />
                 </div>
               ))}
             </div>
@@ -618,30 +626,33 @@ export default function AdminDashboard() {
 
         {/* Platform Goals */}
         <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl">
-          <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-t-3xl">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Target className="w-5 h-5" /> {t('AdminDashboard.goals.title')}
-            </CardTitle>
-            <CardDescription className="text-pink-100">
+          <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-4 sm:p-6 rounded-t-3xl">
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 sm:w-5 sm:h-5" /> 
+              <CardTitle className="text-lg font-bold sm:text-xl">
+                {t('AdminDashboard.goals.title')}
+              </CardTitle>
+            </div>
+            <CardDescription className="text-pink-100 text-xs sm:text-sm">
               {t('AdminDashboard.goals.subtitle')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-4">
               {[
                 { goal: t('AdminDashboard.goals.userGrowth'), progress: 75, target: '1000 مستخدم' },
                 { goal: t('AdminDashboard.goals.orderCompletion'), progress: 85, target: '95%' },
                 { goal: t('AdminDashboard.goals.merchantSatisfaction'), progress: 90, target: '95%' },
                 { goal: t('AdminDashboard.goals.revenueGrowth'), progress: 65, target: '100%' },
               ].map((item, index) => (
-                <div key={index} className="space-y-3">
+                <div key={index} className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-rose-800 font-medium text-sm">{item.goal}</span>
+                    <span className="text-rose-800 font-medium text-xs sm:text-sm">{item.goal}</span>
                     <span className="text-rose-600 text-xs">{item.target}</span>
                   </div>
-                  <div className="w-full bg-rose-200 rounded-full h-3">
+                  <div className="w-full bg-rose-200 rounded-full h-2 sm:h-3">
                     <div 
-                      className="bg-gradient-to-r from-rose-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-rose-500 to-pink-500 h-2 sm:h-3 rounded-full transition-all duration-500"
                       style={{ width: `${item.progress}%` }}
                     ></div>
                   </div>

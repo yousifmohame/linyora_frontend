@@ -1,3 +1,4 @@
+// src/app/dashboard/admin/promotion-tiers/page.tsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -77,7 +78,7 @@ const formatPrice = (price: any, currency: string): string => {
 
 export default function PromotionTiersPage() {
     const { t, i18n } = useTranslation();
-    const currency = 'SAR'; // or extract from config
+    const currency = 'SAR';
 
     const [tiers, setTiers] = useState<PromotionTier[]>([]);
     const [loading, setLoading] = useState(true);
@@ -163,45 +164,47 @@ export default function PromotionTiersPage() {
 
     if (loading) {
         return (
-            <div className="p-8">
-                <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="p-4 min-h-screen">
+                <AdminNav />
+                <div className="flex items-center justify-center h-64 mt-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6 space-y-6">
-          <AdminNav />
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="p-4 sm:p-6 space-y-6 min-h-screen">
+            <AdminNav />
+            
+            <header className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-3 xs:gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                         {t('PromotionTiersPage.title')}
                     </h1>
-                    <p className="text-muted-foreground mt-2">
+                    <p className="text-muted-foreground text-sm mt-1.5">
                         {t('PromotionTiersPage.subtitle')}
                     </p>
                 </div>
                 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                     <Select value={sortBy} onValueChange={(value: 'priority' | 'name' | 'price') => setSortBy(value)}>
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="w-28 xs:w-32 text-xs sm:text-sm">
                             <SelectValue placeholder={t('PromotionTiersPage.sort.placeholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="priority">{t('PromotionTiersPage.sort.priority')}</SelectItem>
-                            <SelectItem value="name">{t('PromotionTiersPage.sort.name')}</SelectItem>
-                            <SelectItem value="price">{t('PromotionTiersPage.sort.price')}</SelectItem>
+                            <SelectItem value="priority" className="text-xs sm:text-sm">{t('PromotionTiersPage.sort.priority')}</SelectItem>
+                            <SelectItem value="name" className="text-xs sm:text-sm">{t('PromotionTiersPage.sort.name')}</SelectItem>
+                            <SelectItem value="price" className="text-xs sm:text-sm">{t('PromotionTiersPage.sort.price')}</SelectItem>
                         </SelectContent>
                     </Select>
 
-                    <div className="flex border rounded-lg p-1">
+                    <div className="flex border rounded-lg p-0.5">
                         <Button
                             variant={viewMode === 'grid' ? 'default' : 'ghost'}
                             size="sm"
                             onClick={() => setViewMode('grid')}
-                            className="h-9"
+                            className="h-8 text-xs px-2"
                         >
                             {t('PromotionTiersPage.view.grid')}
                         </Button>
@@ -209,7 +212,7 @@ export default function PromotionTiersPage() {
                             variant={viewMode === 'table' ? 'default' : 'ghost'}
                             size="sm"
                             onClick={() => setViewMode('table')}
-                            className="h-9"
+                            className="h-8 text-xs px-2"
                         >
                             {t('PromotionTiersPage.view.table')}
                         </Button>
@@ -217,68 +220,68 @@ export default function PromotionTiersPage() {
 
                     <Button 
                         onClick={() => { setTierToEdit(null); setIsDialogOpen(true); }}
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-xs px-2.5 py-1.5 h-8"
                     >
-                        <PlusCircle className="mr-2 h-4 w-4" /> 
+                        <PlusCircle className="mr-1 h-3 w-3" /> 
                         {t('PromotionTiersPage.actions.createTier')}
                     </Button>
                 </div>
             </header>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                    <CardContent className="p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-sm rounded-xl">
+                    <CardContent className="p-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">{t('PromotionTiersPage.stats.totalTiers')}</p>
-                                <p className="text-2xl font-bold">{totalTiers}</p>
+                                <p className="text-xs font-medium text-muted-foreground">{t('PromotionTiersPage.stats.totalTiers')}</p>
+                                <p className="text-lg font-bold">{totalTiers}</p>
                             </div>
-                            <Crown className="h-8 w-8 text-purple-500" />
+                            <Crown className="h-5 w-5 text-purple-500" />
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardContent className="p-4">
+                <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-sm rounded-xl">
+                    <CardContent className="p-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">{t('PromotionTiersPage.stats.activeTiers')}</p>
-                                <p className="text-2xl font-bold">{activeTiers}</p>
+                                <p className="text-xs font-medium text-muted-foreground">{t('PromotionTiersPage.stats.activeTiers')}</p>
+                                <p className="text-lg font-bold">{activeTiers}</p>
                             </div>
-                            <Eye className="h-8 w-8 text-green-500" />
+                            <Eye className="h-5 w-5 text-green-500" />
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardContent className="p-4">
+                <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-sm rounded-xl">
+                    <CardContent className="p-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">{t('PromotionTiersPage.stats.highestPrice')}</p>
-                                <p className="text-2xl font-bold">
+                                <p className="text-xs font-medium text-muted-foreground">{t('PromotionTiersPage.stats.highestPrice')}</p>
+                                <p className="text-lg font-bold">
                                     {formatPrice(highestPrice, currency)}
                                 </p>
                             </div>
-                            <TrendingUp className="h-8 w-8 text-orange-500" />
+                            <TrendingUp className="h-5 w-5 text-orange-500" />
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardContent className="p-4">
+                <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-sm rounded-xl">
+                    <CardContent className="p-3">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-muted-foreground">{t('PromotionTiersPage.stats.maxPriority')}</p>
-                                <p className="text-2xl font-bold">
+                                <p className="text-xs font-medium text-muted-foreground">{t('PromotionTiersPage.stats.maxPriority')}</p>
+                                <p className="text-lg font-bold">
                                     {maxPriority}
                                 </p>
                             </div>
-                            <ArrowUpDown className="h-8 w-8 text-blue-500" />
+                            <ArrowUpDown className="h-5 w-5 text-blue-500" />
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
             {viewMode === 'grid' ? (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 xs:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {tiers.map(tier => {
                         const TierIcon = getTierIcon(tier.name);
                         const safePrice = formatPrice(tier.price, currency);
@@ -286,89 +289,91 @@ export default function PromotionTiersPage() {
                         const safeDuration = safeNumber(tier.duration_days, 7);
 
                         return (
-                            <Card key={tier.id} className={`flex flex-col transition-all duration-300 hover:shadow-lg ${
-                                !tier.is_active ? 'opacity-60 grayscale' : ''
-                            }`}>
-                                <CardHeader className="pb-4">
+                            <Card key={tier.id} className={`flex flex-col transition-all duration-300 hover:shadow-md ${
+                                !tier.is_active ? 'opacity-70 grayscale' : ''
+                            } bg-white/80 backdrop-blur-sm border-rose-200 rounded-xl`}>
+                                <CardHeader className="pb-3">
                                     <div className="flex items-center justify-between">
-                                        <CardTitle className="flex items-center gap-2">
-                                            <TierIcon style={{ color: tier.badge_color }} className="h-5 w-5" />
+                                        <CardTitle className="flex items-center gap-1.5 text-sm sm:text-base">
+                                            <TierIcon style={{ color: tier.badge_color }} className="h-4 w-4" />
                                             <span style={{ color: tier.badge_color }}>{tier.name || t('PromotionTiersPage.common.unnamed')}</span>
                                         </CardTitle>
                                         <Badge 
                                             variant={tier.is_active ? "default" : "secondary"}
                                             style={{ backgroundColor: tier.is_active ? tier.badge_color : undefined }}
+                                            className="text-xs px-2 py-0.5"
                                         >
                                             {tier.is_active ? t('common.active') : t('common.inactive')}
                                         </Badge>
                                     </div>
-                                    <CardDescription>
+                                    <CardDescription className="text-xs mt-1.5">
                                         {t('PromotionTiersPage.tier.priority')}: <strong>{safePriority}</strong>
                                         {tier.description && (
-                                            <p className="mt-2 text-sm">{tier.description}</p>
+                                            <p className="mt-1.5 text-xs">{tier.description}</p>
                                         )}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="flex-grow space-y-3">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="flex items-center gap-2">
-                                            <Calendar className="h-4 w-4" />
+                                <CardContent className="flex-grow space-y-2.5">
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="flex items-center gap-1.5">
+                                            <Calendar className="h-3 w-3" />
                                             {t('PromotionTiersPage.tier.duration')}:
                                         </span>
                                         <strong>{safeDuration} {t('PromotionTiersPage.tier.days', { count: safeDuration })}</strong>
                                     </div>
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="flex items-center gap-2">
-                                            <CreditCard className="h-4 w-4" />
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="flex items-center gap-1.5">
+                                            <CreditCard className="h-3 w-3" />
                                             {t('PromotionTiersPage.tier.price')}:
                                         </span>
-                                        <strong className="text-lg">
+                                        <strong className="text-base">
                                             {safePrice}
                                         </strong>
                                     </div>
                                     
                                     {tier.features && tier.features.length > 0 && (
-                                        <div className="mt-4">
-                                            <p className="text-sm font-medium mb-2">{t('PromotionTiersPage.tier.features')}</p>
+                                        <div className="mt-3">
+                                            <p className="text-xs font-medium mb-1.5">{t('PromotionTiersPage.tier.features')}</p>
                                             <ul className="text-xs space-y-1">
                                                 {tier.features.map((feature, index) => (
-                                                    <li key={index} className="flex items-center gap-2">
+                                                    <li key={index} className="flex items-start gap-1.5">
                                                         <div 
-                                                            className="w-1 h-1 rounded-full" 
+                                                            className="w-1 h-1 rounded-full mt-1" 
                                                             style={{ backgroundColor: tier.badge_color }}
                                                         />
-                                                        {feature}
+                                                        <span className="leading-tight">{feature}</span>
                                                     </li>
                                                 ))}
                                             </ul>
                                         </div>
                                     )}
                                 </CardContent>
-                                <div className="p-4 border-t space-y-2">
+                                <div className="p-3 border-t border-rose-100 space-y-1.5">
                                     <div className="flex items-center justify-between">
-                                        <Label htmlFor={`toggle-${tier.id}`} className="text-sm">
+                                        <Label htmlFor={`toggle-${tier.id}`} className="text-xs">
                                             {tier.is_active ? t('common.active') : t('common.inactive')}
                                         </Label>
                                         <Switch
                                             id={`toggle-${tier.id}`}
                                             checked={tier.is_active}
                                             onCheckedChange={() => handleToggleStatus(tier)}
+                                            className="h-5 w-9"
                                         />
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-1.5">
                                         <Button 
                                             variant="outline" 
                                             size="sm" 
                                             onClick={() => { setTierToEdit(tier); setIsDialogOpen(true); }}
-                                            className="flex-1"
+                                            className="flex-1 text-xs h-8 px-2"
                                         >
-                                            <Edit className="mr-2 h-3 w-3" /> {t('common.edit')}
+                                            <Edit className="mr-1 h-3 w-3" /> {t('common.edit')}
                                         </Button>
                                         <Button 
                                             variant="outline" 
                                             size="sm" 
                                             onClick={() => handleDeleteClick(tier)}
-                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
                                         >
                                             <Trash2 className="h-3 w-3" />
                                         </Button>
@@ -379,83 +384,90 @@ export default function PromotionTiersPage() {
                     })}
                 </div>
             ) : (
-                <Card>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>{t('PromotionTiersPage.table.name')}</TableHead>
-                                <TableHead>{t('PromotionTiersPage.table.status')}</TableHead>
-                                <TableHead>{t('PromotionTiersPage.table.duration')}</TableHead>
-                                <TableHead>{t('PromotionTiersPage.table.price')}</TableHead>
-                                <TableHead>{t('PromotionTiersPage.table.priority')}</TableHead>
-                                <TableHead>{t('PromotionTiersPage.table.color')}</TableHead>
-                                <TableHead>{t('PromotionTiersPage.table.actions')}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {tiers.map(tier => {
-                                const TierIcon = getTierIcon(tier.name);
-                                const safePrice = formatPrice(tier.price, currency);
-                                const safeDuration = safeNumber(tier.duration_days, 7);
-                                const safePriority = safeNumber(tier.priority);
+                <Card className="bg-white/80 backdrop-blur-sm border-rose-200 rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-rose-50">
+                                    <TableHead className="text-xs sm:text-sm py-2.5">{t('PromotionTiersPage.table.name')}</TableHead>
+                                    <TableHead className="text-xs sm:text-sm py-2.5">{t('PromotionTiersPage.table.status')}</TableHead>
+                                    <TableHead className="text-xs sm:text-sm py-2.5">{t('PromotionTiersPage.table.duration')}</TableHead>
+                                    <TableHead className="text-xs sm:text-sm py-2.5">{t('PromotionTiersPage.table.price')}</TableHead>
+                                    <TableHead className="text-xs sm:text-sm py-2.5">{t('PromotionTiersPage.table.priority')}</TableHead>
+                                    <TableHead className="text-xs sm:text-sm py-2.5">{t('PromotionTiersPage.table.color')}</TableHead>
+                                    <TableHead className="text-xs sm:text-sm py-2.5">{t('PromotionTiersPage.table.actions')}</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {tiers.map(tier => {
+                                    const TierIcon = getTierIcon(tier.name);
+                                    const safePrice = formatPrice(tier.price, currency);
+                                    const safeDuration = safeNumber(tier.duration_days, 7);
+                                    const safePriority = safeNumber(tier.priority);
 
-                                return (
-                                    <TableRow key={tier.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <TierIcon style={{ color: tier.badge_color }} className="h-4 w-4" />
-                                                <span className="font-medium">{tier.name || t('PromotionTiersPage.common.unnamed')}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge 
-                                                variant={tier.is_active ? "default" : "secondary"}
-                                                style={{ backgroundColor: tier.is_active ? tier.badge_color : undefined }}
-                                            >
-                                                {tier.is_active ? t('common.active') : t('common.inactive')}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>{safeDuration} {t('PromotionTiersPage.tier.days', { count: safeDuration })}</TableCell>
-                                        <TableCell>
-                                            <strong>{safePrice}</strong>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline">{safePriority}</Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div 
-                                                className="w-6 h-6 rounded border" 
-                                                style={{ backgroundColor: tier.badge_color }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <Switch
-                                                    checked={tier.is_active}
-                                                    onCheckedChange={() => handleToggleStatus(tier)}
+                                    return (
+                                        <TableRow key={tier.id} className="border-rose-100 hover:bg-rose-50/50">
+                                            <TableCell className="py-2.5">
+                                                <div className="flex items-center gap-1.5">
+                                                    <TierIcon style={{ color: tier.badge_color }} className="h-3.5 w-3.5" />
+                                                    <span className="font-medium text-sm">{tier.name || t('PromotionTiersPage.common.unnamed')}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="py-2.5">
+                                                <Badge 
+                                                    variant={tier.is_active ? "default" : "secondary"}
+                                                    style={{ backgroundColor: tier.is_active ? tier.badge_color : undefined }}
+                                                    className="text-xs px-2 py-0.5"
+                                                >
+                                                    {tier.is_active ? t('common.active') : t('common.inactive')}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="py-2.5 text-sm">
+                                                {safeDuration} {t('PromotionTiersPage.tier.days', { count: safeDuration })}
+                                            </TableCell>
+                                            <TableCell className="py-2.5">
+                                                <strong className="text-sm">{safePrice}</strong>
+                                            </TableCell>
+                                            <TableCell className="py-2.5">
+                                                <Badge variant="outline" className="text-xs px-2 py-0.5">{safePriority}</Badge>
+                                            </TableCell>
+                                            <TableCell className="py-2.5">
+                                                <div 
+                                                    className="w-4 h-4 rounded border border-rose-200" 
+                                                    style={{ backgroundColor: tier.badge_color }}
                                                 />
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="sm"
-                                                    onClick={() => { setTierToEdit(tier); setIsDialogOpen(true); }}
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="sm"
-                                                    onClick={() => handleDeleteClick(tier)}
-                                                    className="text-red-600 hover:text-red-700"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
+                                            </TableCell>
+                                            <TableCell className="py-2.5">
+                                                <div className="flex items-center gap-1">
+                                                    <Switch
+                                                        checked={tier.is_active}
+                                                        onCheckedChange={() => handleToggleStatus(tier)}
+                                                        className="h-4 w-7"
+                                                    />
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm"
+                                                        onClick={() => { setTierToEdit(tier); setIsDialogOpen(true); }}
+                                                        className="h-7 w-7 p-0"
+                                                    >
+                                                        <Edit className="h-3 w-3" />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm"
+                                                        onClick={() => handleDeleteClick(tier)}
+                                                        className="text-red-600 hover:text-red-700 h-7 w-7 p-0"
+                                                    >
+                                                        <Trash2 className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </Card>
             )}
 
@@ -468,18 +480,20 @@ export default function PromotionTiersPage() {
             />
 
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
+                <AlertDialogContent className="max-w-[95vw] sm:max-w-md">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{t('PromotionTiersPage.confirmDelete.title')}</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="text-base sm:text-lg">
+                            {t('PromotionTiersPage.confirmDelete.title')}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm">
                             {t('PromotionTiersPage.confirmDelete.description', { name: tierToDelete?.name || t('PromotionTiersPage.common.unnamed') })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                    <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+                        <AlertDialogCancel className="text-sm">{t('common.cancel')}</AlertDialogCancel>
                         <AlertDialogAction 
                             onClick={handleDeleteConfirm}
-                            className="bg-red-600 hover:bg-red-700"
+                            className="bg-red-600 hover:bg-red-700 text-sm py-2"
                         >
                             {t('PromotionTiersPage.confirmDelete.confirm')}
                         </AlertDialogAction>
@@ -592,21 +606,21 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-[95vw] sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        {tier ? <Edit className="h-5 w-5" /> : <PlusCircle className="h-5 w-5" />}
+                    <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        {tier ? <Edit className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
                         {tier ? t('PromotionTiersPage.form.editTitle') : t('PromotionTiersPage.form.createTitle')}
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-sm">
                         {tier ? t('PromotionTiersPage.form.editSubtitle') : t('PromotionTiersPage.form.createSubtitle')}
                     </DialogDescription>
                 </DialogHeader>
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">{t('PromotionTiersPage.form.nameLabel')} *</Label>
+                <form onSubmit={handleSubmit} className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="name" className="text-sm">{t('PromotionTiersPage.form.nameLabel')} *</Label>
                             <Input 
                                 id="name" 
                                 name="name" 
@@ -614,11 +628,12 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
                                 onChange={handleChange} 
                                 placeholder={t('PromotionTiersPage.form.namePlaceholder')}
                                 required 
+                                className="text-sm"
                             />
                         </div>
                         
-                        <div className="space-y-2">
-                            <Label htmlFor="duration_days">{t('PromotionTiersPage.form.durationLabel')} *</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="duration_days" className="text-sm">{t('PromotionTiersPage.form.durationLabel')} *</Label>
                             <Input 
                                 id="duration_days" 
                                 name="duration_days" 
@@ -627,13 +642,14 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
                                 value={formData.duration_days || ''} 
                                 onChange={handleNumberChange} 
                                 required 
+                                className="text-sm"
                             />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="price">{t('PromotionTiersPage.form.priceLabel', { currency })} *</Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="price" className="text-sm">{t('PromotionTiersPage.form.priceLabel', { currency })} *</Label>
                             <Input 
                                 id="price" 
                                 name="price" 
@@ -643,11 +659,12 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
                                 value={formData.price || ''} 
                                 onChange={handleNumberChange} 
                                 required 
+                                className="text-sm"
                             />
                         </div>
                         
-                        <div className="space-y-2">
-                            <Label htmlFor="priority">{t('PromotionTiersPage.form.priorityLabel')} *</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="priority" className="text-sm">{t('PromotionTiersPage.form.priorityLabel')} *</Label>
                             <Input 
                                 id="priority" 
                                 name="priority" 
@@ -656,6 +673,7 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
                                 value={formData.priority || 0} 
                                 onChange={handleNumberChange} 
                                 required 
+                                className="text-sm"
                             />
                             <p className="text-xs text-muted-foreground">
                                 {t('PromotionTiersPage.form.priorityHint')}
@@ -663,20 +681,20 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="description">{t('PromotionTiersPage.form.descriptionLabel')}</Label>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="description" className="text-sm">{t('PromotionTiersPage.form.descriptionLabel')}</Label>
                         <textarea
                             id="description"
                             name="description"
                             value={formData.description || ''}
                             onChange={handleChange}
-                            className="w-full min-h-[80px] p-3 border rounded-lg resize-none"
+                            className="w-full min-h-[70px] p-2.5 border rounded-lg resize-none text-sm"
                             placeholder={t('PromotionTiersPage.form.descriptionPlaceholder')}
                         />
                     </div>
 
-                    <div className="space-y-3">
-                        <Label>{t('PromotionTiersPage.form.featuresLabel')}</Label>
+                    <div className="space-y-2">
+                        <Label className="text-sm">{t('PromotionTiersPage.form.featuresLabel')}</Label>
                         <div className="flex gap-2">
                             <Input
                                 value={featureInput}
@@ -688,17 +706,18 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
                                         handleAddFeature();
                                     }
                                 }}
+                                className="text-sm"
                             />
-                            <Button type="button" onClick={handleAddFeature} variant="outline">
+                            <Button type="button" onClick={handleAddFeature} variant="outline" className="h-9 px-2 text-xs">
                                 {t('common.add')}
                             </Button>
                         </div>
                         
                         {formData.features && formData.features.length > 0 && (
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 {formData.features.map((feature, index) => (
-                                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
-                                        <span className="text-sm">{feature}</span>
+                                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
+                                        <span>{feature}</span>
                                         <Button
                                             type="button"
                                             variant="ghost"
@@ -714,24 +733,24 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                            <Label htmlFor="badge_color">{t('PromotionTiersPage.form.badgeColorLabel')}</Label>
-                            <div className="flex items-center gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="badge_color" className="text-sm">{t('PromotionTiersPage.form.badgeColorLabel')}</Label>
+                            <div className="flex items-center gap-2">
                                 <Input 
                                     id="badge_color" 
                                     name="badge_color" 
                                     type="color" 
                                     value={formData.badge_color || DEFAULT_COLORS[0]} 
                                     onChange={handleChange} 
-                                    className="w-16 h-10 p-1"
+                                    className="w-12 h-9 p-1"
                                 />
                                 <div className="flex gap-1">
                                     {DEFAULT_COLORS.map(color => (
                                         <button
                                             key={color}
                                             type="button"
-                                            className="w-6 h-6 rounded border"
+                                            className="w-5 h-5 rounded border border-rose-200"
                                             style={{ backgroundColor: color }}
                                             onClick={() => setFormData({...formData, badge_color: color})}
                                         />
@@ -740,26 +759,27 @@ function TierFormDialog({ isOpen, onOpenChange, onSuccess, tier, currency }: Tie
                             </div>
                         </div>
                         
-                        <div className="flex items-center space-x-3 pt-6">
+                        <div className="flex items-center space-x-2 pt-4">
                             <Switch 
                                 id="is_active" 
                                 checked={formData.is_active} 
                                 onCheckedChange={(checked) => setFormData({...formData, is_active: checked})} 
+                                className="h-5 w-9"
                             />
-                            <Label htmlFor="is_active" className="cursor-pointer">
+                            <Label htmlFor="is_active" className="text-sm cursor-pointer">
                                 {t('PromotionTiersPage.form.activeLabel')}
                             </Label>
                         </div>
                     </div>
 
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                    <DialogFooter className="flex-col-reverse sm:flex-row gap-2 pt-2">
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="text-sm py-2">
                             {t('common.cancel')}
                         </Button>
-                        <Button type="submit" disabled={isSubmitting} className="min-w-24">
+                        <Button type="submit" disabled={isSubmitting} className="min-w-20 text-sm py-2">
                             {isSubmitting ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                                     {t('PromotionTiersPage.actions.saving')}
                                 </div>
                             ) : (

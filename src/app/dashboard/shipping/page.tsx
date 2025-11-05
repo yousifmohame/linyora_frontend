@@ -176,7 +176,7 @@ function MerchantShippingPage() {
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : 'en-US', {
             year: 'numeric',
-            month: 'long',
+            month: 'short',
             day: 'numeric'
         });
     };
@@ -193,111 +193,110 @@ function MerchantShippingPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-4 sm:p-6 lg:p-8">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-4 sm:p-6">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
             
             <Navigation />
-            
-            <header className="mb-8 text-center relative">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="p-3 bg-white rounded-2xl shadow-lg">
-                        <Truck className="h-8 w-8 text-rose-500" />
+
+            <header className="mb-6 text-center">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                    <div className="p-2.5 bg-white rounded-xl shadow-md">
+                        <Truck className="h-7 w-7 text-rose-500" />
                     </div>
-                    <Sparkles className="h-6 w-6 text-rose-300" />
-                    <Crown className="h-6 w-6 text-rose-300" />
+                    <Sparkles className="h-5 w-5 text-rose-300" />
+                    <Crown className="h-5 w-5 text-rose-300" />
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-3">
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-2">
                     {t('ShippingPage.title')}
                 </h1>
-                <p className="text-rose-700 text-lg max-w-2xl mx-auto">
+                <p className="text-rose-700 text-base max-w-xl mx-auto px-2">
                     {t('ShippingPage.subtitle')}
                 </p>
-                <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
+                <div className="w-20 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-3"></div>
             </header>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-2xl text-center">
-                    <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-rose-600 mb-1">{stats.total}</div>
-                        <div className="text-rose-700 text-sm">{t('ShippingPage.stats.total')}</div>
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+                <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow rounded-xl text-center">
+                    <CardContent className="p-3">
+                        <div className="text-xl font-bold text-rose-600">{stats.total}</div>
+                        <div className="text-rose-700 text-xs">{t('ShippingPage.stats.total')}</div>
                     </CardContent>
                 </Card>
-                <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-lg rounded-2xl text-center">
-                    <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-green-600 mb-1">{stats.active}</div>
-                        <div className="text-green-700 text-sm">{t('ShippingPage.stats.active')}</div>
+                <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow rounded-xl text-center">
+                    <CardContent className="p-3">
+                        <div className="text-xl font-bold text-green-600">{stats.active}</div>
+                        <div className="text-green-700 text-xs">{t('ShippingPage.stats.active')}</div>
                     </CardContent>
                 </Card>
-                <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg rounded-2xl text-center">
-                    <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-blue-600 mb-1">
+                <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow rounded-xl text-center">
+                    <CardContent className="p-3">
+                        <div className="text-xl font-bold text-blue-600">
                             {stats.averageCost.toFixed(0)}
                         </div>
-                        <div className="text-blue-700 text-sm">{t('ShippingPage.stats.averageCost')}</div>
+                        <div className="text-blue-700 text-xs">{t('ShippingPage.stats.averageCost')}</div>
                     </CardContent>
                 </Card>
-                <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow-lg rounded-2xl text-center">
-                    <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-purple-600 mb-1">
+                <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow rounded-xl text-center">
+                    <CardContent className="p-3">
+                        <div className="text-xl font-bold text-purple-600">
                             {stats.totalCost.toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US')}
                         </div>
-                        <div className="text-purple-700 text-sm">{t('ShippingPage.stats.totalCost')}</div>
+                        <div className="text-purple-700 text-xs">{t('ShippingPage.stats.totalCost')}</div>
                     </CardContent>
                 </Card>
             </div>
 
-            <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl mb-8">
-                <CardContent className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                            <div className="relative flex-1">
-                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-400" />
-                                <Input
-                                    placeholder={t('ShippingPage.search.placeholder')}
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pr-10 border-rose-200 focus:border-rose-400 rounded-xl"
-                                />
-                            </div>
+            {/* Controls */}
+            <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow rounded-2xl mb-6">
+                <CardContent className="p-4">
+                    <div className="flex flex-col gap-4">
+                        <div className="relative">
+                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-400" />
+                            <Input
+                                placeholder={t('ShippingPage.search.placeholder')}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pr-10 border-rose-200 focus:border-rose-400 rounded-xl w-full"
+                            />
                         </div>
-                        
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap gap-2 justify-center">
                             <Button 
                                 variant="outline" 
                                 onClick={exportData}
-                                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl text-sm px-3 h-9"
                             >
-                                <Download className="w-4 h-4 ml-2" />
+                                <Download className="w-3.5 h-3.5 mr-1.5" />
                                 {t('ShippingPage.actions.export')}
                             </Button>
                             <Button 
                                 variant="outline" 
                                 onClick={fetchCompanies}
                                 disabled={refreshing}
-                                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl text-sm px-3 h-9"
                             >
-                                <RefreshCw className={`w-4 h-4 ml-2 ${refreshing ? 'animate-spin' : ''}`} />
+                                <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${refreshing ? 'animate-spin' : ''}`} />
                                 {t('ShippingPage.actions.refresh')}
                             </Button>
                             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                                 <DialogTrigger asChild>
                                     <Button 
                                         onClick={() => setCurrentCompany({})}
-                                        className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl"
+                                        className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl text-sm px-3 h-9"
                                     >
-                                        <PlusCircle className="w-4 h-4 ml-2" />
+                                        <PlusCircle className="w-3.5 h-3.5 mr-1.5" />
                                         {t('ShippingPage.actions.addCompany')}
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl max-w-md">
+                                <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-2xl shadow-lg max-w-md">
                                     <DialogHeader>
-                                        <DialogTitle className="flex items-center gap-2 text-rose-800 text-2xl">
-                                            <Truck className="w-6 h-6" />
+                                        <DialogTitle className="flex items-center gap-2 text-rose-800">
+                                            <Truck className="w-5 h-5" />
                                             {currentCompany.id ? t('ShippingPage.dialog.editTitle') : t('ShippingPage.dialog.createTitle')}
                                         </DialogTitle>
                                     </DialogHeader>
-                                    <form onSubmit={handleSave} className="space-y-4">
+                                    <form onSubmit={handleSave} className="space-y-4 mt-2">
                                         <div className="space-y-2">
                                             <Label htmlFor="name" className="text-rose-800 font-medium">
                                                 {t('ShippingPage.form.name.label')}
@@ -345,18 +344,18 @@ function MerchantShippingPage() {
                                                 className="border-rose-200 focus:border-rose-400 rounded-xl"
                                             />
                                         </div>
-                                        <DialogFooter className="flex gap-3 pt-4">
+                                        <DialogFooter className="flex gap-2 pt-2">
                                             <Button 
                                                 type="button" 
                                                 variant="outline" 
                                                 onClick={() => setIsDialogOpen(false)}
-                                                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl flex-1"
+                                                className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl flex-1 text-sm"
                                             >
                                                 {t('common.cancel')}
                                             </Button>
                                             <Button 
                                                 type="submit" 
-                                                className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl flex-1"
+                                                className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl flex-1 text-sm"
                                             >
                                                 {currentCompany.id ? t('common.update') : t('common.add')}
                                             </Button>
@@ -369,166 +368,166 @@ function MerchantShippingPage() {
                 </CardContent>
             </Card>
 
-            <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-                    <div className="flex items-center justify-between">
+            {/* Table */}
+            <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow rounded-2xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
-                            <CardTitle className="flex items-center gap-2 text-2xl">
-                                <Truck className="w-6 h-6" />
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <Truck className="w-5 h-5" />
                                 {t('ShippingPage.table.title')}
                             </CardTitle>
-                            <CardDescription className="text-pink-100">
+                            <CardDescription className="text-pink-100 text-sm">
                                 {t('ShippingPage.table.subtitle', { count: filteredCompanies.length })}
                             </CardDescription>
                         </div>
-                        <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                        <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs px-2 py-1">
                             {filteredCompanies.length} {t('ShippingPage.table.companies')}
                         </Badge>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="bg-rose-50/50 hover:bg-rose-50/70">
-                                <TableHead className="text-rose-800 font-bold">{t('ShippingPage.table.headers.company')}</TableHead>
-                                <TableHead className="text-rose-800 font-bold">{t('ShippingPage.table.headers.cost')}</TableHead>
-                                <TableHead className="text-rose-800 font-bold">{t('ShippingPage.table.headers.deliveryTime')}</TableHead>
-                                <TableHead className="text-rose-800 font-bold">{t('ShippingPage.table.headers.status')}</TableHead>
-                                <TableHead className="text-rose-800 font-bold">{t('ShippingPage.table.headers.dateAdded')}</TableHead>
-                                <TableHead className="text-rose-800 font-bold text-left">{t('ShippingPage.table.headers.actions')}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-12">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 mb-3"></div>
-                                            <p className="text-rose-700 font-medium">{t('ShippingPage.loading')}</p>
-                                        </div>
-                                    </TableCell>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow className="bg-rose-50/50 hover:bg-rose-50/70">
+                                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm whitespace-nowrap">{t('ShippingPage.table.headers.company')}</TableHead>
+                                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm whitespace-nowrap">{t('ShippingPage.table.headers.cost')}</TableHead>
+                                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm whitespace-nowrap">{t('ShippingPage.table.headers.deliveryTime')}</TableHead>
+                                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm whitespace-nowrap">{t('ShippingPage.table.headers.status')}</TableHead>
+                                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm whitespace-nowrap">{t('ShippingPage.table.headers.dateAdded')}</TableHead>
+                                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm text-left whitespace-nowrap">{t('ShippingPage.table.headers.actions')}</TableHead>
                                 </TableRow>
-                            ) : filteredCompanies.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-12">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <Truck className="w-16 h-16 text-rose-300 mb-4" />
-                                            <h3 className="font-bold text-xl text-rose-800 mb-2">{t('ShippingPage.empty.title')}</h3>
-                                            <p className="text-rose-600">
-                                                {searchTerm
-                                                    ? t('ShippingPage.empty.noResults')
-                                                    : t('ShippingPage.empty.noCompanies')
-                                                }
-                                            </p>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                filteredCompanies.map((company) => (
-                                    <TableRow key={company.id} className="border-rose-100 hover:bg-rose-50/30 transition-colors">
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                                    <Truck className="w-4 h-4" />
-                                                </div>
-                                                <div className="font-medium text-rose-900">{company.name}</div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="font-bold text-rose-600 text-lg">
-                                                {company.shipping_cost.toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US')} {t('ShippingPage.currency')}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2 text-rose-600">
-                                                <Clock className="w-4 h-4" />
-                                                {company.delivery_time}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Switch
-                                                    checked={company.is_active}
-                                                    onCheckedChange={() => handleStatusToggle(company)}
-                                                    className="data-[state=checked]:bg-green-500"
-                                                />
-                                                <Badge 
-                                                    variant="outline" 
-                                                    className={company.is_active 
-                                                        ? "bg-green-100 text-green-700 border-green-200 flex items-center gap-1" 
-                                                        : "bg-red-100 text-red-700 border-red-200 flex items-center gap-1"
-                                                    }
-                                                >
-                                                    {company.is_active ? 
-                                                        <CheckCircle className="w-3 h-3" /> : 
-                                                        <XCircle className="w-3 h-3" />
-                                                    }
-                                                    {company.is_active ? t('ShippingPage.status.active') : t('ShippingPage.status.inactive')}
-                                                </Badge>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="text-rose-600 text-sm">
-                                                {formatDate(company.created_at)}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-left">
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setCurrentCompany(company);
-                                                        setIsDialogOpen(true);
-                                                    }}
-                                                    className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
-                                                >
-                                                    <Edit className="h-4 w-4 ml-2" />
-                                                    {t('common.edit')}
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        setCompanyToDelete(company);
-                                                        setIsDeleteDialogOpen(true);
-                                                    }}
-                                                    className="text-red-600 hover:bg-red-50 border-red-200 rounded-xl"
-                                                >
-                                                    <Trash2 className="h-4 w-4 ml-2" />
-                                                    {t('common.delete')}
-                                                </Button>
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center py-8">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-rose-500 mb-2"></div>
+                                                <p className="text-rose-700 text-sm">{t('ShippingPage.loading')}</p>
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                ) : filteredCompanies.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center py-8 px-2">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <Truck className="w-12 h-12 text-rose-300 mb-2" />
+                                                <h3 className="font-bold text-lg text-rose-800 mb-1">{t('ShippingPage.empty.title')}</h3>
+                                                <p className="text-rose-600 text-sm px-2">
+                                                    {searchTerm
+                                                        ? t('ShippingPage.empty.noResults')
+                                                        : t('ShippingPage.empty.noCompanies')
+                                                    }
+                                                </p>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredCompanies.map((company) => (
+                                        <TableRow key={company.id} className="border-rose-100 hover:bg-rose-50/30">
+                                            <TableCell className="font-medium text-rose-900 text-sm py-3 px-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-7 h-7 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                                        <Truck className="w-3 h-3" />
+                                                    </div>
+                                                    {company.name}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-rose-600 font-bold text-sm py-3 px-3">
+                                                {company.shipping_cost.toLocaleString(i18n.language === 'ar' ? 'ar-EG' : 'en-US')} {t('ShippingPage.currency')}
+                                            </TableCell>
+                                            <TableCell className="text-rose-600 text-sm py-3 px-3">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Clock className="w-3.5 h-3.5" />
+                                                    <span className="text-xs sm:text-sm">{company.delivery_time}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="py-3 px-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Switch
+                                                        checked={company.is_active}
+                                                        onCheckedChange={() => handleStatusToggle(company)}
+                                                        className="data-[state=checked]:bg-green-500"
+                                                    />
+                                                    <Badge 
+                                                        variant="outline" 
+                                                        className={company.is_active 
+                                                            ? "bg-green-100 text-green-700 border-green-200 text-xs px-2 py-0.5" 
+                                                            : "bg-red-100 text-red-700 border-red-200 text-xs px-2 py-0.5"
+                                                        }
+                                                    >
+                                                        {company.is_active ? 
+                                                            <CheckCircle className="w-3 h-3 mr-1" /> : 
+                                                            <XCircle className="w-3 h-3 mr-1" />
+                                                        }
+                                                        {company.is_active ? t('ShippingPage.status.active') : t('ShippingPage.status.inactive')}
+                                                    </Badge>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-rose-600 text-xs sm:text-sm py-3 px-3">
+                                                {formatDate(company.created_at)}
+                                            </TableCell>
+                                            <TableCell className="py-3 px-3">
+                                                <div className="flex flex-col sm:flex-row gap-1.5">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setCurrentCompany(company);
+                                                            setIsDialogOpen(true);
+                                                        }}
+                                                        className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-lg text-xs h-8"
+                                                    >
+                                                        <Edit className="h-3 w-3 mr-1" />
+                                                        {t('common.edit')}
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setCompanyToDelete(company);
+                                                            setIsDeleteDialogOpen(true);
+                                                        }}
+                                                        className="text-red-600 hover:bg-red-50 border-red-200 rounded-lg text-xs h-8"
+                                                    >
+                                                        <Trash2 className="h-3 w-3 mr-1" />
+                                                        {t('common.delete')}
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
 
+            {/* Delete Confirmation */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl">
+                <AlertDialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-2xl shadow-lg">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2 text-rose-800 text-2xl">
-                            <Trash2 className="w-6 h-6 text-red-500" />
+                        <AlertDialogTitle className="flex items-center gap-2 text-rose-800">
+                            <Trash2 className="w-5 h-5 text-red-500" />
                             {t('ShippingPage.delete.confirmTitle')}
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-rose-600 text-lg">
+                        <AlertDialogDescription className="text-rose-600">
                             {companyToDelete && t('ShippingPage.delete.confirmMessage', { name: companyToDelete.name })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <AlertDialogFooter className="flex gap-3">
+                    <AlertDialogFooter className="flex gap-2">
                         <AlertDialogCancel 
                             onClick={() => setCompanyToDelete(null)}
-                            className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                            className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-lg text-sm"
                         >
                             {t('common.cancel')}
                         </AlertDialogCancel>
                         <AlertDialogAction 
                             onClick={handleDelete}
-                            className="bg-red-500 hover:bg-red-600 text-white rounded-xl"
+                            className="bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm"
                         >
                             {t('common.delete')}
                         </AlertDialogAction>

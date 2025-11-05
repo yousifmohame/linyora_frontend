@@ -1183,10 +1183,41 @@ const resources = {
           "profile": "My Profile"
         }
       },
+      "AdminMessagesPage": {
+        "title": "Conversation Monitoring",
+        "subtitle": "Monitor and oversee all conversations between models and merchants",
+        "conversations": {
+          "title": "Conversations",
+          "subtitle": "Active discussions",
+          "searchPlaceholder": "Search conversations...",
+          "empty": {
+            "title": "No Conversations",
+            "noResults": "No conversations match your search.",
+            "noConversations": "No active conversations yet."
+          },
+          "withMerchant": "with {{merchant}}"
+        },
+        "messages": {
+          "selectPrompt": "Select a Conversation",
+          "empty": {
+            "title": "No Messages",
+            "noMessages": "No messages in this conversation yet.",
+            "selectConversation": "Select a conversation from the sidebar to view messages."
+          }
+        },
+        "roles": {
+          "model": "Model",
+          "merchant": "Merchant"
+        },
+        "monitoring": "Monitoring",
+        "monitoring.info": "You are monitoring this conversation. Messages cannot be sent in monitoring mode."
+      },
       "AdminNav": {
+        "title":"Admin Dashboard Controller",
         "nav": {
           "overview": "Overview",
           "users": "Users",
+          "messages":"Messages",
           "Footer":"Footer-setting",
           "marquee-bar":"marquee Bar",
           "main-banners": "Main Banners",
@@ -3767,7 +3798,7 @@ const resources = {
         "profile": "حسابي",
         "dashboard": "لوحة التحكم",
         "logout": "تسجيل الخروج",
-        "login": "تسجيل الدخول",
+        "login": "الدخول",
         "register": "إنشاء حساب",
         "search": "بحث",
         "searchPlaceholder": "ابحث عن منتجات...",
@@ -5163,10 +5194,41 @@ const resources = {
       "saveError": "حدث خطأ."
     }
   },
+  "AdminMessagesPage": {
+    "title": "مراقبة المحادثات",
+    "subtitle": "راقب وتابع جميع المحادثات بين العارضات والتجار",
+    "conversations": {
+      "title": "المحادثات",
+      "subtitle": "مناقشات نشطة",
+      "searchPlaceholder": "البحث في المحادثات...",
+      "empty": {
+        "title": "لا توجد محادثات",
+        "noResults": "لا توجد محادثات تطابق بحثك.",
+        "noConversations": "لا توجد محادثات نشطة حتى الآن."
+      },
+      "withMerchant": "مع {{merchant}}"
+    },
+    "messages": {
+      "selectPrompt": "اختر محادثة",
+      "empty": {
+        "title": "لا توجد رسائل",
+        "noMessages": "لا توجد رسائل في هذه المحادثة بعد.",
+        "selectConversation": "اختر محادثة من الشريط الجانبي لعرض الرسائل."
+      }
+    },
+    "roles": {
+      "model": "عارضة",
+      "merchant": "تاجر"
+    },
+    "monitoring": "مراقبة",
+    "monitoring.info": "أنت تراقب هذه المحادثة. لا يمكن إرسال رسائل في وضع المراقبة."
+  },
       "AdminNav": {
+        "title":"لوحة تحكم المشرفة",
         "nav": {
           "overview": "نظرة عامة",
           "users": "المستخدمون",
+          "messages":"المحادثات",
           "main-banners": "البنرات الرئيسية",
           "Footer":"إعدادات الفوتر",
           "marquee-bar":"الشريط الإعلاني",

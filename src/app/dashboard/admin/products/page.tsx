@@ -1,3 +1,4 @@
+// frontend/src/components/dashboards/ManageProductsPage.tsx
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -212,7 +213,7 @@ export default function ManageProductsPage() {
     const locale = i18n.language === 'ar' ? 'ar-EG' : 'en-US';
     return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
   };
@@ -249,7 +250,7 @@ export default function ManageProductsPage() {
     const IconComponent = config.icon;
 
     return (
-      <Badge variant="outline" className={`${config.color} flex items-center gap-1`}>
+      <Badge variant="outline" className={`${config.color} flex items-center gap-1 text-xs px-2 py-1`}>
         <IconComponent className="w-3 h-3" />
         {config.text}
       </Badge>
@@ -258,147 +259,149 @@ export default function ManageProductsPage() {
 
   const getInventoryBadge = (inventory: number) => {
     if (inventory === 0) {
-      return <Badge variant="destructive" className="flex items-center gap-1">
+      return <Badge variant="destructive" className="text-xs px-2 py-1 flex items-center gap-1">
         {t('ManageProducts.inventory.outOfStock')}
       </Badge>;
     } else if (inventory <= 10) {
-      return <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 flex items-center gap-1">
+      return <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 text-xs px-2 py-1 flex items-center gap-1">
         {t('ManageProducts.inventory.low')}
       </Badge>;
     } else {
-      return <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 flex items-center gap-1">
+      return <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 text-xs px-2 py-1 flex items-center gap-1">
         {t('ManageProducts.inventory.inStock')}
       </Badge>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-6 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-4 sm:p-6">
       <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
       
       <AdminNav />
       
-      <header className="mb-8 text-center relative">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="p-3 bg-white rounded-2xl shadow-lg">
-            <Package className="h-8 w-8 text-rose-500" />
+      <header className="mb-6 text-center relative">
+        <div className="flex items-center justify-center gap-2 mb-3 sm:gap-3 sm:mb-4">
+          <div className="p-2 bg-white rounded-2xl shadow-lg sm:p-3">
+            <Package className="h-6 w-6 text-rose-500 sm:h-8 sm:w-8" />
           </div>
-          <Sparkles className="h-6 w-6 text-rose-300" />
-          <BarChart3 className="h-6 w-6 text-rose-300" />
+          <Sparkles className="h-4 w-4 text-rose-300 sm:h-6 sm:w-6" />
+          <BarChart3 className="h-4 w-4 text-rose-300 sm:h-6 sm:w-6" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-3">
+        <h1 className="text-xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-2 sm:text-2xl sm:mb-3">
           {t('ManageProducts.title')}
         </h1>
-        <p className="text-rose-700 text-lg max-w-2xl mx-auto">
+        <p className="text-rose-700 text-base max-w-2xl mx-auto sm:text-lg">
           {t('ManageProducts.subtitle')}
         </p>
-        <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
+        <div className="w-20 h-0.5 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-3 sm:w-24 sm:h-1 sm:mt-4"></div>
       </header>
 
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-2xl text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-rose-600 mb-1">{stats.total}</div>
-              <div className="text-rose-700 text-sm">{t('ManageProducts.stats.total')}</div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6 sm:gap-4">
+          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-xl text-center">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-lg font-bold text-rose-600 mb-1 sm:text-xl">{stats.total}</div>
+              <div className="text-rose-700 text-xs sm:text-sm">{t('ManageProducts.stats.total')}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-lg rounded-2xl text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-green-600 mb-1">{stats.active}</div>
-              <div className="text-green-700 text-sm">{t('ManageProducts.stats.active')}</div>
+          <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-lg rounded-xl text-center">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-lg font-bold text-green-600 mb-1 sm:text-xl">{stats.active}</div>
+              <div className="text-green-700 text-xs sm:text-sm">{t('ManageProducts.stats.active')}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/80 backdrop-blur-sm border-amber-200 shadow-lg rounded-2xl text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-amber-600 mb-1">{stats.draft}</div>
-              <div className="text-amber-700 text-sm">{t('ManageProducts.stats.draft')}</div>
+          <Card className="bg-white/80 backdrop-blur-sm border-amber-200 shadow-lg rounded-xl text-center">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-lg font-bold text-amber-600 mb-1 sm:text-xl">{stats.draft}</div>
+              <div className="text-amber-700 text-xs sm:text-sm">{t('ManageProducts.stats.draft')}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-2xl text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-gray-600 mb-1">{stats.archived}</div>
-              <div className="text-gray-700 text-sm">{t('ManageProducts.stats.archived')}</div>
+          <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-xl text-center">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-lg font-bold text-gray-600 mb-1 sm:text-xl">{stats.archived}</div>
+              <div className="text-gray-700 text-xs sm:text-sm">{t('ManageProducts.stats.archived')}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/80 backdrop-blur-sm border-red-200 shadow-lg rounded-2xl text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-red-600 mb-1">{stats.outOfStock}</div>
-              <div className="text-red-700 text-sm">{t('ManageProducts.stats.outOfStock')}</div>
+          <Card className="bg-white/80 backdrop-blur-sm border-red-200 shadow-lg rounded-xl text-center">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-lg font-bold text-red-600 mb-1 sm:text-xl">{stats.outOfStock}</div>
+              <div className="text-red-700 text-xs sm:text-sm">{t('ManageProducts.stats.outOfStock')}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg rounded-2xl text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-orange-600 mb-1">{stats.lowStock}</div>
-              <div className="text-orange-700 text-sm">{t('ManageProducts.stats.lowStock')}</div>
+          <Card className="bg-white/80 backdrop-blur-sm border-orange-200 shadow-lg rounded-xl text-center">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-lg font-bold text-orange-600 mb-1 sm:text-xl">{stats.lowStock}</div>
+              <div className="text-orange-700 text-xs sm:text-sm">{t('ManageProducts.stats.lowStock')}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters and Actions */}
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl">
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="flex flex-col sm:flex-row gap-4 flex-1">
+        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-xl rounded-2xl">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-400" />
+                  <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-400" />
                   <Input
                     placeholder={t('ManageProducts.search.placeholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pr-10 border-rose-200 focus:border-rose-400 rounded-xl"
+                    className="pr-9 border-rose-200 focus:border-rose-400 rounded-xl text-sm"
                   />
                 </div>
                 
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger className="w-40 border-rose-200 focus:border-rose-400 rounded-xl">
-                    <Filter className="w-4 h-4 ml-2 text-rose-400" />
-                    <SelectValue placeholder={t('ManageProducts.filters.status.all')} />
-                  </SelectTrigger>
-                  <SelectContent className="border-rose-200 rounded-xl">
-                    <SelectItem value="all">{t('ManageProducts.filters.status.all')}</SelectItem>
-                    <SelectItem value="active">{t('ManageProducts.filters.status.active')}</SelectItem>
-                    <SelectItem value="draft">{t('ManageProducts.filters.status.draft')}</SelectItem>
-                    <SelectItem value="archived">{t('ManageProducts.filters.status.archived')}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-col sm:flex-row gap-3 flex-1">
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="w-full sm:w-36 border-rose-200 focus:border-rose-400 rounded-xl text-sm">
+                      <Filter className="w-3 h-3 ml-1 text-rose-400" />
+                      <SelectValue placeholder={t('ManageProducts.filters.status.all')} />
+                    </SelectTrigger>
+                    <SelectContent className="border-rose-200 rounded-xl">
+                      <SelectItem value="all">{t('ManageProducts.filters.status.all')}</SelectItem>
+                      <SelectItem value="active">{t('ManageProducts.filters.status.active')}</SelectItem>
+                      <SelectItem value="draft">{t('ManageProducts.filters.status.draft')}</SelectItem>
+                      <SelectItem value="archived">{t('ManageProducts.filters.status.archived')}</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-40 border-rose-200 focus:border-rose-400 rounded-xl">
-                    <SelectValue placeholder={t('ManageProducts.filters.category.all')} />
-                  </SelectTrigger>
-                  <SelectContent className="border-rose-200 rounded-xl">
-                    <SelectItem value="all">{t('ManageProducts.filters.category.all')}</SelectItem>
-                    {uniqueCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full sm:w-36 border-rose-200 focus:border-rose-400 rounded-xl text-sm">
+                      <SelectValue placeholder={t('ManageProducts.filters.category.all')} />
+                    </SelectTrigger>
+                    <SelectContent className="border-rose-200 rounded-xl">
+                      <SelectItem value="all">{t('ManageProducts.filters.category.all')}</SelectItem>
+                      {uniqueCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap justify-center sm:justify-start gap-2">
                 <Button 
                   variant="outline" 
                   onClick={exportProducts}
-                  className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                  className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl text-xs sm:text-sm px-3 py-1.5"
                 >
-                  <Download className="w-4 h-4 ml-2" />
+                  <Download className="w-3 h-3 ml-1" />
                   {t('ManageProducts.export')}
                 </Button>
                 <Button 
                   variant="outline" 
                   onClick={fetchProducts}
-                  className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                  className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl text-xs sm:text-sm px-3 py-1.5"
                 >
-                  <RefreshCw className="w-4 h-4 ml-2" />
+                  <RefreshCw className="w-3 h-3 ml-1" />
                   {t('common.refresh')}
                 </Button>
-                <Button className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl">
-                  <Plus className="w-4 h-4 ml-2" />
+                <Button className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl text-xs sm:text-sm px-3 py-1.5">
+                  <Plus className="w-3 h-3 ml-1" />
                   {t('ManageProducts.actions.addProduct')}
                 </Button>
               </div>
@@ -407,225 +410,227 @@ export default function ManageProductsPage() {
         </Card>
 
         {/* Products Table */}
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-            <div className="flex items-center justify-between">
+        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-xl rounded-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Package className="w-6 h-6" />
+                <CardTitle className="flex items-center gap-2 text-lg font-bold sm:text-xl">
+                  <Package className="w-5 h-5" />
                   {t('ManageProducts.table.title')}
                 </CardTitle>
-                <CardDescription className="text-pink-100">
+                <CardDescription className="text-pink-100 text-xs sm:text-sm">
                   {t('ManageProducts.table.subtitle', { count: filteredProducts.length })}
                 </CardDescription>
               </div>
-              <Badge variant="secondary" className="bg-white/20 text-white border-0">
+              <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs px-2 py-1">
                 {t('ManageProducts.table.count', { count: filteredProducts.length })}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-rose-50/50 hover:bg-rose-50/70">
-                  <TableHead className="text-rose-800 font-bold">{t('ManageProducts.table.headers.product')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold">{t('ManageProducts.table.headers.brand')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold">{t('ManageProducts.table.headers.merchant')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold">{t('ManageProducts.table.headers.price')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold">{t('ManageProducts.table.headers.inventory')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold">{t('ManageProducts.table.headers.status')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold">{t('ManageProducts.table.headers.date')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold text-left">{t('ManageProducts.table.headers.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12">
-                      <div className="flex flex-col items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 mb-3"></div>
-                        <p className="text-rose-700 font-medium">{t('ManageProducts.loading')}</p>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table className="min-w-full">
+                <TableHeader>
+                  <TableRow className="bg-rose-50/50 hover:bg-rose-50/70">
+                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm px-4 py-3">{t('ManageProducts.table.headers.product')}</TableHead>
+                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm px-4 py-3">{t('ManageProducts.table.headers.brand')}</TableHead>
+                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm px-4 py-3">{t('ManageProducts.table.headers.merchant')}</TableHead>
+                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm px-4 py-3">{t('ManageProducts.table.headers.price')}</TableHead>
+                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm px-4 py-3">{t('ManageProducts.table.headers.inventory')}</TableHead>
+                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm px-4 py-3">{t('ManageProducts.table.headers.status')}</TableHead>
+                    <TableHead className="text-rose-800 font-bold text-xs sm:text-sm px-4 py-3">{t('ManageProducts.table.headers.date')}</TableHead>
+                    <TableHead className="text-rose-800 font-bold text-left text-xs sm:text-sm px-4 py-3">{t('ManageProducts.table.headers.actions')}</TableHead>
                   </TableRow>
-                ) : filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <TableRow key={product.id} className="border-rose-100 hover:bg-rose-50/30 transition-colors">
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-bold text-sm">
-                            <Package className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-rose-900">{product.name}</div>
-                            {product.category && (
-                              <div className="text-rose-600 text-sm">{product.category}</div>
-                            )}
-                          </div>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-rose-500 mb-2"></div>
+                          <p className="text-rose-700 font-medium text-sm">{t('ManageProducts.loading')}</p>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium text-rose-800">{product.brand}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-rose-100 rounded-full flex items-center justify-center">
-                            <span className="text-xs font-bold text-rose-600">{product.merchantName.charAt(0)}</span>
-                          </div>
-                          <span className="text-rose-700">{product.merchantName}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-bold text-rose-600">
-                          {formatCurrency(product.price)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          {getInventoryBadge(product.inventory || 0)}
-                          <div className="text-rose-600 text-xs">
-                            {t('ManageProducts.inventory.units', { count: product.inventory || 0 })}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(product.status)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-rose-600 text-sm">
-                          <Calendar className="w-4 h-4 text-rose-400" />
-                          {formatDate(product.createdAt)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-left">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-rose-600 hover:bg-rose-50 rounded-xl">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="border-rose-200 rounded-xl w-48">
-                            <DropdownMenuItem className="text-rose-700">
-                              <Eye className="w-4 h-4 ml-2" />
-                              {t('ManageProducts.actions.view')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => setProductToEdit(product)}
-                              className="text-rose-700"
-                            >
-                              <Edit className="w-4 h-4 ml-2" />
-                              {t('ManageProducts.actions.edit')}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-rose-200" />
-                            {product.status !== 'active' && (
-                              <DropdownMenuItem
-                                onClick={() => handleStatusUpdate(product, 'active')}
-                                className="text-green-600"
-                              >
-                                <CheckCircle className="w-4 h-4 ml-2" />
-                                {t('ManageProducts.actions.activate')}
-                              </DropdownMenuItem>
-                            )}
-                            {product.status !== 'draft' && (
-                              <DropdownMenuItem
-                                onClick={() => handleStatusUpdate(product, 'draft')}
-                                className="text-amber-600"
-                              >
-                                <Clock className="w-4 h-4 ml-2" />
-                                {t('ManageProducts.actions.toDraft')}
-                              </DropdownMenuItem>
-                            )}
-                            {product.status !== 'archived' && (
-                              <DropdownMenuItem
-                                onClick={() => handleStatusUpdate(product, 'archived')}
-                                className="text-gray-600"
-                              >
-                                <XCircle className="w-4 h-4 ml-2" />
-                                {t('ManageProducts.actions.archive')}
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator className="bg-rose-200" />
-                            <DropdownMenuItem 
-                              onClick={() => setProductToDelete(product)}
-                              className="text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4 ml-2" />
-                              {t('ManageProducts.actions.delete')}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12">
-                      <div className="flex flex-col items-center justify-center">
-                        <Package className="w-16 h-16 text-rose-300 mb-4" />
-                        <h3 className="font-bold text-xl text-rose-800 mb-2">
-                          {t('ManageProducts.table.noResults.title')}
-                        </h3>
-                        <p className="text-rose-600 max-w-md">
-                          {searchTerm || selectedStatus !== 'all' || selectedCategory !== 'all'
-                            ? t('ManageProducts.table.noResults.filtered')
-                            : t('ManageProducts.table.noResults.empty')
-                          }
-                        </p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  ) : filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <TableRow key={product.id} className="border-rose-100 hover:bg-rose-50/30 transition-colors">
+                        <TableCell className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-gradient-to-r from-rose-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">
+                              <Package className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-rose-900 text-sm">{product.name}</div>
+                              {product.category && (
+                                <div className="text-rose-600 text-xs">{product.category}</div>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <div className="font-medium text-rose-800 text-sm">{product.brand}</div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 bg-rose-100 rounded-full flex items-center justify-center">
+                              <span className="text-[10px] font-bold text-rose-600">{product.merchantName.charAt(0)}</span>
+                            </div>
+                            <span className="text-rose-700 text-sm">{product.merchantName}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <div className="font-bold text-rose-600 text-sm">
+                            {formatCurrency(product.price)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <div className="flex flex-col gap-1">
+                            {getInventoryBadge(product.inventory || 0)}
+                            <div className="text-rose-600 text-xs">
+                              {t('ManageProducts.inventory.units', { count: product.inventory || 0 })}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          {getStatusBadge(product.status)}
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <div className="flex items-center gap-1.5 text-rose-600 text-xs">
+                            <Calendar className="w-3 h-3 text-rose-400" />
+                            {formatDate(product.createdAt)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3 text-left">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-rose-600 hover:bg-rose-50 rounded-lg w-8 h-8">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="border-rose-200 rounded-lg w-44">
+                              <DropdownMenuItem className="text-rose-700 text-sm">
+                                <Eye className="w-3.5 h-3.5 ml-1.5" />
+                                {t('ManageProducts.actions.view')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => setProductToEdit(product)}
+                                className="text-rose-700 text-sm"
+                              >
+                                <Edit className="w-3.5 h-3.5 ml-1.5" />
+                                {t('ManageProducts.actions.edit')}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator className="bg-rose-200" />
+                              {product.status !== 'active' && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusUpdate(product, 'active')}
+                                  className="text-green-600 text-sm"
+                                >
+                                  <CheckCircle className="w-3.5 h-3.5 ml-1.5" />
+                                  {t('ManageProducts.actions.activate')}
+                                </DropdownMenuItem>
+                              )}
+                              {product.status !== 'draft' && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusUpdate(product, 'draft')}
+                                  className="text-amber-600 text-sm"
+                                >
+                                  <Clock className="w-3.5 h-3.5 ml-1.5" />
+                                  {t('ManageProducts.actions.toDraft')}
+                                </DropdownMenuItem>
+                              )}
+                              {product.status !== 'archived' && (
+                                <DropdownMenuItem
+                                  onClick={() => handleStatusUpdate(product, 'archived')}
+                                  className="text-gray-600 text-sm"
+                                >
+                                  <XCircle className="w-3.5 h-3.5 ml-1.5" />
+                                  {t('ManageProducts.actions.archive')}
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator className="bg-rose-200" />
+                              <DropdownMenuItem 
+                                onClick={() => setProductToDelete(product)}
+                                className="text-red-600 focus:text-red-600 text-sm"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 ml-1.5" />
+                                {t('ManageProducts.actions.delete')}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-8">
+                        <div className="flex flex-col items-center justify-center">
+                          <Package className="w-12 h-12 text-rose-300 mb-3" />
+                          <h3 className="font-bold text-lg text-rose-800 mb-1">
+                            {t('ManageProducts.table.noResults.title')}
+                          </h3>
+                          <p className="text-rose-600 px-4 text-sm">
+                            {searchTerm || selectedStatus !== 'all' || selectedCategory !== 'all'
+                              ? t('ManageProducts.table.noResults.filtered')
+                              : t('ManageProducts.table.noResults.empty')
+                            }
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Edit Product Dialog */}
       <Dialog open={!!productToEdit} onOpenChange={(open) => !open && setProductToEdit(null)}>
-        <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl max-w-2xl">
+        <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-2xl shadow-xl max-w-md sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-rose-800">
-              <Edit className="w-5 h-5" />
+            <DialogTitle className="flex items-center gap-2 text-rose-800 text-lg">
+              <Edit className="w-4 h-4" />
               {t('ManageProducts.dialog.edit.title')}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               {t('ManageProducts.dialog.edit.description', { name: productToEdit?.name })}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3 py-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-rose-800 font-medium">{t('ManageProducts.fields.name')}</Label>
+                <Label className="text-rose-800 font-medium text-sm">{t('ManageProducts.fields.name')}</Label>
                 <Input 
                   defaultValue={productToEdit?.name}
-                  className="border-rose-200 focus:border-rose-400 rounded-xl"
+                  className="border-rose-200 focus:border-rose-400 rounded-lg text-sm"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-rose-800 font-medium">{t('ManageProducts.fields.brand')}</Label>
+                <Label className="text-rose-800 font-medium text-sm">{t('ManageProducts.fields.brand')}</Label>
                 <Input 
                   defaultValue={productToEdit?.brand}
-                  className="border-rose-200 focus:border-rose-400 rounded-xl"
+                  className="border-rose-200 focus:border-rose-400 rounded-lg text-sm"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-rose-800 font-medium">{t('ManageProducts.fields.status')}</Label>
-              <div className="p-3 bg-rose-50 rounded-xl border border-rose-200">
+              <Label className="text-rose-800 font-medium text-sm">{t('ManageProducts.fields.status')}</Label>
+              <div className="p-2.5 bg-rose-50 rounded-lg border border-rose-200">
                 {productToEdit && getStatusBadge(productToEdit.status)}
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button 
               variant="outline" 
               onClick={() => setProductToEdit(null)}
-              className="border-rose-200 text-rose-700 hover:bg-rose-50"
+              className="border-rose-200 text-rose-700 hover:bg-rose-50 text-sm px-3 py-2"
             >
               {t('common.cancel')}
             </Button>
-            <Button className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white">
+            <Button className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-sm px-3 py-2">
               {t('ManageProducts.dialog.edit.save')}
             </Button>
           </DialogFooter>
@@ -634,27 +639,27 @@ export default function ManageProductsPage() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
-        <AlertDialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl">
+        <AlertDialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-2xl shadow-xl">
           <AlertDialogHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-              <Trash2 className="h-6 w-6 text-red-600" />
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+              <Trash2 className="h-5 w-5 text-red-600" />
             </div>
-            <AlertDialogTitle className="text-2xl font-bold text-rose-800">
+            <AlertDialogTitle className="text-lg font-bold text-rose-800">
               {t('ManageProducts.dialog.delete.title')}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-rose-600 text-lg">
+            <AlertDialogDescription className="text-rose-600 text-sm mt-2">
               {t('ManageProducts.dialog.delete.description', { name: productToDelete?.name })}
               <br />
               <span className="font-bold text-rose-700">{t('ManageProducts.dialog.delete.warning')}</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-col sm:flex-row gap-3">
-            <AlertDialogCancel className="bg-rose-100 text-rose-700 border-rose-200 hover:bg-rose-200 rounded-2xl px-6 py-2">
+          <AlertDialogFooter className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+            <AlertDialogCancel className="bg-rose-100 text-rose-700 border-rose-200 hover:bg-rose-200 rounded-xl px-4 py-2 text-sm">
               {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete}
-              className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white rounded-2xl px-6 py-2 font-bold"
+              className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white rounded-xl px-4 py-2 font-medium text-sm"
             >
               {t('ManageProducts.dialog.delete.confirm')}
             </AlertDialogAction>

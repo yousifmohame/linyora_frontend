@@ -896,6 +896,7 @@ const resources = {
           "total": "Total Requests",
           "pending": "Pending Review",
           "inProgress": "In Progress",
+          "delivered":"Delivered",
           "completed": "Completed"
         },
 
@@ -911,6 +912,7 @@ const resources = {
           "accepted": "Accepted",
           "in_progress": "In Progress",
           "completed": "Completed",
+          "delivered":"Delivered",
           "rejected": "Rejected"
         },
 
@@ -935,8 +937,10 @@ const resources = {
         "actions": {
           "accept": "Accept Request",
           "reject": "Reject",
+          "deliver":"Deliver",
           "start": "Start Execution",
-          "complete": "Complete Request"
+          "complete": "Complete Request",
+          "waitingForMerchant": " Waiting For Merchant"
         },
 
         "rejectDialog": {
@@ -1274,13 +1278,17 @@ const resources = {
         "pending": "Pending Approval",
         "accepted": "In Progress",
         "completed": "Completed",
-        "totalValue": "Total Value"
+        "in_progress":"In Progress",
+        "delivered":"Delivered",
+        "totalValue": "Total Value",
       },
       "status": {
         "pending": "Pending Approval",
         "accepted": "In Progress",
         "rejected": "Rejected",
-        "completed": "Completed"
+        "completed": "Completed",
+        "in_progress":"In Progress",
+        "delivered":"Delivered",
       },
       "empty": {
         "title": "No Agreements Found",
@@ -1303,7 +1311,8 @@ const resources = {
       "actions": {
         "confirmCompletion": "Confirm Completion",
         "completing": "Completing...",
-        "details": "Details"
+        "details": "Details",
+        "addReview":"Add Review"
       },
       "dialog": {
         "review": {
@@ -4845,7 +4854,8 @@ const resources = {
           "total": "إجمالي الطلبات",
           "pending": "بانتظار المراجعة",
           "inProgress": "قيد التنفيذ",
-          "completed": "مكتملة"
+          "completed": "مكتملة",
+          "delivered" :"تم التسليم",
         },
 
         "filters": {
@@ -4860,7 +4870,8 @@ const resources = {
           "accepted": "تم القبول",
           "in_progress": "قيد التنفيذ",
           "completed": "مكتملة",
-          "rejected": "مرفوضة"
+          "rejected": "مرفوضة",
+          "delivered" :"تم التسليم",
         },
 
         "empty": {
@@ -4885,7 +4896,9 @@ const resources = {
           "accept": "قبول الطلب",
           "reject": "رفض",
           "start": "بدء التنفيذ",
-          "complete": "إكمال الطلب"
+          "complete": "إكمال الطلب",
+          "waitingForMerchant": "بانتظار تأكيد التاجر",
+          "deliver":"تسليم",
         },
 
         "rejectDialog": {
@@ -5583,13 +5596,17 @@ const resources = {
       "pending": "بانتظار الموافقة",
       "accepted": "قيد التنفيذ",
       "completed": "مكتملة",
-      "totalValue": "إجمالي القيمة"
+      "totalValue": "إجمالي القيمة",
+      "in_progress":"قيد التنفيذ",
+      "delivered":"تم التسليم",
     },
     "status": {
       "pending": "بانتظار الموافقة",
       "accepted": "قيد التنفيذ",
       "rejected": "مرفوض",
-      "completed": "مكتمل"
+      "completed": "مكتمل",
+      "in_progress":"قيد التنفيذ",
+      "delivered":"تم التسليم",
     },
     "empty": {
       "title": "لا توجد اتفاقيات",
@@ -5612,7 +5629,8 @@ const resources = {
     "actions": {
       "confirmCompletion": "تأكيد الإكمال",
       "completing": "جاري الإكمال...",
-      "details": "التفاصيل"
+      "details": "التفاصيل",
+      "addReview":"التقييم"
     },
     "dialog": {
       "review": {

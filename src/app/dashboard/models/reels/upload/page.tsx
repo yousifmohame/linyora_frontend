@@ -170,9 +170,14 @@ export default function UploadReelPage() {
 
     } catch (error: any) {
       console.error("Upload failed:", error);
-      toast.error(t('UploadReelPage.toast.uploadError'), {
-        description: error.response?.data?.message || error.message || t('common.tryAgain'),
-      });
+      const errorMessage = error.response?.data?.message || 'فشل الرفع. حاول مجدداً.';
+    
+    // إذا كان الخطأ بسبب الحجم (من Multer أو Express)
+      if (error.response?.status === 413) {
+        toast.error('فشل الرفع: الفيديو كبير جداً!');
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsUploading(false);
     }

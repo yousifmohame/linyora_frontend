@@ -16,11 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
-import {
   CheckCircle,
   Clock,
   XCircle,
@@ -30,11 +25,12 @@ import {
   Crown,
   Users,
   Handshake,
-  TrendingUp,
   Search,
   RefreshCw,
   Download,
-  Eye
+  Eye,
+  Zap, // ✨ New
+  PackageCheck, // ✨ New
 } from "lucide-react";
 import Navigation from "@/components/dashboards/Navigation";
 import {
@@ -50,13 +46,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
+// ✨ 1. تحديث الواجهة لتشمل كل الحالات
 interface Agreement {
   id: number;
-  status: "pending" | "accepted" | "rejected" | "completed";
+  status: "pending" | "accepted" | "rejected" | "in_progress" | "delivered" | "completed";
   modelName: string;
-  offerTitle: string;
-  offerPrice: number;
+  // تم تغيير اسمها من offerTitle/offerPrice لتطابق الخادم
+  packageTitle: string; 
+  tierPrice: number;
   created_at: string;
+  hasMerchantReviewed: boolean; // ✨ New
 }
 
 const StarRating = ({
@@ -85,14 +84,20 @@ const StarRating = ({
 
 const MerchantAgreementsPage = () => {
   const { t, i18n } = useTranslation();
+  const [isClient, setIsClient] = useState(false);
+
   const [agreements, setAgreements] = useState<Agreement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submittingId, setSubmittingId] = useState<number | null>(null);
+  const [processingId, setProcessingId] = useState<number | null>(null); // ✨ Renamed
   const [agreementToReview, setAgreementToReview] = useState<Agreement | null>(null);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const fetchAgreements = useCallback(async () => {
     setLoading(true);
@@ -109,8 +114,55 @@ const MerchantAgreementsPage = () => {
   }, [t]);
 
   useEffect(() => {
-    fetchAgreements();
-  }, [fetchAgreements]);
+    if (isClient) {
+      fetchAgreements();
+    }
+  }, [isClient, fetchAgreements]);
+
+  // ✨ --- معالج أحداث مرن ---
+  const handleAction = async (
+    actionPromise: Promise<any>,
+    successMessageKey: string
+  ) => {
+    toast.promise(actionPromise, {
+      loading: t('MerchantAgreements.toast.loading'),
+      success: async () => {
+        await fetchAgreements(); // انتظر جلب البيانات
+        setAgreementToReview(null); // أغلق نافذة التقييم
+        return t(successMessageKey);
+      },
+      error: (err: unknown) => {
+        if (axios.isAxiosError(err)) {
+          return err.response?.data?.message || t('MerchantAgreements.toast.completeError');
+        }
+        return t('MerchantAgreements.toast.unexpectedError');
+      },
+      finally: () => {
+        setProcessingId(null);
+      }
+    });
+  };
+
+  // ✨ --- (جديد) دالة إكمال الطلب ---
+  const handleComplete = (agreement: Agreement) => {
+    setProcessingId(agreement.id);
+    const completePromise = api.put(`/agreements/${agreement.id}/complete`);
+    handleAction(completePromise, 'MerchantAgreements.toast.completeSuccess');
+  };
+
+  // ✨ --- (معدل) دالة إرسال التقييم ---
+  const handleSubmitReview = () => {
+    if (!agreementToReview) return;
+    if (rating === 0) {
+      toast.error(t('MerchantAgreements.toast.ratingRequired'));
+      return;
+    }
+
+    setProcessingId(agreementToReview.id);
+    const reviewPromise = api.post(`/agreements/${agreementToReview.id}/review`, { rating, comment });
+    handleAction(reviewPromise, 'MerchantAgreements.toast.reviewSuccess'); // رسالة جديدة
+  };
+
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -127,35 +179,7 @@ const MerchantAgreementsPage = () => {
     setComment("");
   };
 
-  const handleSubmitReviewAndComplete = async () => {
-    if (!agreementToReview) return;
-    if (rating === 0) {
-      toast.error(t('MerchantAgreements.toast.ratingRequired'));
-      return;
-    }
-
-    setSubmittingId(agreementToReview.id);
-
-    const completePromise = api.put(`/agreements/${agreementToReview.id}/complete`);
-    const reviewPromise = api.post(`/agreements/${agreementToReview.id}/review`, { rating, comment });
-
-    toast.promise(Promise.all([completePromise, reviewPromise]), {
-      loading: t('MerchantAgreements.toast.completing'),
-      success: () => {
-        fetchAgreements();
-        setAgreementToReview(null);
-        return t('MerchantAgreements.toast.completeSuccess');
-      },
-      error: (err: unknown) => {
-        setSubmittingId(null);
-        if (axios.isAxiosError(err)) {
-          return err.response?.data?.message || t('MerchantAgreements.toast.completeError');
-        }
-        return t('MerchantAgreements.toast.unexpectedError');
-      },
-    });
-  };
-
+  // ✨ 2. تحديث الأوسمة (Badges)
   const getStatusBadge = (status: Agreement["status"]) => {
     const statusConfig = {
       pending: {
@@ -167,6 +191,16 @@ const MerchantAgreementsPage = () => {
         icon: <Clock className="h-3 w-3 ml-1" />,
         label: t('MerchantAgreements.status.accepted'),
         className: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+      in_progress: { // ✨ New
+        icon: <Zap className="h-3 w-3 ml-1" />,
+        label: t('MerchantAgreements.status.in_progress'),
+        className: "bg-purple-100 text-purple-700 border-purple-200",
+      },
+      delivered: { // ✨ New
+        icon: <PackageCheck className="h-3 w-3 ml-1" />,
+        label: t('MerchantAgreements.status.delivered'),
+        className: "bg-yellow-100 text-yellow-700 border-yellow-200",
       },
       rejected: {
         icon: <XCircle className="h-3 w-3 ml-1" />,
@@ -180,7 +214,11 @@ const MerchantAgreementsPage = () => {
       },
     };
 
-    const config = statusConfig[status];
+    const config = statusConfig[status] || {
+      icon: <XCircle className="h-3 w-3 ml-1" />,
+      label: t('MerchantAgreements.status.unknown', { status: status }),
+      className: "bg-gray-100 text-gray-700 border-gray-200",
+    };
 
     return (
       <Badge variant="outline" className={`${config.className} flex items-center gap-1`}>
@@ -192,25 +230,30 @@ const MerchantAgreementsPage = () => {
 
   const filteredAgreements = agreements.filter(agreement =>
     agreement.modelName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agreement.offerTitle.toLowerCase().includes(searchTerm.toLowerCase())
+    (agreement.packageTitle && agreement.packageTitle.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  // ✨ 3. تحديث الإحصائيات
   const stats = {
     total: agreements.length,
     pending: agreements.filter(a => a.status === 'pending').length,
     accepted: agreements.filter(a => a.status === 'accepted').length,
+    inProgress: agreements.filter(a => a.status === 'in_progress').length, // ✨ New
+    delivered: agreements.filter(a => a.status === 'delivered').length, // ✨ New
     completed: agreements.filter(a => a.status === 'completed').length,
-    totalValue: agreements.reduce((sum, a) => sum + Number(a.offerPrice || 0), 0),
+    totalValue: agreements.reduce((sum, a) => sum + Number(a.tierPrice || 0), 0),
   };
 
   const locale = i18n.language === 'ar' ? 'ar-EG' : 'en-US';
 
-  if (loading) {
+  if (!isClient || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500 mx-auto mb-4"></div>
-          <p className="text-rose-700 font-medium">{t('MerchantAgreements.loading')}</p>
+          <p className="text-rose-700 font-medium">
+            {isClient ? t('MerchantAgreements.loading') : 'Loading...'}
+          </p>
         </div>
       </div>
     );
@@ -240,7 +283,8 @@ const MerchantAgreementsPage = () => {
         <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      {/* ✨ 4. تحديث شبكة الإحصائيات */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
         <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-2xl text-center">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-rose-600 mb-1">{stats.total}</div>
@@ -259,18 +303,30 @@ const MerchantAgreementsPage = () => {
             <div className="text-blue-700 text-sm">{t('MerchantAgreements.stats.accepted')}</div>
           </CardContent>
         </Card>
+        <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow-lg rounded-2xl text-center">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-purple-600 mb-1">{stats.inProgress}</div>
+            <div className="text-purple-700 text-sm">{t('MerchantAgreements.stats.in_progress')}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-white/80 backdrop-blur-sm border-yellow-200 shadow-lg rounded-2xl text-center">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-yellow-600 mb-1">{stats.delivered}</div>
+            <div className="text-yellow-700 text-sm">{t('MerchantAgreements.stats.delivered')}</div>
+          </CardContent>
+        </Card>
         <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-lg rounded-2xl text-center">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600 mb-1">{stats.completed}</div>
             <div className="text-green-700 text-sm">{t('MerchantAgreements.stats.completed')}</div>
           </CardContent>
         </Card>
-        <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow-lg rounded-2xl text-center">
+        <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg rounded-2xl text-center">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600 mb-1">
+            <div className="text-2xl font-bold text-pink-600 mb-1">
               {new Intl.NumberFormat(locale, { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(stats.totalValue)}
             </div>
-            <div className="text-purple-700 text-sm">{t('MerchantAgreements.stats.totalValue')}</div>
+            <div className="text-pink-700 text-sm">{t('MerchantAgreements.stats.totalValue')}</div>
           </CardContent>
         </Card>
       </div>
@@ -381,44 +437,68 @@ const MerchantAgreementsPage = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-rose-700">{agreement.offerTitle}</div>
+                        <div className="text-rose-700">{agreement.packageTitle}</div>
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(agreement.status)}
                       </TableCell>
                       <TableCell>
                         <div className="font-bold text-rose-600 text-lg">
-                          {new Intl.NumberFormat(locale, { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(Number(agreement.offerPrice ?? 0))}
+                          {new Intl.NumberFormat(locale, { style: 'currency', currency: 'SAR', minimumFractionDigits: 0 }).format(Number(agreement.tierPrice ?? 0))}
                         </div>
                       </TableCell>
                       <TableCell className="text-left">
                         <div className="flex items-center gap-2">
-                          {agreement.status === "accepted" && (
+                          
+                          {/* ✨ 5. تحديث منطق الأزرار بالكامل */}
+
+                          {/* الحالة 1: تم التسليم (Delivered) -> الإجراء: تأكيد الاستلام */}
+                          {agreement.status === "delivered" && (
                             <Button
                               size="sm"
-                              onClick={() => handleOpenReviewModal(agreement)}
-                              disabled={submittingId === agreement.id}
+                              onClick={() => handleComplete(agreement)}
+                              disabled={processingId === agreement.id}
                               className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl"
                             >
-                              {submittingId === agreement.id
+                              {processingId === agreement.id
                                 ? t('MerchantAgreements.actions.completing')
                                 : t('MerchantAgreements.actions.confirmCompletion')}
                             </Button>
                           )}
+
+                          {/* الحالة 2: مكتمل (Completed) -> الإجراء: إضافة تقييم (إن لم يوجد) */}
                           {agreement.status === "completed" && (
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                              <CheckCircle className="w-3 h-3 ml-1" />
-                              {t('MerchantAgreements.status.completed')}
-                            </Badge>
+                            <>
+                              {agreement.hasMerchantReviewed ? (
+                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                  <CheckCircle className="w-3 h-3 ml-1" />
+                                  {t('MerchantAgreements.actions.reviewSubmitted')}
+                                </Badge>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleOpenReviewModal(agreement)}
+                                  className="text-amber-600 hover:bg-amber-50 border-amber-200 rounded-xl"
+                                >
+                                  <Star className="w-4 h-4 ml-2" />
+                                  {t('MerchantAgreements.actions.addReview')}
+                                </Button>
+                              )}
+                            </>
                           )}
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
-                          >
-                            <Eye className="w-4 h-4 ml-2" />
-                            {t('MerchantAgreements.actions.details')}
-                          </Button>
+
+                          {/* الحالات الأخرى (Pending, Accepted, InProgress, Rejected) -> لا يوجد إجراء */}
+                          {["pending", "accepted", "in_progress", "rejected"].includes(agreement.status) && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
+                            >
+                              <Eye className="w-4 h-4 ml-2" />
+                              {t('MerchantAgreements.actions.details')}
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -429,6 +509,7 @@ const MerchantAgreementsPage = () => {
           </Card>
         )}
 
+        {/* ✨ 6. تحديث نافذة التقييم (Dialog) */}
         <Dialog open={!!agreementToReview} onOpenChange={() => setAgreementToReview(null)}>
           <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl max-w-md">
             <DialogHeader>
@@ -472,11 +553,11 @@ const MerchantAgreementsPage = () => {
                 {t('common.cancel')}
               </Button>
               <Button
-                onClick={handleSubmitReviewAndComplete}
-                disabled={submittingId === agreementToReview?.id || rating === 0}
+                onClick={handleSubmitReview} // ✨ تم التغيير هنا
+                disabled={processingId === agreementToReview?.id || rating === 0}
                 className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl flex-1"
               >
-                {submittingId === agreementToReview?.id
+                {processingId === agreementToReview?.id
                   ? t('MerchantAgreements.dialog.review.confirming')
                   : t('MerchantAgreements.dialog.review.confirm')}
               </Button>

@@ -35,6 +35,7 @@ import {
   Filter as FilterIcon,
   Sparkles,
   Target,
+  PackageCheck, // New Icon
 } from 'lucide-react';
 import ModelNav from '@/components/dashboards/ModelNav';
 import { toast } from 'sonner';
@@ -62,7 +63,8 @@ interface AgreementRequest {
   deliveryDays: number;
   revisions: number;
   features: string[];
-  status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'in_progress';
+  // ✨ Updated status to include 'delivered'
+  status: 'pending' | 'accepted' | 'rejected' | 'in_progress' | 'delivered' | 'completed';
   created_at: string;
   merchantRating?: number;
   merchantLocation?: string;
@@ -84,6 +86,7 @@ function AgreementRequestsPage() {
   const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
+      // This endpoint should return all requests for the logged-in model
       const response = await api.get('/agreements/requests');
       setRequests(response.data);
       setFilteredRequests(response.data);
@@ -119,24 +122,56 @@ function AgreementRequestsPage() {
     setFilteredRequests(filtered);
   }, [requests, statusFilter, searchTerm]);
 
-  const handleStatusUpdate = async (
-    id: number,
-    status: 'accepted' | 'rejected' | 'in_progress' | 'completed',
-    reason?: string
+  // ✨ --- New flexible action handler ---
+  const handleAction = (
+    actionPromise: Promise<any>,
+    successMessageKey: string, // Use a key for translation
+    loadingMessageKey: string = 'modelrequests.toasts.loading'
   ) => {
-    const promise = api.put(`/agreements/requests/${id}/status`, { status, reason });
-
-    toast.promise(promise, {
-      loading: t('modelrequests.toasts.loading'),
+    toast.promise(actionPromise, {
+      loading: t(loadingMessageKey),
       success: () => {
-        fetchRequests();
-        setRejectDialogOpen(false);
-        setRejectReason('');
-        return t('modelrequests.toasts.success');
+        fetchRequests(); // Re-fetch data on success
+        setRejectDialogOpen(false); // Close dialog if open
+        setRejectReason(''); // Clear reason
+        return t(successMessageKey); // Show translated success message
       },
-      error: () => t('modelrequests.toasts.error'),
+      error: (err) => {
+        // Attempt to get specific error message from backend response
+        const apiError = err.response?.data?.message;
+        return apiError ? t(apiError) : t('modelrequests.toasts.error');
+      },
     });
   };
+
+  // --- Specific action functions that use the new handler ---
+
+  const handleResponse = (
+    id: number,
+    status: 'accepted' | 'rejected',
+    reason?: string
+  ) => {
+    const promise = api.put(`/agreements/${id}/respond`, { status, reason });
+    const messageKey = status === 'accepted' 
+      ? 'modelrequests.toasts.accepted' 
+      : 'modelrequests.toasts.rejected';
+    handleAction(promise, messageKey);
+  };
+
+  const handleStart = (id: number) => {
+    const promise = api.put(`/agreements/${id}/start`);
+    handleAction(promise, 'modelrequests.toasts.started');
+  };
+
+  // ✨ New "Deliver" action
+  const handleDeliver = (id: number) => {
+    // Here you could add a dialog to attach files or notes
+    // For now, it just updates the status
+    const promise = api.put(`/agreements/${id}/deliver`);
+    handleAction(promise, 'modelrequests.toasts.delivered');
+  };
+
+  // --- End of new action handlers ---
 
   const handleRejectWithReason = (request: AgreementRequest) => {
     setSelectedRequest(request);
@@ -164,6 +199,12 @@ function AgreementRequestsPage() {
         label: t('modelrequests.status.in_progress'),
         className: 'bg-purple-100 text-purple-800 border-purple-200',
         icon: <Zap className="w-3 h-3 ml-1" />,
+      },
+      // ✨ New 'delivered' status badge
+      delivered: {
+        label: t('modelrequests.status.delivered'),
+        className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+        icon: <PackageCheck className="w-3 h-3 ml-1" />,
       },
       completed: {
         label: t('modelrequests.status.completed'),
@@ -198,6 +239,8 @@ function AgreementRequestsPage() {
     total: requests.length,
     pending: requests.filter((req) => req.status === 'pending').length,
     inProgress: requests.filter((req) => req.status === 'in_progress').length,
+    // ✨ New 'delivered' stat
+    delivered: requests.filter((req) => req.status === 'delivered').length,
     completed: requests.filter((req) => req.status === 'completed').length,
   };
 
@@ -227,8 +270,8 @@ function AgreementRequestsPage() {
         <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
       </header>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {/* Stats Overview - ✨ Updated to 5 columns */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-2xl text-center">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-rose-600 mb-1">{stats.total}</div>
@@ -245,6 +288,13 @@ function AgreementRequestsPage() {
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-purple-600 mb-1">{stats.inProgress}</div>
             <div className="text-purple-700 text-sm">{t('modelrequests.stats.inProgress')}</div>
+          </CardContent>
+        </Card>
+         {/* ✨ New 'delivered' stat card */}
+        <Card className="bg-white/80 backdrop-blur-sm border-yellow-200 shadow-lg rounded-2xl text-center">
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-yellow-600 mb-1">{stats.delivered}</div>
+            <div className="text-yellow-700 text-sm">{t('modelrequests.stats.delivered')}</div>
           </CardContent>
         </Card>
         <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-lg rounded-2xl text-center">
@@ -279,6 +329,8 @@ function AgreementRequestsPage() {
                 <SelectItem value="pending">{t('modelrequests.status.pending')}</SelectItem>
                 <SelectItem value="accepted">{t('modelrequests.status.accepted')}</SelectItem>
                 <SelectItem value="in_progress">{t('modelrequests.status.in_progress')}</SelectItem>
+                {/* ✨ New 'delivered' filter option */}
+                <SelectItem value="delivered">{t('modelrequests.status.delivered')}</SelectItem>
                 <SelectItem value="completed">{t('modelrequests.status.completed')}</SelectItem>
                 <SelectItem value="rejected">{t('modelrequests.status.rejected')}</SelectItem>
               </SelectContent>
@@ -452,11 +504,13 @@ function AgreementRequestsPage() {
                 )}
               </CardContent>
 
-              {/* Actions */}
+              {/* Actions - ✨ Updated Logic */}
+              
+              {/* 1. PENDING: Model can Accept or Reject */}
               {req.status === 'pending' && (
                 <CardFooter className="flex gap-3 p-6 pt-0">
                   <Button
-                    onClick={() => handleStatusUpdate(req.id, 'accepted')}
+                    onClick={() => handleResponse(req.id, 'accepted')}
                     className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl py-2"
                   >
                     <Check className="w-4 h-4 mr-2" />
@@ -473,10 +527,11 @@ function AgreementRequestsPage() {
                 </CardFooter>
               )}
 
+              {/* 2. ACCEPTED: Model can Start Progress */}
               {req.status === 'accepted' && (
                 <CardFooter className="flex gap-3 p-6 pt-0">
                   <Button
-                    onClick={() => handleStatusUpdate(req.id, 'in_progress')}
+                    onClick={() => handleStart(req.id)}
                     className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl py-2"
                   >
                     <Zap className="w-4 h-4 mr-2" />
@@ -485,23 +540,40 @@ function AgreementRequestsPage() {
                 </CardFooter>
               )}
 
+              {/* 3. IN_PROGRESS: Model can Deliver */}
               {req.status === 'in_progress' && (
                 <CardFooter className="flex gap-3 p-6 pt-0">
                   <Button
-                    onClick={() => handleStatusUpdate(req.id, 'completed')}
+                    onClick={() => handleDeliver(req.id)}
                     className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl py-2"
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    {t('modelrequests.actions.complete')}
+                    <PackageCheck className="w-4 h-4 mr-2" />
+                    {t('modelrequests.actions.deliver')}
                   </Button>
                 </CardFooter>
+              )}
+
+              {/* 4. DELIVERED: Model waits for Merchant */}
+              {req.status === 'delivered' && (
+                <CardFooter className="flex gap-3 p-6 pt-0 justify-center">
+                  <p className="text-sm text-yellow-800 font-medium p-2 bg-yellow-50 rounded-lg">
+                    {t('modelrequests.actions.waitingForMerchant')}
+                  </p>
+                </CardFooter>
+              )}
+
+              {/* 5. COMPLETED / REJECTED: No actions */}
+              {(req.status === 'completed' || req.status === 'rejected') && (
+                 <CardFooter className="p-4 pt-0">
+                    {/* No actions shown, footer is empty or can have a "View Details" */}
+                 </CardFooter>
               )}
             </Card>
           ))}
         </div>
       )}
 
-      {/* Reject Reason Dialog */}
+      {/* Reject Reason Dialog - ✨ Updated Action */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl">
           <DialogHeader>
@@ -549,7 +621,7 @@ function AgreementRequestsPage() {
             </Button>
             <Button
               onClick={() =>
-                selectedRequest && handleStatusUpdate(selectedRequest.id, 'rejected', rejectReason)
+                selectedRequest && handleResponse(selectedRequest.id, 'rejected', rejectReason)
               }
               disabled={!rejectReason}
               className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white"

@@ -528,7 +528,7 @@ export default function Header() {
             >
               <div className="relative w-20 h-12 sm:w-17 sm:h-12">
                 <Image
-                  src="/logo3.png"
+                  src="/logo4.png"
                   alt="Linyora Logo"
                   fill
                   className="object-cover"

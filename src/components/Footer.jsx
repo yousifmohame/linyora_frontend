@@ -231,7 +231,7 @@ const Footer = () => {
                 whileHover={{ scale: 1.05 }}
               >
                 <Image 
-                  src="/logo3.png" 
+                  src="/logo4.png" 
                   alt="Linyora Logo" 
                   fill
                   className="object-cover"

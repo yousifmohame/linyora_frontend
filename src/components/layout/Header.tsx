@@ -531,7 +531,7 @@ export default function Header() {
                   src="/logo4.jpg"
                   alt="Linyora Logo"
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   priority
                 />
               </div>

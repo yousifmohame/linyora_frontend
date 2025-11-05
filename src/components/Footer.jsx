@@ -234,7 +234,7 @@ const Footer = () => {
                   src="/logo4.jpg" 
                   alt="Linyora Logo" 
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   sizes="(max-width: 768px) 40px, 48px"
                 />
               </motion.div>

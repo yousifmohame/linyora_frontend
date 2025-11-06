@@ -1,10 +1,10 @@
-"use client"; // ⭐️ 1. يجب أن يكون Client Component
+"use client";
 
 import { useState, useEffect } from "react";
 import ReelVerticalViewer, { ReelData } from "@/components/reels/ReelVerticalViewer";
-import api from "@/lib/axios"; // ⭐️ 2. استخدام (api) الذي يرسل التوكن
+import api from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/context/AuthContext"; // ⭐️ 3. استيراد useAuth
+import { useAuth } from "@/context/AuthContext";
 
 // (هيكل عظمي لتحسين تجربة المستخدم)
 const ReelSkeleton = () => (
@@ -36,31 +36,29 @@ const ReelSkeleton = () => (
 export default function StyleTodayPage() {
   const [reels, setReels] = useState<ReelData[]>([]);
   const [loadingReels, setLoadingReels] = useState(true); 
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-
-  // ⭐️ 4. جلب حالة تحميل المصادقة
+  
+  // 1. 🗑️ حذفنا (page) و (hasMore) لأننا سنجلب الكل مرة واحدة
   const { loading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchReels = async () => {
-      if (!hasMore || (loadingReels && page > 1)) return;
-      
       setLoadingReels(true);
       try {
-        console.log(`[CLIENT BROWSER] Fetching reels, Page: ${page}`);
-        // ⭐️ 5. هذا الطلب سيحتوي تلقائيًا على التوكن
+        console.log(`[CLIENT BROWSER] Fetching ALL reels...`);
+        
+        // 2. ✏️ تعديل الطلب: حذفنا (page) و (limit)
         const response = await api.get(`/reels`, {
-          params: { page: page, limit: 5, sort: 'latest' }
+          params: { sort: 'latest' } // طلب الكل، مرتبة بالأحدث
         });
         
         console.log("[CLIENT BROWSER] /api/reels response:", response.data);
         if (response.data.reels && response.data.reels.length > 0) {
            console.log("[CLIENT BROWSER] Example Reel (isLikedByMe):", response.data.reels[0].isLikedByMe);
+           
+           // 3. ✏️ تعديل: (setReels) بدلاً من الإضافة
+           setReels(response.data.reels);
         }
 
-        setReels(prevReels => [...prevReels, ...response.data.reels]);
-        setHasMore(response.data.hasMore);
       } catch (error) {
         console.error("Failed to fetch reels:", error);
       } finally {
@@ -68,11 +66,9 @@ export default function StyleTodayPage() {
       }
     };
 
-    // ⭐️ 6. شرط الانتظار ⭐️
-    // لا تقم بجلب البيانات إلا إذا انتهت المصادقة
+    // لا نقم بالجلب إلا إذا انتهت المصادقة
     if (!authLoading) {
       console.log("[CLIENT BROWSER] Auth is ready. Fetching reels.");
-      // (نضيف شرطاً إضافياً لمنع الجلب المتكرر إذا كانت لدينا بيانات بالفعل)
       if (reels.length === 0) {
         fetchReels();
       }
@@ -80,7 +76,7 @@ export default function StyleTodayPage() {
       console.log("[CLIENT BROWSER] Waiting for Auth to be ready...");
     }
     
-  }, [page, authLoading, hasMore, loadingReels, reels.length]); // ⭐️ 7. إضافة الاعتمادات
+  }, [authLoading, reels.length]); // 4. ✏️ تبسيط الاعتمادات
 
 
   if ((authLoading || loadingReels) && reels.length === 0) {

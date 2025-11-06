@@ -16,6 +16,12 @@ import {
   MessageCircle,
   UserCheck,
   UserPlus,
+  Youtube,  // ✨ إضافة جديدة
+  Send,     // ✨ إضافة جديدة (لسناب شات)
+  Twitter,  // ✨ إضافة جديدة (لـ X)
+  Facebook, // ✨ إضافة جديدة
+  Music,    // ✨ إضافة جديدة (لـ TikTok)
+  Users,    // ✨ إضافة جديدة (لمتابعي المنصة)
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -29,8 +35,22 @@ import { toast } from 'sonner';
 interface ModelProfileData {
   profile: User & {
     role_name: string;
-    stats?: { followers?: string; engagement?: string; reelsCount?: number; [key: string]: any };
-    social_links?: { instagram?: string; snapchat?: string; [key: string]: any };
+    stats?: {
+      followers?: string; // (هذا متابعين انستجرام)
+      engagement?: string;
+      reelsCount?: number;
+      inAppFollowers?: number; // ✨ إضافة جديدة (متابعو المنصة)
+      [key: string]: any;
+    };
+    social_links?: {
+      instagram?: string;
+      snapchat?: string;
+      youtube?: string;   // ✨ إضافة جديدة
+      tiktok?: string;    // ✨ إضافة جديدة
+      twitter?: string;   // ✨ إضافة جديدة
+      facebook?: string;  // ✨ إضافة جديدة
+      [key: string]: any;
+    };
     portfolio?: string[];
     is_verified?: boolean;
     isFollowedByMe?: boolean;
@@ -133,30 +153,87 @@ const ModelProfileClient: React.FC<ModelProfileClientProps> = ({ profileData }) 
           </div>
           <p className="text-sm text-gray-500 mb-3">{profile.role_name}</p>
 
-          <div className="flex justify-center sm:justify-start gap-4 mb-4 text-sm">
-            {stats.followers && (
-              <div>
-                <span className="font-semibold">{stats.followers}</span> {t('ModelProfilee.stats.followers')}
+          {/* ✨ --- قسم الإحصائيات المعدل --- ✨ */}
+          <div className="flex flex-wrap justify-center sm:justify-start gap-4 mb-4 text-sm">
+            {/* متابعو المنصة */}
+            {stats.inAppFollowers != null && (
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4 text-primary" />
+                <span className="font-semibold">{stats.inAppFollowers}</span> 
+                {t('ModelProfilee.stats.platformFollowers', 'متابع')}
               </div>
             )}
-            {stats.reelsCount && (
-              <div>
-                <span className="font-semibold">{stats.reelsCount}</span> {t('ModelProfilee.stats.reels')}
+            {/* متابعو انستجرام */}
+            {stats.followers && (
+              <div className="flex items-center gap-1">
+                <Instagram className="w-4 h-4 text-gray-600" />
+                <span className="font-semibold">{stats.followers}</span> 
+                {t('ModelProfilee.stats.followers', 'متابع انستجرام')}
+              </div>
+            )}
+            {/* عدد الريلز */}
+            {stats.reelsCount != null && (
+              <div className="flex items-center gap-1">
+                <PlayCircle className="w-4 h-4 text-gray-600" />
+                <span className="font-semibold">{stats.reelsCount}</span> 
+                {t('ModelProfilee.stats.reels', 'ريلز')}
               </div>
             )}
           </div>
 
           {profile.bio && <p className="text-gray-700 mb-4 text-sm">{profile.bio}</p>}
 
+          {/* ✨ --- قسم أيقونات التواصل الاجتماعي المعدل --- ✨ */}
           <div className="flex flex-wrap justify-center sm:justify-start gap-3">
             {socialLinks.instagram && (
               <Button variant="outline" size="sm" asChild>
                 <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer">
-                  <Instagram className="mr-2 h-4 w-4" /> {t('ModelProfilee.social.instagram')}
+                  <Instagram className="mr-2 h-4 w-4" /> {t('ModelProfilee.social.instagram', 'انستجرام')}
                 </a>
               </Button>
             )}
 
+            {socialLinks.tiktok && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={socialLinks.tiktok} target="_blank" rel="noopener noreferrer">
+                  <Music className="mr-2 h-4 w-4" /> {t('ModelProfilee.social.tiktok', 'تيك توك')}
+                </a>
+              </Button>
+            )}
+
+            {socialLinks.youtube && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer">
+                  <Youtube className="mr-2 h-4 w-4" /> {t('ModelProfilee.social.youtube', 'يوتيوب')}
+                </a>
+              </Button>
+            )}
+
+            {socialLinks.snapchat && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={socialLinks.snapchat} target="_blank" rel="noopener noreferrer">
+                  <Send className="mr-2 h-4 w-4" /> {t('ModelProfilee.social.snapchat', 'سناب شات')}
+                </a>
+              </Button>
+            )}
+
+            {socialLinks.twitter && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer">
+                  <Twitter className="mr-2 h-4 w-4" /> {t('ModelProfilee.social.twitter', 'تويتر (X)')}
+                </a>
+              </Button>
+            )}
+
+            {socialLinks.facebook && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer">
+                  <Facebook className="mr-2 h-4 w-4" /> {t('ModelProfilee.social.facebook', 'فيسبوك')}
+                </a>
+              </Button>
+            )}
+
+            {/* زر المتابعة */}
             {user && user.id !== profile.id && (
               <Button
                 size="sm"

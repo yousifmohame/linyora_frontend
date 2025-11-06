@@ -1339,6 +1339,49 @@ const resources = {
         "star": "{{count}} star"
       }
     },
+    "ModelProfilee": {
+    "reel": {
+      "alt": "Reel by {{name}}",
+      "empty": "No reels posted yet."
+    },
+    "portfolio": {
+      "alt": "Portfolio item {{index}}",
+      "empty": "Portfolio is empty."
+    },
+    "services": {
+      "startsFrom": "Starts from {{price}} SAR",
+      "empty": "No services or offers available."
+    },
+    "offers": {
+      "price": "{{price}} SAR"
+    },
+    "stats": {
+      "followers": "Followers",
+      "reels": "Reels"
+    },
+    "social": {
+      "instagram": "Instagram"
+    },
+    "actions": {
+      "follow": "Follow",
+      "following": "Following"
+    },
+    "tabs": {
+      "reels_one": "Reels ({{count}})",
+      "reels_other": "Reels ({{count}})",
+      "portfolio_one": "Portfolio ({{count}})",
+      "portfolio_other": "Portfolio ({{count}})",
+      "services_one": "Services ({{count}})",
+      "services_other": "Services ({{count}})"
+    },
+    "toast": {
+      "loginToFollow": "Please log in to follow users.",
+      "cannotFollowSelf": "You cannot follow yourself.",
+      "followed": "Started following {{name}}",
+      "unfollowed": "Unfollowed {{name}}",
+      "error": "Something went wrong."
+    }
+  },
     "StoreSettings": {
       "title": "Store Settings",
       "subtitle": "Manage your store's basic information and preferences.",
@@ -5448,6 +5491,61 @@ const resources = {
       "title": "هل أنت متأكد من الحذف؟",
       "message": "سيتم حذف المنتج \"{{name}}\" وجميع متغيراته بشكل دائم.",
       "confirm": "نعم، احذف المنتج"
+    }
+  },
+  "ModelProfilee": {
+    "reel": {
+      "alt": "رييل لـ {{name}}",
+      "empty": "لم يتم نشر أي رييلات بعد."
+    },
+    "portfolio": {
+      "alt": "عنصر البوفوليو {{index}}",
+      "empty": "البوفوليو فارغ."
+    },
+    "services": {
+      "startsFrom": "يبدأ من {{price}} ر.س",
+      "empty": "لا توجد خدمات أو عروض متاحة."
+    },
+    "offers": {
+      "price": "{{price}} ر.س"
+    },
+    "stats": {
+      "followers": "متابعون",
+      "reels": "رييلات"
+    },
+    "social": {
+      "instagram": "إنستغرام"
+    },
+    "actions": {
+      "follow": "متابَعة",
+      "following": "متابَع"
+    },
+    "tabs": {
+      "reels_zero": "رييلات ({{count}})",
+      "reels_one": "رييل ({{count}})",
+      "reels_two": "رييلين ({{count}})",
+      "reels_few": "رييلات ({{count}})",
+      "reels_many": "رييل ({{count}})",
+      "reels_other": "رييل ({{count}})",
+      "portfolio_zero": "بوفوليو ({{count}})",
+      "portfolio_one": "بوفوليو ({{count}})",
+      "portfolio_two": "بوفوليوهين ({{count}})",
+      "portfolio_few": "بوفوليوات ({{count}})",
+      "portfolio_many": "بوفوليو ({{count}})",
+      "portfolio_other": "بوفوليو ({{count}})",
+      "services_zero": "خدمات ({{count}})",
+      "services_one": "خدمة ({{count}})",
+      "services_two": "خدمتين ({{count}})",
+      "services_few": "خدمات ({{count}})",
+      "services_many": "خدمة ({{count}})",
+      "services_other": "خدمة ({{count}})"
+    },
+    "toast": {
+      "loginToFollow": "يرجى تسجيل الدخول لمتابعة المستخدمين.",
+      "cannotFollowSelf": "لا يمكنك متابعة نفسك.",
+      "followed": "بدأت متابعة {{name}}",
+      "unfollowed": "ألغيت متابعة {{name}}",
+      "error": "حدث خطأ ما."
     }
   },
   "ModelAnalytics": {

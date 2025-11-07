@@ -47,7 +47,7 @@ interface Transaction {
   type: 'earning' | 'payout' | 'refund';
   description: string;
   date: string;
-  status: 'completed' | 'pending' | 'failed';
+  status: 'completed' | 'pending' | 'failed' | 'pending_clearance';
   reference?: string;
 }
 
@@ -519,15 +519,17 @@ const ModelWalletPage = () => {
                           className={`text-xs ${
                             transaction.status === 'completed'
                               ? 'bg-green-100 text-green-800'
-                              : transaction.status === 'pending'
+                              // ✨ تعديل: تحقق من الحالتين
+                              : (transaction.status === 'pending' || transaction.status === 'pending_clearance') 
                               ? 'bg-amber-100 text-amber-800'
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
                           {transaction.status === 'completed'
                             ? t('modelwallet.transactions.status.completed')
-                            : transaction.status === 'pending'
-                            ? t('modelwallet.transactions.status.pending')
+                            // ✨ تعديل: تحقق من الحالتين
+                            : (transaction.status === 'pending' || transaction.status === 'pending_clearance')
+                            ? t('modelwallet.transactions.status.pending') // اعرض كلمة "معلق"
                             : t('modelwallet.transactions.status.failed')}
                         </Badge>
                       </div>

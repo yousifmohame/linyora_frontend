@@ -787,6 +787,9 @@ const resources = {
           "variants": "Variants",
           "lowStock": "Low Stock"
         },
+        "promotion":{
+          "daysLeft":"Days Left",
+        },
         "status": {
           "active": "Active",
           "draft": "Draft"
@@ -5460,6 +5463,9 @@ const resources = {
       "activeProducts": "المنتجات النشطة",
       "variants": "المتغيرات",
       "lowStock": "منخفضة المخزون"
+    },
+    "promotion":{
+      "daysLeft":"الايام المتبقية",
     },
     "status": {
       "active": "نشط",

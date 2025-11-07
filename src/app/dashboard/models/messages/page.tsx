@@ -24,7 +24,7 @@ import ModelNav from '@/components/dashboards/ModelNav';
 import ActiveConversationLoader from './ActiveConversationLoader';
 import { withSubscription } from '@/components/auth/withSubscription';
 
-// --- أنواع البيانات ---
+// --- Types ---
 export interface Conversation {
   id: number;
   participantId: number;
@@ -55,7 +55,7 @@ function MessagesPage() {
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [showConversations, setShowConversations] = useState(true);
+  const [showConversations, setShowConversations] = useState(false); // Start hidden on mobile
 
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -77,9 +77,7 @@ function MessagesPage() {
     api
       .get(`/messages/${convo.id}`)
       .then((res) => setMessages(res.data))
-      .catch((err) =>
-        console.error(`Failed to fetch messages for convo ${convo.id}`, err)
-      )
+      .catch((err) => console.error(`Failed to fetch messages for convo ${convo.id}`, err))
       .finally(() => setLoadingMessages(false));
 
     if (socket) {
@@ -90,8 +88,7 @@ function MessagesPage() {
   const fetchConversations = useCallback(async () => {
     try {
       const res = await api.get('/messages');
-      const fetchedConversations: Conversation[] = res.data;
-      setConversations(fetchedConversations);
+      setConversations(res.data);
     } catch (err) {
       console.error('Failed to fetch conversations', err);
     } finally {
@@ -143,20 +140,17 @@ function MessagesPage() {
     if (!activeConversation) return;
 
     const tempId = Date.now();
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: tempId,
-        sender_id: user!.id,
-        body,
-        attachment_url,
-        attachment_type,
-        is_read: false,
-        created_at: new Date().toISOString(),
-        conversation_id: activeConversation.id,
-      },
-    ]);
-
+    const tempMessage: Message = {
+      id: tempId,
+      sender_id: user!.id,
+      body,
+      attachment_url,
+      attachment_type,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      conversation_id: activeConversation.id,
+    };
+    setMessages((prev) => [...prev, tempMessage]);
     if (body) setNewMessage('');
 
     try {
@@ -201,27 +195,25 @@ function MessagesPage() {
     return date.toLocaleTimeString(i18n.language === 'ar' ? 'ar-EG' : 'en-US');
   };
 
-  return (
-    <div className="min-h-screen flex flex-col p-2 sm:p-4 md:p-6">
-      <ModelNav />
-      
-      {/* العنوان */}
-      <div className="flex-shrink-0">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
-          {t('MessagesPage.title')}
-        </h1>
+  const isRTL = i18n.language === 'ar';
 
-        {activeConversation && !showConversations && (
-          <div className="lg:hidden mb-4">
+  return (
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <ModelNav />
+
+      <div className="flex-shrink-0 px-4 py-3 sm:p-4 md:p-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">{t('MessagesPage.title')}</h1>
+
+        {activeConversation && (
+          <div className="lg:hidden mt-3">
             <Button variant="outline" size="sm" onClick={toggleConversations}>
-              <Menu className="w-4 h-4 ml-1" />
+              <Menu className="w-4 h-4 mr-2" />
               {t('MessagesPage.conversations')}
             </Button>
           </div>
         )}
       </div>
 
-      {/* ✅ Critical Fix: Wrap loader in Suspense */}
       <Suspense fallback={null}>
         <ActiveConversationLoader
           conversations={conversations}
@@ -229,20 +221,27 @@ function MessagesPage() {
         />
       </Suspense>
 
-      {/* الحاوية الرئيسية للمحادثات والرسائل */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Conversations List */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-3 sm:gap-4 p-4">
+        {/* Conversations Sidebar */}
         <Card
-          className={`lg:col-span-1 flex flex-col transition-all duration-300 ${
-            showConversations ? 'block' : 'hidden lg:block'
-          }`}
+          className={`lg:w-1/3 xl:w-1/4 transition-transform duration-300 transform ${
+            showConversations ? 'absolute z-10 inset-0 lg:static lg:translate-x-0' : 'hidden lg:block'
+          } flex flex-col`}
         >
-          <div className="p-3 sm:p-4 border-b font-semibold flex-shrink-0">
-            {t('MessagesPage.conversations')}
+          <div className="p-4 border-b font-semibold flex justify-between items-center">
+            <span>{t('MessagesPage.conversations')}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setShowConversations(false)}
+            >
+              <X className="w-5 h-5" />
+            </Button>
           </div>
-          <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 p-2">
             {loadingConversations ? (
-              <p className="p-4 text-sm text-gray-500">
+              <p className="p-4 text-sm text-muted-foreground text-center">
                 {t('MessagesPage.loadingConversations')}
               </p>
             ) : conversations.length > 0 ? (
@@ -250,55 +249,49 @@ function MessagesPage() {
                 <div
                   key={convo.id}
                   onClick={() => selectConversation(convo)}
-                  className={`flex items-center p-3 m-2 rounded-lg cursor-pointer transition-colors ${
+                  className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
                     activeConversation?.id === convo.id
-                      ? 'bg-purple-100'
-                      : 'hover:bg-gray-100'
+                      ? 'bg-primary/10'
+                      : 'hover:bg-muted'
                   }`}
                 >
-                  <Avatar className="w-9 h-9 sm:w-10 sm:h-10 relative">
+                  <Avatar className="w-10 h-10 relative flex-shrink-0">
                     <AvatarImage src={convo.participantAvatar || undefined} />
                     <AvatarFallback>{convo.participantName.charAt(0)}</AvatarFallback>
                     {convo.is_online && (
-                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                     )}
                   </Avatar>
-                  <div className="mr-3 overflow-hidden">
-                    <p className="font-semibold text-sm truncate">{convo.participantName}</p>
+                  <div className="mr-3 ml-3 overflow-hidden flex-1">
+                    <p className="font-medium text-sm truncate">{convo.participantName}</p>
                     {convo.lastMessage && (
-                      <p className="text-xs text-gray-500 truncate">{convo.lastMessage}</p>
+                      <p className="text-xs text-muted-foreground truncate">{convo.lastMessage}</p>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <p className="p-4 text-center text-sm text-gray-500">
+              <p className="p-4 text-center text-sm text-muted-foreground">
                 {t('MessagesPage.noConversations')}
               </p>
             )}
           </div>
         </Card>
 
-        {/* Chat Window */}
-        <Card
-          className={`lg:col-span-3 flex flex-col ${
-            !showConversations && 'lg:col-span-4'
-          }`}
-        >
+        {/* Chat Area */}
+        <Card className="flex-1 flex flex-col min-h-0">
           {activeConversation ? (
             <>
-              {/* رأس المحادثة */}
-              <div className="p-3 sm:p-4 border-b flex items-center justify-between flex-shrink-0">
+              {/* Chat Header */}
+              <div className="p-4 border-b flex items-center justify-between">
                 <div className="flex items-center">
-                  <Avatar className="w-9 h-9 sm:w-10 sm:h-10 relative">
+                  <Avatar className="w-10 h-10">
                     <AvatarImage src={activeConversation.participantAvatar || undefined} />
                     <AvatarFallback>{activeConversation.participantName.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <div className="mr-3">
-                    <p className="font-bold text-sm sm:text-base">
-                      {activeConversation.participantName}
-                    </p>
-                    <p className="text-xs text-gray-500">
+                  <div className="mr-3 ml-3">
+                    <p className="font-semibold">{activeConversation.participantName}</p>
+                    <p className="text-xs text-muted-foreground">
                       {activeConversation.is_online
                         ? t('MessagesPage.online')
                         : `${t('MessagesPage.lastSeen.label')}: ${formatLastSeen(
@@ -307,41 +300,36 @@ function MessagesPage() {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="lg:hidden"
-                  onClick={() => setShowConversations(true)}
-                >
-                  <X className="w-5 h-5" />
-                </Button>
               </div>
 
-              {/* منطقة الرسائل */}
-              <div className="flex-1 p-3 sm:p-4 bg-gray-50 overflow-y-auto min-h-0">
+              {/* Messages Area */}
+              <div className="flex-1 p-4 overflow-y-auto bg-muted/30">
                 {loadingMessages ? (
-                  <p className="text-center text-gray-500">
-                    {t('MessagesPage.loadingMessages')}
-                  </p>
+                  <div className="flex justify-center items-center h-full">
+                    <p className="text-muted-foreground">{t('MessagesPage.loadingMessages')}</p>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                    <MessageSquare className="w-12 h-12 mb-2 opacity-50" />
+                    <p className="text-sm">{t('MessagesPage.noMessages')}</p>
+                  </div>
                 ) : (
-                  <div className="space-y-3 sm:space-y-4">
+                  <div className="space-y-4">
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`flex items-end gap-2 ${
-                          msg.sender_id === user?.id ? 'justify-end' : 'justify-start'
-                        }`}
+                        className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-[80%] sm:max-w-[70%] px-3 sm:px-4 py-2 rounded-2xl ${
+                          className={`max-w-[80%] px-4 py-2 rounded-2xl ${
                             msg.sender_id === user?.id
-                              ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-br-none'
-                              : 'bg-white border rounded-bl-none'
+                              ? 'bg-primary text-primary-foreground rounded-br-none'
+                              : 'bg-background border rounded-bl-none'
                           }`}
                         >
-                          {msg.body && <p className="text-sm">{msg.body}</p>}
-                          {msg.attachment_url && (
-                            msg.attachment_type === 'image' ? (
+                          {msg.body && <p className="text-sm break-words">{msg.body}</p>}
+                          {msg.attachment_url &&
+                            (msg.attachment_type === 'image' ? (
                               <Link
                                 href={msg.attachment_url}
                                 target="_blank"
@@ -350,7 +338,7 @@ function MessagesPage() {
                                 <img
                                   src={msg.attachment_url}
                                   alt={t('MessagesPage.attachmentImageAlt')}
-                                  className="rounded-lg mt-2 max-w-[200px] sm:max-w-xs cursor-pointer"
+                                  className="rounded mt-2 max-w-[250px] max-h-48 object-contain"
                                 />
                               </Link>
                             ) : (
@@ -365,15 +353,17 @@ function MessagesPage() {
                                   {t('MessagesPage.attachmentFile')}
                                 </span>
                               </Link>
-                            )
-                          )}
+                            ))}
                         </div>
-                        {msg.sender_id === user?.id &&
-                          (msg.is_read ? (
-                            <CheckCheck className="w-4 h-4 text-blue-500 mt-1 flex-shrink-0" />
-                          ) : (
-                            <Check className="w-4 h-4 text-gray-400 mt-1 flex-shrink-0" />
-                          ))}
+                        {msg.sender_id === user?.id && (
+                          <div className="ml-2 flex items-end">
+                            {msg.is_read ? (
+                              <CheckCheck className="w-4 h-4 text-blue-500" />
+                            ) : (
+                              <Check className="w-4 h-4 text-muted-foreground" />
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                     <div ref={messagesEndRef} />
@@ -381,55 +371,53 @@ function MessagesPage() {
                 )}
               </div>
 
-              {/* نموذج إرسال الرسالة */}
+              {/* Message Input */}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSendMessage(newMessage);
                 }}
-                className="p-3 sm:p-4 border-t flex gap-2 bg-white flex-shrink-0"
+                className="p-3 border-t bg-background"
               >
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={t('MessagesPage.messagePlaceholder')}
-                  className="h-10 sm:h-12 rounded-full text-sm sm:text-base"
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 flex-shrink-0"
-                >
-                  <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <Paperclip className="w-5 h-5" />
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                  />
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder={t('MessagesPage.messagePlaceholder')}
+                    className="flex-1 rounded-full"
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    className="h-10 w-10 rounded-full bg-primary"
+                    disabled={!newMessage.trim() && !isUploading}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
               </form>
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
-              <MessageSquare className="w-14 h-14 sm:w-16 sm:h-16 text-gray-300 mb-3 sm:mb-4" />
-              <p className="font-semibold text-sm sm:text-base">
-                {t('MessagesPage.selectConversation')}
-              </p>
-              <p className="text-xs sm:text-sm">
-                {t('MessagesPage.selectConversationHint')}
-              </p>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
+              <MessageSquare className="w-16 h-16 opacity-40 mb-4" />
+              <p className="font-medium mb-1">{t('MessagesPage.selectConversation')}</p>
+              <p className="text-sm">{t('MessagesPage.selectConversationHint')}</p>
             </div>
           )}
         </Card>

@@ -1,10 +1,12 @@
-'use client';
+"use client";
 
-import { Swiper, SwiperSlide, Swiper as SwiperType } from 'swiper/react';
-import { Mousewheel, Keyboard, Virtual } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Mousewheel, Keyboard, Virtual, Autoplay } from 'swiper/modules';
 import 'swiper/css';
+import 'swiper/css/pagination';
 import { ReelCard } from './ReelCard';
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { BackButton } from '@/components/BackButton';
 
 export type ReelData = {
   id: number;
@@ -39,12 +41,12 @@ export default function ReelVerticalViewer({ initialReels }: ReelVerticalViewerP
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
+  // استخدام useMemo لمنع إعادة التصيير غير الضرورية
   const reels = useMemo(() => {
     if (Array.isArray(initialReels)) {
-      return initialReels.filter(
-        (reel) =>
-          reel.video_url &&
-          (reel.video_url.startsWith('http') || reel.video_url.startsWith('/'))
+      return initialReels.filter(reel => 
+        reel.video_url && 
+        (reel.video_url.startsWith('http') || reel.video_url.startsWith('/'))
       );
     }
     return [];
@@ -54,37 +56,35 @@ export default function ReelVerticalViewer({ initialReels }: ReelVerticalViewerP
     setIsLoading(false);
   }, []);
 
-  const handleSlideChange = useCallback((swiper: SwiperType) => {
+  const handleSlideChange = useCallback((swiper: any) => {
     setActiveIndex(swiper.activeIndex);
   }, []);
 
-  const swiperConfig = useMemo(
-    () => ({
-      direction: 'vertical' as const,
-      slidesPerView: 1,
-      spaceBetween: 0,
-      mousewheel: {
-        forceToAxis: true,
-        sensitivity: 1,
-        releaseOnEdges: true,
-      },
-      keyboard: {
-        enabled: true,
-        onlyInViewport: false,
-      },
-      virtual: {
-        addSlidesAfter: 1,
-        addSlidesBefore: 1,
-        cache: true,
-      },
-      resistanceRatio: 0,
-      speed: 400,
-      threshold: 5,
-      followFinger: true,
-      longSwipesRatio: 0.1,
-    }),
-    []
-  );
+  // إعدادات Swiper محسنة للأداء
+  const swiperConfig = useMemo(() => ({
+    direction: 'vertical' as const,
+    slidesPerView: 1,
+    spaceBetween: 0,
+    mousewheel: {
+      forceToAxis: true,
+      sensitivity: 1,
+      releaseOnEdges: true,
+    },
+    keyboard: {
+      enabled: true,
+      onlyInViewport: false,
+    },
+    virtual: {
+      addSlidesAfter: 1,
+      addSlidesBefore: 1,
+      cache: true,
+    },
+    resistanceRatio: 0,
+    speed: 400,
+    threshold: 5,
+    followFinger: true,
+    longSwipesRatio: 0.1,
+  }), []);
 
   if (isLoading) {
     return (
@@ -107,8 +107,8 @@ export default function ReelVerticalViewer({ initialReels }: ReelVerticalViewerP
             <SwiperSlide key={reel.id} virtualIndex={index}>
               {({ isActive }) => (
                 <div className="flex items-center justify-center h-full w-full">
-                  <ReelCard
-                    reel={reel}
+                  <ReelCard 
+                    reel={reel} 
                     isActive={isActive}
                     isVisible={Math.abs(index - activeIndex) <= 1}
                   />
@@ -124,7 +124,9 @@ export default function ReelVerticalViewer({ initialReels }: ReelVerticalViewerP
                   <span className="text-2xl">🎥</span>
                 </div>
                 <h3 className="text-xl font-semibold mb-2">لا توجد فيديوهات</h3>
-                <p className="text-gray-400 mb-6">كن أول من يشارك ستايله مع المجتمع!</p>
+                <p className="text-gray-400 mb-6">
+                  كن أول من يشارك ستايله مع المجتمع!
+                </p>
                 <button className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-full font-medium transition-all duration-200">
                   أنشئ أول فيديو لك
                 </button>
@@ -133,6 +135,8 @@ export default function ReelVerticalViewer({ initialReels }: ReelVerticalViewerP
           </SwiperSlide>
         )}
       </Swiper>
+
+      
     </div>
   );
 }

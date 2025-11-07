@@ -1,9 +1,22 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import Hls from 'hls.js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Share2, ShoppingBag, Volume2, VolumeX, Play, Pause, MoreHorizontal, UserCheck, UserPlus } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  ShoppingBag,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  MoreHorizontal,
+  UserCheck,
+  UserPlus,
+} from 'lucide-react';
 import api from '@/lib/axios';
 import { ReelProductsSheet } from './ReelProductsSheet';
 import { ReelCommentsSheet } from './ReelCommentsSheet';
@@ -20,8 +33,8 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useReelAudio } from '@/context/ReelAudioContext'; // ⭐️ استيراد Context الصوت
-import { BackButton, BackButtonIcon } from '../BackButton';
+import { useReelAudio } from '@/context/ReelAudioContext';
+import { BackButtonIcon } from '../BackButton';
 
 interface ReelCardProps {
   reel: ReelData;
@@ -32,26 +45,53 @@ interface ReelCardProps {
 export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: ReelCardProps) {
   const { user } = useAuth();
   const router = useRouter();
-  const { isMuted, toggleMute } = useReelAudio(); // ⭐️ استخدام Context الصوت
+  const { isMuted, toggleMute } = useReelAudio();
 
   const [isProductsSheetOpen, setIsProductsSheetOpen] = useState(false);
   const [isCommentsSheetOpen, setIsCommentsSheetOpen] = useState(false);
-  
+
   const [likes, setLikes] = useState(reel.likes_count);
   const [shares, setShares] = useState(reel.shares_count);
   const [isLiked, setIsLiked] = useState(reel.isLikedByMe);
   const [isFollowing, setIsFollowing] = useState(reel.isFollowedByMe);
-  
+
   const [likeLoading, setLikeLoading] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
-  const [hasAudio, setHasAudio] = useState(true); // تتبع إذا كان للفيديو صوت
-  
+  const [hasAudio, setHasAudio] = useState(true);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout>();
 
-  // إعداد الفيديو - محسن للصوت
+  // Handle HLS or MP4 video loading
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const videoUrl = reel.video_url;
+    let hls: Hls | null = null;
+
+    if (videoUrl.endsWith('.m3u8')) {
+      if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(videoUrl);
+        hls.attachMedia(video);
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = videoUrl;
+      }
+    } else {
+      video.src = videoUrl;
+    }
+
+    return () => {
+      if (hls) {
+        hls.destroy();
+      }
+    };
+  }, [reel.video_url]);
+
+  // Video event listeners
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -63,10 +103,11 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
       setVideoProgress(0);
     };
     const handleLoadedMetadata = () => {
-      // التحقق إذا كان الفيديو يحتوي على مسار صوتي
-      setHasAudio(video.mozHasAudio || 
-                 Boolean(video.webkitAudioDecodedByteCount) || 
-                 Boolean(video.audioTracks && video.audioTracks.length > 0));
+      setHasAudio(
+        video.mozHasAudio ||
+        Boolean(video.webkitAudioDecodedByteCount) ||
+        Boolean(video.audioTracks && video.audioTracks.length > 0)
+      );
     };
 
     video.addEventListener('play', handlePlay);
@@ -82,32 +123,27 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
     };
   }, []);
 
-  // تطبيق حالة الصوت العالمية على الفيديو
+  // Apply global mute state to video
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    
     video.muted = isMuted;
   }, [isMuted]);
 
-  // التحكم في التشغيل والإيقاف - محسن
+  // Auto-play logic
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     if (isActive && isVisible) {
-      // محاولة التشغيل مع الصوت (قد يفشل بسبب سياسات المتصفح)
       const playWithSound = async () => {
         try {
-          video.muted = false; // محاولة تشغيل بدون كتم مؤقت
+          video.muted = false;
           await video.play();
-          
-          // إذا كان الصوت مكتوماً في الإعدادات العالمية، نعيد الكتم
           if (isMuted) {
             video.muted = true;
           }
         } catch (error) {
-          // إذا فشل التشغيل بدون كتم، نجرب مع الكتم
           try {
             video.muted = true;
             await video.play();
@@ -117,9 +153,7 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
         }
       };
 
-      const timer = setTimeout(() => {
-        playWithSound();
-      }, 100);
+      const timer = setTimeout(playWithSound, 100);
 
       return () => {
         clearTimeout(timer);
@@ -132,7 +166,7 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
     }
   }, [isActive, isVisible, isMuted]);
 
-  // شريط التقدم - محسن
+  // Video progress tracking
   useEffect(() => {
     if (isPlaying && isActive) {
       progressIntervalRef.current = setInterval(() => {
@@ -145,15 +179,13 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
       clearInterval(progressIntervalRef.current);
     }
 
-    return () => {
-      clearInterval(progressIntervalRef.current);
-    };
+    return () => clearInterval(progressIntervalRef.current);
   }, [isPlaying, isActive]);
 
   const togglePlayPause = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
-    
+
     if (video.paused) {
       video.play().catch(console.error);
     } else {
@@ -161,19 +193,17 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
     }
   }, []);
 
-  // الإعجاب - محسن
   const handleLike = useCallback(async () => {
     if (!user) {
-      toast.error("يرجى تسجيل الدخول للإعجاب بالفيديوهات");
+      toast.error('يرجى تسجيل الدخول للإعجاب بالفيديوهات');
       router.push('/login');
       return;
     }
 
     setLikeLoading(true);
     const originalLikeState = isLiked;
-    
     setIsLiked(!originalLikeState);
-    setLikes(prev => originalLikeState ? prev - 1 : prev + 1);
+    setLikes((prev) => (originalLikeState ? prev - 1 : prev + 1));
 
     try {
       if (originalLikeState) {
@@ -182,23 +212,22 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
         await api.post(`/reels/${reel.id}/like`);
       }
     } catch (error) {
-      console.error("فشل في الإعجاب:", error);
-      toast.error("حدث خطأ ما");
+      console.error('فشل في الإعجاب:', error);
+      toast.error('حدث خطأ ما');
       setIsLiked(originalLikeState);
-      setLikes(prev => originalLikeState ? prev + 1 : prev - 1);
+      setLikes((prev) => (originalLikeState ? prev + 1 : prev - 1));
     } finally {
       setLikeLoading(false);
     }
   }, [user, isLiked, reel.id, router]);
 
-  // المشاركة - محسن
   const handleShare = useCallback(async () => {
     try {
       const { data } = await api.post(`/reels/${reel.id}/share`);
       setShares(data.shares_count);
-      
+
       const shareUrl = `${window.location.origin}/reels/${reel.id}`;
-      
+
       if (navigator.share) {
         await navigator.share({
           title: `فيديو من ${reel.userName}`,
@@ -210,20 +239,19 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
         toast.success('تم نسخ الرابط!');
       }
     } catch (error) {
-      console.error("فشل في المشاركة:", error);
+      console.error('فشل في المشاركة:', error);
     }
   }, [reel.id, reel.userName, reel.caption]);
 
-  // المتابعة - محسن
   const handleFollow = useCallback(async () => {
     if (!user) {
-      toast.error("يرجى تسجيل الدخول لمتابعة المستخدمين");
+      toast.error('يرجى تسجيل الدخول لمتابعة المستخدمين');
       router.push('/login');
       return;
     }
-    
+
     if (user.id === reel.userId) {
-      toast.info("لا يمكنك متابعة نفسك");
+      toast.info('لا يمكنك متابعة نفسك');
       return;
     }
 
@@ -240,8 +268,8 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
         toast.success(`بدأت متابعة ${reel.userName}`);
       }
     } catch (error) {
-      console.error("فشل في المتابعة:", error);
-      toast.error("حدث خطأ ما");
+      console.error('فشل في المتابعة:', error);
+      toast.error('حدث خطأ ما');
       setIsFollowing(originalFollowState);
     } finally {
       setFollowLoading(false);
@@ -262,7 +290,6 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
       <div className="relative h-full w-full">
         <video
           ref={videoRef}
-          src={reel.video_url}
           loop
           muted={isMuted}
           playsInline
@@ -274,7 +301,7 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
 
         {/* Progress Bar */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-600 z-20">
-          <div 
+          <div
             className="h-full bg-primary transition-all duration-200"
             style={{ width: `${videoProgress}%` }}
           />
@@ -286,14 +313,12 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
         {/* Top Controls */}
         <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20">
           <div className="mb-4">
-                          <BackButtonIcon />
-                  </div>
+            <BackButtonIcon />
+          </div>
+
           {/* User Info */}
           <div className="flex items-center gap-3">
-            <Link 
-              href={`/models/${reel.userId}`} 
-              className="flex items-center gap-3 group/user"
-            >
+            <Link href={`/models/${reel.userId}`} className="flex items-center gap-3 group/user">
               <Avatar className="w-10 h-10 border-2 border-white/80 cursor-pointer hover:border-white transition-all">
                 <AvatarImage src={reel.userAvatar} alt={reel.userName} />
                 <AvatarFallback className="bg-gradient-to-r from-primary to-purple-600 text-white font-semibold">
@@ -304,9 +329,9 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
             <div className="text-white">
               <div className="font-semibold text-sm">{reel.userName}</div>
               {user && user.id !== reel.userId && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="h-6 px-3 text-xs bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 mt-1"
                   onClick={handleFollow}
                   disabled={followLoading}
@@ -324,7 +349,6 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
-            {/* Sound Toggle - يظهر فقط إذا كان الفيديو يحتوي على صوت */}
             {hasAudio && (
               <Button
                 variant="ghost"
@@ -336,7 +360,6 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
               </Button>
             )}
 
-            {/* More Options */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -348,16 +371,10 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-black/90 backdrop-blur-sm border-gray-800">
-                <DropdownMenuItem className="text-white hover:bg-white/10">
-                  حفظ في المفضلة
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-white hover:bg-white/10">
-                  الإبلاغ
-                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-white/10">حفظ في المفضلة</DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-white/10">الإبلاغ</DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-700" />
-                <DropdownMenuItem className="text-white hover:bg-white/10">
-                  غير مهتم
-                </DropdownMenuItem>
+                <DropdownMenuItem className="text-white hover:bg-white/10">غير مهتم</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -368,9 +385,7 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
 
         {/* Caption */}
         <div className="absolute bottom-20 left-4 right-4 z-20">
-          <p className="text-white text-sm font-medium line-clamp-2 leading-relaxed">
-            {reel.caption}
-          </p>
+          <p className="text-white text-sm font-medium line-clamp-2 leading-relaxed">{reel.caption}</p>
           {hasProducts && (
             <Badge variant="secondary" className="mt-2 bg-white/20 backdrop-blur-sm text-white border-0">
               {reel.tagged_products.length} منتج متوفر
@@ -378,9 +393,9 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
           )}
         </div>
 
-        {/* Right Action Buttons */}
+        {/* Action Buttons */}
         <div className="absolute right-4 bottom-20 flex flex-col gap-4 items-center z-20">
-          {/* Like Button */}
+          {/* Like */}
           <div className="flex flex-col items-center">
             <Button
               variant="ghost"
@@ -389,17 +404,17 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
               onClick={handleLike}
               disabled={likeLoading}
             >
-              <Heart 
-                size={28} 
+              <Heart
+                size={28}
                 className={`transition-all duration-200 ${
                   isLiked ? 'fill-red-500 text-red-500 scale-110' : ''
-                }`} 
+                }`}
               />
             </Button>
             <span className="text-white text-xs font-medium mt-1">{formatNumber(likes)}</span>
           </div>
 
-          {/* Comment Button */}
+          {/* Comment */}
           <div className="flex flex-col items-center">
             <Button
               variant="ghost"
@@ -412,7 +427,7 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
             <span className="text-white text-xs font-medium mt-1">{formatNumber(reel.comments_count)}</span>
           </div>
 
-          {/* Share Button */}
+          {/* Share */}
           <div className="flex flex-col items-center">
             <Button
               variant="ghost"
@@ -425,7 +440,7 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
             <span className="text-white text-xs font-medium mt-1">{formatNumber(shares)}</span>
           </div>
 
-          {/* Shop Button */}
+          {/* Shop */}
           {hasProducts && (
             <div className="flex flex-col items-center">
               <Button
@@ -443,7 +458,7 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
 
         {/* Play/Pause Overlay */}
         {!isPlaying && (
-          <div 
+          <div
             className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer z-10"
             onClick={togglePlayPause}
           >
@@ -455,11 +470,11 @@ export const ReelCard = memo(function ReelCard({ reel, isActive, isVisible }: Re
       </div>
 
       {/* Sheets */}
-      <ReelProductsSheet 
-        reelId={reel.id} 
+      <ReelProductsSheet
+        reelId={reel.id}
         modelId={reel.userId}
-        isOpen={isProductsSheetOpen} 
-        setIsOpen={setIsProductsSheetOpen} 
+        isOpen={isProductsSheetOpen}
+        setIsOpen={setIsProductsSheetOpen}
       />
 
       <ReelCommentsSheet

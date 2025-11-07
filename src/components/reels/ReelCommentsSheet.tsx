@@ -1,4 +1,3 @@
-// src/components/reels/ReelCommentsSheet.tsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -12,7 +11,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SendHorizonal, Heart, MoreHorizontal, X, UserPlus, MessageCircle } from 'lucide-react';
+import {
+  SendHorizonal,
+  Heart,
+  MoreHorizontal,
+  X,
+  UserPlus,
+  MessageCircle,
+} from 'lucide-react';
 import api from '@/lib/axios';
 import { useAuth } from '@/context/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -45,6 +51,7 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
   const [likedComments, setLikedComments] = useState<Set<number>>(new Set());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  // Fetch comments when sheet opens
   useEffect(() => {
     const fetchComments = async () => {
       if (isOpen && reel.id) {
@@ -64,7 +71,7 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
     fetchComments();
   }, [isOpen, reel.id]);
 
-  // التمرير التلقائي للأسفل
+  // Auto-scroll to bottom when new comments appear
   useEffect(() => {
     if (scrollAreaRef.current && comments.length > 0) {
       setTimeout(() => {
@@ -77,12 +84,12 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
 
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || newComment.trim() === '') return;
+    if (!user || !newComment.trim()) return;
 
     setIsPosting(true);
     try {
       const response = await api.post(`/reels/${reel.id}/comment`, {
-        comment: newComment,
+        comment: newComment.trim(),
       });
       setComments((prev) => [response.data, ...prev]);
       setNewComment('');
@@ -104,20 +111,29 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
     }
 
     const isCurrentlyLiked = likedComments.has(commentId);
-    const newLikedStatus = new Set(likedComments);
+    const previousState = new Set(likedComments);
 
+    // Optimistic UI update
+    const updatedLiked = new Set(likedComments);
+    if (isCurrentlyLiked) {
+      updatedLiked.delete(commentId);
+    } else {
+      updatedLiked.add(commentId);
+    }
+    setLikedComments(updatedLiked);
+
+    // API call
     try {
       if (isCurrentlyLiked) {
         await api.delete(`/comments/${commentId}/like`);
-        newLikedStatus.delete(commentId);
       } else {
         await api.post(`/comments/${commentId}/like`);
-        newLikedStatus.add(commentId);
       }
-      setLikedComments(newLikedStatus);
     } catch (error) {
       console.error('Failed to like comment:', error);
       toast.error('Failed to like comment');
+      // Revert on failure
+      setLikedComments(previousState);
     }
   };
 
@@ -143,14 +159,14 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="bottom" 
-        className="h-[65vh] rounded-t-3xl border-0 bg-gradient-to-b from-gray-900/95 via-gray-900/90 to-black/95 backdrop-blur-2xl"
+      <SheetContent
+        side="bottom"
+        className="h-[65vh] rounded-t-3xl border-0 bg-gray-950 text-white"
       >
-        {/* Header مع تأثير الزجاج */}
+        {/* Header */}
         <SheetHeader className="flex-row items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+            <div className="p-2 bg-white/10 rounded-xl">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -168,18 +184,15 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
           </Button>
         </SheetHeader>
 
-        {/* منطقة التعليقات */}
-        <ScrollArea 
-          className="flex-grow my-4 pr-4"
-          ref={scrollAreaRef}
-        >
+        {/* Comments List */}
+        <ScrollArea className="flex-grow my-4 pr-4" ref={scrollAreaRef}>
           <div className="space-y-4 px-1">
             {isLoading && (
               <div className="flex justify-center py-8">
                 <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
               </div>
             )}
-            
+
             {!isLoading && comments.length === 0 && (
               <div className="text-center py-12">
                 <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -190,105 +203,102 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
               </div>
             )}
 
-            {!isLoading && comments.map((comment) => (
-              <div 
-                key={comment.id} 
-                className="flex items-start gap-3 group hover:bg-white/5 rounded-2xl p-3 transition-all duration-200"
-              >
-                {/* صورة المستخدم */}
-                <Link href={`/models/${comment.userId}`}>
-                  <Avatar className="w-10 h-10 border-2 border-white/20 hover:border-primary transition-all cursor-pointer">
-                    <AvatarImage src={comment.userAvatar || ''} alt={comment.userName} />
-                    <AvatarFallback className="bg-gradient-to-r from-primary to-purple-600 text-white font-semibold">
-                      {comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
+            {!isLoading &&
+              comments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="flex items-start gap-3 group hover:bg-white/5 rounded-2xl p-3 transition-all duration-200"
+                >
+                  <Link href={`/models/${comment.userId}`}>
+                    <Avatar className="w-10 h-10 border-2 border-white/20 hover:border-primary transition-all cursor-pointer">
+                      <AvatarImage src={comment.userAvatar || ''} alt={comment.userName} />
+                      <AvatarFallback className="bg-gradient-to-r from-primary to-purple-600 text-white font-semibold">
+                        {comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
 
-                {/* محتوى التعليق */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Link href={`/models/${comment.userId}`}>
-                      <span className="text-white font-semibold text-sm hover:text-primary transition-colors cursor-pointer">
-                        {comment.userName}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Link href={`/models/${comment.userId}`}>
+                        <span className="text-white font-semibold text-sm hover:text-primary transition-colors cursor-pointer">
+                          {comment.userName}
+                        </span>
+                      </Link>
+                      <span className="text-white/40 text-xs">
+                        {formatDistanceToNow(new Date(comment.created_at), {
+                          addSuffix: true,
+                          locale: arSA,
+                        })}
                       </span>
-                    </Link>
-                    <span className="text-white/40 text-xs">
-                      {formatDistanceToNow(new Date(comment.created_at), { 
-                        addSuffix: true, 
-                        locale: arSA 
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-white/90 text-sm leading-relaxed break-words">
-                    {comment.comment}
-                  </p>
-                  
-                  {/* إجراءات التعليق */}
-                  <div className="flex items-center gap-4 mt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-white/60 hover:text-red-400 hover:bg-transparent"
-                      onClick={() => handleLikeComment(comment.id)}
-                    >
-                      <Heart 
-                        className={`w-3 h-3 mr-1 transition-all ${
-                          likedComments.has(comment.id) 
-                            ? 'fill-red-500 text-red-500 scale-110' 
-                            : ''
-                        }`} 
-                      />
-                      <span className="text-xs">Like</span>
-                    </Button>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-white/60 hover:text-primary hover:bg-transparent text-xs"
-                      onClick={() => handleFollowUser(comment.userId, comment.userName)}
-                    >
-                      <UserPlus className="w-3 h-3 mr-1" />
-                      Follow
-                    </Button>
-                  </div>
-                </div>
+                    </div>
+                    <p className="text-white/90 text-sm leading-relaxed break-words">
+                      {comment.comment}
+                    </p>
 
-                {/* القائمة المنسدلة */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-white/40 opacity-0 group-hover:opacity-100 hover:bg-white/20 hover:text-white rounded-full transition-all"
+                    <div className="flex items-center gap-4 mt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-white/60 hover:text-red-400 hover:bg-transparent"
+                        onClick={() => handleLikeComment(comment.id)}
+                      >
+                        <Heart
+                          className={`w-3 h-3 mr-1 transition-all ${
+                            likedComments.has(comment.id)
+                              ? 'fill-red-500 text-red-500 scale-110'
+                              : ''
+                          }`}
+                        />
+                        <span className="text-xs">Like</span>
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-white/60 hover:text-primary hover:bg-transparent text-xs"
+                        onClick={() => handleFollowUser(comment.userId, comment.userName)}
+                      >
+                        <UserPlus className="w-3 h-3 mr-1" />
+                        Follow
+                      </Button>
+                    </div>
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-white/40 opacity-0 group-hover:opacity-100 hover:bg-white/20 hover:text-white rounded-full transition-all"
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="bg-gray-900 border-white/20 text-white"
                     >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="bg-black/90 backdrop-blur-xl border-white/10 text-white"
-                  >
-                    <DropdownMenuItem 
-                      className="cursor-pointer hover:bg-white/10"
-                      onClick={() => navigator.clipboard.writeText(comment.comment)}
-                    >
-                      Copy text
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="cursor-pointer hover:bg-white/10 text-red-400"
-                      onClick={() => handleReportComment(comment.id)}
-                    >
-                      Report
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ))}
+                      <DropdownMenuItem
+                        className="cursor-pointer hover:bg-white/10"
+                        onClick={() => navigator.clipboard.writeText(comment.comment)}
+                      >
+                        Copy text
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer hover:bg-white/10 text-red-400"
+                        onClick={() => handleReportComment(comment.id)}
+                      >
+                        Report
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
           </div>
         </ScrollArea>
 
-        {/* منطقة إضافة تعليق */}
+        {/* Comment Input */}
         <div className="border-t border-white/10 pt-4">
           {user ? (
             <form onSubmit={handlePostComment} className="flex items-center gap-3">
@@ -298,19 +308,19 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
                   {user.name ? user.name.charAt(0).toUpperCase() : 'Me'}
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="flex-1 relative">
                 <Input
                   placeholder="Add a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   disabled={isPosting}
-                  className="bg-white/10 border-0 text-white placeholder:text-white/40 rounded-2xl px-4 py-6 pr-12 backdrop-blur-sm focus:bg-white/15 transition-all"
+                  className="bg-white/10 border-0 text-white placeholder:text-white/40 rounded-2xl px-4 py-6 pr-12 focus:bg-white/15 transition-all"
                 />
-                <Button 
-                  type="submit" 
-                  size="icon" 
-                  disabled={isPosting || newComment.trim() === ''}
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={isPosting || !newComment.trim()}
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-primary hover:bg-primary/90 rounded-full transition-all duration-200 hover:scale-110"
                 >
                   {isPosting ? (
@@ -323,13 +333,11 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
             </form>
           ) : (
             <div className="text-center py-4">
-              <p className="text-white/60 text-sm mb-3">
-                Join the conversation
-              </p>
+              <p className="text-white/60 text-sm mb-3">Join the conversation</p>
               <div className="flex gap-3 justify-center">
                 <Link href="/login">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="bg-transparent border-white/20 text-white hover:bg-white/10 rounded-full"
                   >
                     Log in

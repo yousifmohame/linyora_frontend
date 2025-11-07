@@ -13,15 +13,15 @@ export default function PaymentSuccessPage() {
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-4">
                         <CheckCircle2 className="h-10 w-10 text-green-600" />
                     </div>
-                    <CardTitle className="text-2xl font-bold">تم الاشتراك بنجاح!</CardTitle>
+                    <CardTitle className="text-2xl font-bold">تم الدفع بنجاح!</CardTitle>
                     <CardDescription className="text-gray-600 pt-2">
-                        لقد تم تفعيل باقة الدروب شوبنق في حسابك. يمكنك الآن البدء في استكشاف واستيراد المنتجات.
+                        لقد تم ارسال الاتفاقيه بنجاح و بانتظار المراجعه من الطلب الاخر سيصلك اشعار فور قبول الاتفاقيه
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Link href="/dashboard/dropshipping" passHref>
+                    <Link href="/dashboard/agreements" passHref>
                         <Button size="lg" className="w-full">
-                            ابدأ باستيراد المنتجات
+                            رؤيه كل الاتفاقيات
                         </Button>
                     </Link>
                 </CardContent>

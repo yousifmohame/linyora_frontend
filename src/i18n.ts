@@ -5320,6 +5320,7 @@ const resources = {
         "currency": "ريال",
         "locale": "ar-SA",
         "active":"نشط",
+        "done":"تم",
         "uploading": "جاري الرفع...",
         "saving": "جاري الحفظ...",
         "retry": "إعادة المحاولة",

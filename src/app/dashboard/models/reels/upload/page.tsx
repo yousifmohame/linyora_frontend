@@ -424,54 +424,7 @@ export default function UploadReelPage() {
                             </div>
                           )}
 
-                          <div>
-                            <h3 className="text-sm font-semibold mb-3 text-rose-800 flex items-center gap-2">
-                              <ImageIcon className="w-4 h-4 text-rose-500" />
-                              {t('UploadReelPage.taggedProducts.allProducts')}
-                            </h3>
-                            <div className="space-y-2">
-                              {otherProducts.map(product => {
-                                const isChecked = taggedProducts.some(p => p.id === product.id);
-                                const isDisabled = selectedAgreementId !== null;
-                                const imageUrl = product.variants?.[0]?.images?.[0];
-                                return (
-                                  <div 
-                                    key={product.id} 
-                                    className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${
-                                      isDisabled 
-                                        ? 'bg-rose-50 border-rose-100 opacity-60' 
-                                        : 'bg-white border-rose-100 hover:border-rose-200 hover:shadow-sm'
-                                    }`}
-                                  >
-                                    <Checkbox
-                                      id={`product-${product.id}`}
-                                      checked={isChecked}
-                                      onCheckedChange={(checked) => handleTagProduct(product, !!checked)}
-                                      disabled={isDisabled}
-                                      className="data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 mt-0.5"
-                                    />
-                                    <label 
-                                      htmlFor={`product-${product.id}`} 
-                                      className={`flex-1 text-sm font-medium text-rose-900 leading-tight ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                                    >
-                                      {product.name}
-                                    </label>
-                                    {imageUrl && (
-                                      <div className="relative w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden border border-rose-200">
-                                        <Image 
-                                          src={imageUrl} 
-                                          alt={product.name} 
-                                          fill 
-                                          sizes="48px" 
-                                          className="object-cover"
-                                        />
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
+                          
                         </div>
                       </ScrollArea>
 

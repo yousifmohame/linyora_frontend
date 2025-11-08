@@ -28,12 +28,12 @@ import { withSubscription } from '@/components/auth/withSubscription';
 export interface Conversation {
   id: number;
   participantId: number;
-  participantName: string | null; // Allow null
+  participantName: string | null;
   participantAvatar: string | null;
   lastMessage: string | null;
   is_online: boolean;
   last_seen: string | null;
-  unread_count: number; // 👈 Added
+  unread_count: number;
 }
 
 interface Message {
@@ -62,13 +62,18 @@ function MessagesPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Refs
+  const messagesContainerRef = useRef<HTMLDivElement>(null); // 🆕 للتمرير داخل مربع الرسائل
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // 🆕 دالة تمرير مخصصة للحاوية الداخلية فقط
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
+  // تفعيل التمرير عند تحديث الرسائل
   useEffect(scrollToBottom, [messages]);
 
   const selectConversation = useCallback((convo: Conversation) => {
@@ -77,7 +82,9 @@ function MessagesPage() {
     setLoadingMessages(true);
     api
       .get(`/messages/${convo.id}`)
-      .then((res) => setMessages(res.data))
+      .then((res) => {
+        setMessages(res.data);
+      })
       .catch((err) => console.error(`Failed to fetch messages for convo ${convo.id}`, err))
       .finally(() => setLoadingMessages(false));
 
@@ -199,7 +206,6 @@ function MessagesPage() {
     return date.toLocaleTimeString(i18n.language === 'ar' ? 'ar-EG' : 'en-US');
   };
 
-  // Helper: Safely get first letter of name
   const getInitials = (name: string | null): string => {
     if (!name) return '?';
     const cleanName = name.trim();
@@ -259,7 +265,6 @@ function MessagesPage() {
                       {convo.is_online && (
                         <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 rounded-full border-2 border-white" />
                       )}
-                      {/* 🔴 Unread badge — only if > 0 */}
                       {convo.unread_count > 0 && (
                         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
                           {convo.unread_count > 99 ? '99+' : convo.unread_count}
@@ -321,7 +326,11 @@ function MessagesPage() {
                   </Button>
                 </div>
 
-                <div className="flex-1 p-3 sm:p-4 bg-gray-50 overflow-y-auto min-h-0">
+                {/* 🆕 تم تعيين ref هنا */}
+                <div
+                  ref={messagesContainerRef}
+                  className="flex-1 p-3 sm:p-4 bg-gray-50 overflow-y-auto min-h-0"
+                >
                   {loadingMessages ? (
                     <p className="text-center text-gray-500">{t('MessagesPage.loadingMessages')}</p>
                   ) : messages.length === 0 ? (
@@ -381,7 +390,6 @@ function MessagesPage() {
                             ))}
                         </div>
                       ))}
-                      <div ref={messagesEndRef} />
                     </div>
                   )}
                 </div>

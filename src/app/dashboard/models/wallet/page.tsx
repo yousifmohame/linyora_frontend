@@ -47,16 +47,8 @@ interface Transaction {
   type: 'earning' | 'payout' | 'refund';
   description: string;
   date: string;
-  status: 'completed' | 'pending' | 'failed' | 'pending_clearance';
+  status: 'approved' | 'pending' | 'failed' | 'pending_clearance';
   reference?: string;
-}
-
-interface PayoutMethod {
-  id: string;
-  type: 'bank' | 'wallet';
-  name: string;
-  details: string;
-  isDefault: boolean;
 }
 
 const ModelWalletPage = () => {
@@ -64,22 +56,25 @@ const ModelWalletPage = () => {
   const { user } = useAuth();
   const [wallet, setWallet] = useState<ModelWallet | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [payoutMethods, setPayoutMethods] = useState<PayoutMethod[]>([]);
   const [amount, setAmount] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showBalance, setShowBalance] = useState(true);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('month');
+  
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchWalletData = async () => {
       try {
-        const [walletRes, transactionsRes, methodsRes] = await Promise.all([
+        const [walletRes, transactionsRes] = await Promise.all([
           axios.get('/wallet/model/my-wallet'),
           axios.get('/wallet/model/transactions'),
-          axios.get('/wallet/model/payout-methods'),
         ]);
 
         const normalizedTransactions = transactionsRes.data.map((t: Transaction) => ({
@@ -89,12 +84,7 @@ const ModelWalletPage = () => {
 
         setWallet(walletRes.data);
         setTransactions(normalizedTransactions);
-        setPayoutMethods(methodsRes.data);
-
-        const defaultMethod = methodsRes.data.find((method: PayoutMethod) => method.isDefault);
-        if (defaultMethod) {
-          setSelectedMethod(defaultMethod.id);
-        }
+        
       } catch (error) {
         toast.error(t('modelwallet.errors.fetchFailed'));
         console.error(error);
@@ -128,11 +118,6 @@ const ModelWalletPage = () => {
       return;
     }
 
-    if (!selectedMethod) {
-      toast.error(t('modelwallet.errors.noMethod'));
-      return;
-    }
-
     setConfirmDialogOpen(true);
   };
 
@@ -141,7 +126,6 @@ const ModelWalletPage = () => {
     try {
       await axios.post('/wallet/model/request-payout', {
         amount: parseFloat(amount),
-        method_id: selectedMethod,
       });
 
       toast.success(t('modelwallet.success.payoutRequested'));
@@ -174,9 +158,13 @@ const ModelWalletPage = () => {
       case 'week':
         return transactionDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       case 'month':
-        return transactionDate >= new Date(now.setMonth(now.getMonth() - 1));
+        const oneMonthAgo = new Date();
+        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        return transactionDate >= oneMonthAgo;
       case 'year':
-        return transactionDate >= new Date(now.setFullYear(now.getFullYear() - 1));
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        return transactionDate >= oneYearAgo;
       default:
         return true;
     }
@@ -184,18 +172,28 @@ const ModelWalletPage = () => {
 
   const totalEarnings = filteredTransactions
     .filter((t) => t.type === 'earning')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => {
+      const amount = typeof t.amount === 'number' ? t.amount : parseFloat(t.amount);
+      return sum + (isNaN(amount) ? 0 : amount);
+    }, 0);
 
   const totalPayouts = filteredTransactions
     .filter((t) => t.type === 'payout')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => {
+      const amount = typeof t.amount === 'number' ? t.amount : parseFloat(t.amount);
+      return sum + (isNaN(amount) ? 0 : amount);
+    }, 0);
 
-  if (loading) {
+  if (loading || !isMounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-rose-500 mx-auto mb-4"></div>
-          <p className="text-rose-700 text-lg font-medium">{t('modelwallet.loading')}</p>
+          {isMounted ? (
+            <p className="text-rose-700 text-lg font-medium">{t('modelwallet.loading')}</p>
+          ) : (
+            <p className="text-rose-700 text-lg font-medium">Loading...</p>
+          )}
         </div>
       </div>
     );
@@ -224,7 +222,6 @@ const ModelWalletPage = () => {
       </header>
 
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Wallet Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
@@ -292,7 +289,7 @@ const ModelWalletPage = () => {
             </CardHeader>
             <CardContent className="p-6 text-center">
               <div className="text-3xl lg:text-4xl font-bold text-purple-600 mb-3">
-                {totalEarnings.toFixed(2)}
+                {Number(totalEarnings).toFixed(2)} {/* ✅ FIXED */}
               </div>
               <p className="text-purple-700 text-sm">{t('modelwallet.currentMonthEarnings')}</p>
             </CardContent>
@@ -300,7 +297,6 @@ const ModelWalletPage = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Payout Form */}
           <div className="lg:col-span-2">
             <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
@@ -340,50 +336,6 @@ const ModelWalletPage = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-rose-800 font-medium text-lg">
-                      {t('modelwallet.payout.methodLabel')}
-                    </Label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {payoutMethods.map((method) => (
-                        <div
-                          key={method.id}
-                          onClick={() => setSelectedMethod(method.id)}
-                          className={`p-4 border-2 rounded-2xl cursor-pointer transition-all ${
-                            selectedMethod === method.id
-                              ? 'border-rose-500 bg-rose-50 shadow-lg'
-                              : 'border-rose-200 bg-white hover:border-rose-300'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`p-2 rounded-xl ${
-                                method.type === 'bank'
-                                  ? 'bg-blue-100 text-blue-600'
-                                  : 'bg-green-100 text-green-600'
-                              }`}
-                            >
-                              {method.type === 'bank' ? (
-                                <CreditCard className="w-5 h-5" />
-                              ) : (
-                                <Banknote className="w-5 h-5" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-medium text-rose-800">{method.name}</div>
-                              <div className="text-sm text-rose-600">{method.details}</div>
-                            </div>
-                            {method.isDefault && (
-                              <Badge className="bg-rose-500 text-white text-xs">
-                                {t('modelwallet.default')}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
                     <Label className="text-rose-800 font-medium text-sm">
                       {t('modelwallet.payout.quickAmounts')}
                     </Label>
@@ -415,7 +367,6 @@ const ModelWalletPage = () => {
                     disabled={
                       isSubmitting ||
                       !amount ||
-                      !selectedMethod ||
                       parseFloat(amount) < 50
                     }
                     className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white py-3 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
@@ -437,7 +388,6 @@ const ModelWalletPage = () => {
             </Card>
           </div>
 
-          {/* Transactions */}
           <div className="lg:col-span-1">
             <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden h-full">
               <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
@@ -512,24 +462,22 @@ const ModelWalletPage = () => {
                           }`}
                         >
                           {transaction.type === 'earning' ? '+' : '-'}
-                          {transaction.amount.toFixed(2)} ر.س
+                          {Number(transaction.amount).toFixed(2)} ر.س {/* ✅ Also safe */}
                         </p>
                         <Badge
                           variant="secondary"
                           className={`text-xs ${
-                            transaction.status === 'completed'
+                            transaction.status === 'approved'
                               ? 'bg-green-100 text-green-800'
-                              // ✨ تعديل: تحقق من الحالتين
                               : (transaction.status === 'pending' || transaction.status === 'pending_clearance') 
                               ? 'bg-amber-100 text-amber-800'
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {transaction.status === 'completed'
+                          {transaction.status === 'approved'
                             ? t('modelwallet.transactions.status.completed')
-                            // ✨ تعديل: تحقق من الحالتين
                             : (transaction.status === 'pending' || transaction.status === 'pending_clearance')
-                            ? t('modelwallet.transactions.status.pending') // اعرض كلمة "معلق"
+                            ? t('modelwallet.transactions.status.pending')
                             : t('modelwallet.transactions.status.failed')}
                         </Badge>
                       </div>
@@ -558,7 +506,6 @@ const ModelWalletPage = () => {
           </div>
         </div>
 
-        {/* Earnings Summary */}
         <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl">
           <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
             <CardTitle className="flex items-center gap-3 text-xl">
@@ -570,7 +517,7 @@ const ModelWalletPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-4 bg-green-50 rounded-2xl border border-green-200">
                 <div className="text-2xl font-bold text-green-600 mb-1">
-                  +{totalEarnings.toFixed(2)}
+                  +{Number(totalEarnings).toFixed(2)} {/* ✅ FIXED */}
                 </div>
                 <div className="text-green-700 text-sm">
                   {t('modelwallet.summary.totalRevenue')}
@@ -578,7 +525,7 @@ const ModelWalletPage = () => {
               </div>
               <div className="text-center p-4 bg-blue-50 rounded-2xl border border-blue-200">
                 <div className="text-2xl font-bold text-blue-600 mb-1">
-                  -{totalPayouts.toFixed(2)}
+                  -{Number(totalPayouts).toFixed(2)} {/* ✅ Also fixed */}
                 </div>
                 <div className="text-blue-700 text-sm">
                   {t('modelwallet.summary.totalPayouts')}
@@ -597,7 +544,6 @@ const ModelWalletPage = () => {
         </Card>
       </div>
 
-      {/* Confirmation Dialog */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
         <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl">
           <DialogHeader>
@@ -616,14 +562,6 @@ const ModelWalletPage = () => {
                   {t('modelwallet.payout.confirmDialog.amount')}
                 </span>
                 <span className="font-bold text-rose-800">{amount} ر.س</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-rose-700">
-                  {t('modelwallet.payout.confirmDialog.method')}
-                </span>
-                <span className="font-bold text-rose-800">
-                  {payoutMethods.find((m) => m.id === selectedMethod)?.name}
-                </span>
               </div>
             </div>
           </div>

@@ -227,11 +227,11 @@ const Footer = () => {
             {/* (الشعار ثابت) */}
             <div className="flex items-center gap-3">
               <motion.div 
-                className="relative w-20 h-10 md:w-20 md:h-10"
+                className="relative w-30 h-20 md:w-20 md:h-10"
                 whileHover={{ scale: 1.05 }}
               >
                 <Image 
-                  src="/logo4.jpg" 
+                  src="/logo5.jpg" 
                   alt="Linyora Logo" 
                   fill
                   className="object-contain"

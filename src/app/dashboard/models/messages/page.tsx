@@ -61,13 +61,18 @@ function MessagesPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // ✅ NEW: Ref for the scrollable messages container
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ✅ FIXED: Scroll only the messages container
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
+  // Trigger scroll when messages change
   useEffect(scrollToBottom, [messages]);
 
   const selectConversation = useCallback((convo: Conversation) => {
@@ -302,8 +307,11 @@ function MessagesPage() {
                 </div>
               </div>
 
-              {/* Messages Area */}
-              <div className="flex-1 p-4 overflow-y-auto bg-muted/30">
+              {/* ✅ Messages Area with ref */}
+              <div
+                ref={messagesContainerRef} // ←←← THIS IS THE KEY CHANGE
+                className="flex-1 p-4 overflow-y-auto bg-muted/30"
+              >
                 {loadingMessages ? (
                   <div className="flex justify-center items-center h-full">
                     <p className="text-muted-foreground">{t('MessagesPage.loadingMessages')}</p>
@@ -366,7 +374,7 @@ function MessagesPage() {
                         )}
                       </div>
                     ))}
-                    <div ref={messagesEndRef} />
+                    {/* 🗑 Removed: <div ref={messagesEndRef} /> — no longer needed */}
                   </div>
                 )}
               </div>

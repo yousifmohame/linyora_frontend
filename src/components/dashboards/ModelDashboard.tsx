@@ -427,13 +427,13 @@ export default function ModelDashboard() {
               {t('ModelDashboard.cta.description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/dashboard/models/profile">
+              <Link href="/dashboard/models/profile-settings">
                 <Button className="bg-white text-rose-600 hover:bg-rose-50 px-8 py-3 rounded-2xl font-bold">
                   {t('ModelDashboard.cta.profile')}
                   <Sparkles className="mr-2 w-4 h-4" />
                 </Button>
               </Link>
-              <Link href="/dashboard/modelsoffers">
+              <Link href="/dashboard/models/modelsoffers">
                 <Button variant="outline" className="border-white text-black hover:bg-white/20 px-8 py-3 rounded-2xl font-bold">
                   {t('ModelDashboard.cta.createOffers')}
                   <PlusIcon className="mr-2 w-4 h-4" />

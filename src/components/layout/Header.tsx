@@ -519,16 +519,16 @@ export default function Header() {
     <>
       <header className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200 lg:relative">
         <nav className="container mx-auto px-3 sm:px-4">
-          <div className="flex items-center h-16">
+          <div className="flex items-center h-20">
             {/* Logo */}
             <Link
               href="/"
               className="flex items-center"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <div className="relative w-20 h-12 sm:w-17 sm:h-12">
+              <div className="relative w-30 h-12 sm:w-24 sm:h-20">
                 <Image
-                  src="/logo4.jpg"
+                  src="/logo5.jpg"
                   alt="Linyora Logo"
                   fill
                   className="object-contain"

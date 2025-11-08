@@ -57,6 +57,11 @@ const resources = {
       },
       "Login": {
         "title": "Login",
+        "verifyTitle": "Verify Email",
+        "verifySubtitle": "Please enter the verification code sent to your email.",
+        "codeLabel": "Verification Code",
+        "backToLogin": "Back to Login",
+        "verifyButton": "Verify",
         "subtitle": "Welcome back to luxury",
         "emailLabel": "Email",
         "emailPlaceholder": "example@email.com",
@@ -3894,6 +3899,11 @@ const resources = {
       },
       "Login": {
         "title": "تسجيل الدخول",
+        "verifyTitle": "تأكيد البريد الإلكتروني",
+        "verifySubtitle": "يرجى إدخال رمز التحقق الذي تم إرساله إلى بريدك الإلكتروني.",
+        "codeLabel": "رمز التحقق",
+        "backToLogin": "العودة إلى تسجيل الدخول",
+        "verifyButton": "تأكيد",
         "subtitle": "مرحباً بعودتك إلى عالم الرفاهية",
         "emailLabel": "البريد الإلكتروني",
         "emailPlaceholder": "example@email.com",

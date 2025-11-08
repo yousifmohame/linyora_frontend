@@ -7,15 +7,7 @@ import api from '@/lib/axios';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+import { AxiosError } from 'axios';
 import {
   User,
   Shield,
@@ -26,17 +18,26 @@ import {
   Edit,
   Trash2,
   Camera,
-  ShoppingBag,
-  Heart,
-  CreditCard,
-  Save,
-  Mail,
 } from 'lucide-react';
+
+// Components
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AxiosError } from 'axios';
 
 // Types
-type ProfileFormValues = { name: string; email: string; phone?: string };
+type ProfileFormValues = { 
+  name: string; 
+  email: string; 
+  phone?: string 
+};
+
 type AddressFormValues = {
   id?: number;
   address_line1: string;
@@ -46,11 +47,12 @@ type AddressFormValues = {
   country: string;
   is_default: boolean;
 };
+
 interface Address extends AddressFormValues {
   id: number;
 }
 
-// --- AddressForm Component ---
+// AddressForm Component
 const AddressForm = ({
   address,
   onSave,
@@ -60,8 +62,9 @@ const AddressForm = ({
   onSave: () => void;
   children: React.ReactNode;
 }) => {
-  const { t } = useTranslation(); // ✅ Use 'profile' namespace
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  
   const form = useForm<AddressFormValues>({
     defaultValues: address || {
       country: 'Saudi Arabia',
@@ -92,6 +95,7 @@ const AddressForm = ({
     const promise = values.id
       ? api.put(`/customer/addresses/${values.id}`, values)
       : api.post('/customer/addresses', values);
+    
     toast.promise(promise, {
       loading: t('common.saving'),
       success: () => {
@@ -225,10 +229,10 @@ const AddressForm = ({
   );
 };
 
-// --- Main Profile Page Component ---
+// Main Profile Page Component
 export default function ProfilePage() {
-  const { user, fetchUser, loading: authLoading } = useAuth();
-  const { t } = useTranslation(); // ✅ Use 'profile' namespace
+  const { user, refetchUser, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addressToDelete, setAddressToDelete] = useState<Address | null>(null);
   const [activeTab, setActiveTab] = useState('personal');
@@ -260,7 +264,7 @@ export default function ProfilePage() {
     }
   }, [user, profileForm, fetchAddresses]);
 
-  // Handle profile update (legacy form fallback)
+  // Handle profile update
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -286,7 +290,7 @@ export default function ProfilePage() {
 
       const response = await api.put('/users/profile', payload);
       setMessage(response.data.message || t('ProfilePage.updateSuccess'));
-      fetchUser(); // Refresh user data
+      refetchUser();
     } catch (error) {
       if (error instanceof AxiosError) {
         setError(error.response?.data?.message || t('ProfilePage.updateError'));
@@ -299,38 +303,43 @@ export default function ProfilePage() {
   };
 
   // Handle profile picture upload
-  const handlePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      toast.error(t('ProfilePage.toasts.invalidImage'));
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(t('ProfilePage.toasts.fileTooLarge'));
-      return;
-    }
+const handlePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  
+  if (!file.type.startsWith('image/')) {
+    toast.error(t('ProfilePage.toasts.invalidImage'));
+    return;
+  }
+  
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error(t('ProfilePage.toasts.fileTooLarge'));
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append('profilePicture', file);
-    toast.promise(
-      api.post('/users/profile/picture', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }),
-      {
-        loading: t('ProfilePage.toasts.uploading'),
-        success: () => {
-          fetchUser();
-          return t('ProfilePage.toasts.pictureUpdated');
-        },
-        error: (err) => err.response?.data?.message || t('common.error'),
-      }
-    );
-  };
+  const formData = new FormData();
+  
+  // ✅ هذا السطر صحيح تماماً
+  formData.append('profilePicture', file); // اسم الحقل 'profile_picture' هو المناسب
+  
+  toast.promise(
+    // ✅ هذا أيضاً صحيح - بدون هيدر إضافي
+    api.post('/users/profile/picture', formData), 
+    {
+      loading: t('ProfilePage.toasts.uploading'),
+      success: () => {
+        refetchUser();
+        return t('ProfilePage.toasts.pictureUpdated');
+      },
+      error: (err) => err.response?.data?.message || t('common.error'),
+    }
+  );
+};
 
   // Confirm delete address
   const confirmDeleteAddress = async () => {
     if (!addressToDelete) return;
+    
     toast.promise(api.delete(`/customer/addresses/${addressToDelete.id}`), {
       loading: t('common.deleting'),
       success: () => {

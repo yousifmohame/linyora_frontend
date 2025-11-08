@@ -35,6 +35,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
+  
   login: (token: string) => void;
   logout: () => void;
   refetchUser: () => Promise<void>;

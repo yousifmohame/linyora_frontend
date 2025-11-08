@@ -661,14 +661,16 @@ export default function Header() {
                           <p className="font-semibold text-gray-900 truncate">{user.name}</p>
                           <p className="text-xs text-gray-500 truncate">{user.email}</p>
                         </div>
-                        <Link
-                          href="/dashboard/profile"
-                          onClick={() => setIsUserMenuOpen(false)}
-                          className="flex items-center space-x-2 space-x-reverse w-full px-4 py-3 hover:bg-gray-50"
-                        >
-                          <User className="w-4 h-4 text-gray-600" />
-                          <span>{i18n.language === 'ar' ? 'الملف الشخصي' : 'Profile'}</span>
-                        </Link>
+                        {shouldShowMobileBottomNav && (
+                          <Link
+                            href="/dashboard/profile"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
+                          >
+                            <User className="w-5 h-5 text-gray-600" />
+                            <span>{i18n.language === 'ar' ? 'الملف الشخصي' : 'Profile'}</span>
+                          </Link>
+                        )}
                         <button
                           onClick={handleLogout}
                           className="flex items-center space-x-2 space-x-reverse w-full px-4 py-3 hover:bg-red-50 text-red-600 border-t border-gray-100"
@@ -833,14 +835,17 @@ export default function Header() {
                           </Link>
                         )}
 
-                        <Link
-                          href="/dashboard/profile"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
-                        >
-                          <User className="w-5 h-5 text-gray-600" />
-                          <span>{i18n.language === 'ar' ? 'الملف الشخصي' : 'Profile'}</span>
-                        </Link>
+                        
+                        {shouldShowMobileBottomNav && (
+                          <Link
+                            href="/dashboard/profile"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
+                          >
+                            <User className="w-5 h-5 text-gray-600" />
+                            <span>{i18n.language === 'ar' ? 'الملف الشخصي' : 'Profile'}</span>
+                          </Link>
+                        )}
 
                         <MobileNotifications onClose={() => setIsMobileMenuOpen(false)} i18n={i18n} />
 

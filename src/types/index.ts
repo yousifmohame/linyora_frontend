@@ -142,6 +142,7 @@ export interface Offer {
 export interface User {
   id: number;
   name: string;
+  phone:string,
   email?: string; // قد لا نحتاجه في الملف العام
   phone_number?: string | null;
   address?: string | null; // قد لا نحتاجه في الملف العام

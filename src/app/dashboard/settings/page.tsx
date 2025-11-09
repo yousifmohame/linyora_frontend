@@ -1,4 +1,3 @@
-// app/dashboard/settings/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,24 +13,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
-  UploadCloud, 
-  Settings, 
-  Building, 
-  Share2, 
-  Gem, 
-  AlertTriangle, 
-  Sparkles,
-  Globe,
-  Bell,
-  Shield,
-  CreditCard,
-  Download,
-  Eye,
-  Mail,
-  MessageCircle,
-  Phone,
-  Calendar,
-  History
+  UploadCloud, Settings, Building, Share2, Gem, AlertTriangle, Sparkles,
+  Globe, Bell, Shield, CreditCard, Download, Eye, Mail, MessageCircle,
+  Phone, Calendar, History
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -82,6 +66,11 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -92,35 +81,41 @@ export default function SettingsPage() {
           api.get('/subscriptions/status').catch(() => ({ data: null })),
           api.get('/subscriptions/history').catch(() => ({ data: [] }))
         ]);
-        
-        // التأكد من أن social_links كائن صالح
+
+        // Normalize social links
         settingsRes.data.social_links = settingsRes.data.social_links && typeof settingsRes.data.social_links === 'object' 
-            ? settingsRes.data.social_links 
-            : {};
-        
+          ? settingsRes.data.social_links 
+          : {};
+
         setSettings(settingsRes.data);
-        
-        // معالجة بيانات الاشتراك لضمان أن price يكون رقمًا
+
+        // Normalize subscription from /status
         if (statusRes.data) {
-          const subscriptionData = {
-            ...statusRes.data,
-            price: typeof statusRes.data.price === 'string' ? parseFloat(statusRes.data.price) : statusRes.data.price
+          const subscriptionData: SubscriptionData = {
+            id: statusRes.data.id ?? 0,
+            user_id: statusRes.data.user_id ?? 0,
+            status: statusRes.data.status ?? 'inactive',
+            start_date: statusRes.data.startDate ?? '',
+            end_date: statusRes.data.endDate ?? '',
+            stripe_subscription_id: statusRes.data.stripe_subscription_id ?? '',
+            plan_name: statusRes.data.plan?.name ?? t('common.unknownPlan'),
+            price: statusRes.data.plan?.price ?? '0.00',
           };
           setSubscription(subscriptionData);
         }
 
-        // تخزين سجل الاشتراكات
+        // History already matches SubscriptionData shape
         setSubscriptionHistory(historyRes.data);
 
       } catch (error) {
-        toast.error('فشل في جلب بيانات الإعدادات.');
+        toast.error(t('StoreSettings.loadError'));
         console.error('Failed to fetch settings data:', error);
       } finally {
         setLoading(false);
       }
     };
     fetchAllData();
-  }, []);
+  }, [t]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (!settings) return;
@@ -130,45 +125,45 @@ export default function SettingsPage() {
   const handleSocialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!settings) return;
     setSettings({
-        ...settings,
-        social_links: {
-            ...(settings.social_links || {}),
-            [e.target.name]: e.target.value,
-        }
+      ...settings,
+      social_links: {
+        ...(settings.social_links || {}),
+        [e.target.name]: e.target.value,
+      }
     });
   };
 
   const handleToggleChange = <S extends 'notifications' | 'privacy'>(
-      section: S,
-      key: keyof SettingsData[S],
-      value: boolean
-    ) => {
-      if (!settings) return;
-      setSettings((prev) => ({
-        ...prev!,
-        [section]: {
-          ...prev![section],
-          [key]: value,
-        },
-      }));
-    };
+    section: S,
+    key: keyof SettingsData[S],
+    value: boolean
+  ) => {
+    if (!settings) return;
+    setSettings((prev) => ({
+      ...prev!,
+      [section]: {
+        ...prev![section],
+        [key]: value,
+      },
+    }));
+  };
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!e.target.files || !settings) return;
-      setIsUploading(true);
-      const file = e.target.files[0];
-      const formData = new FormData();
-      formData.append('image', file);
-      try {
-          const response = await api.post('/upload', formData);
-          setSettings({...settings, store_banner_url: response.data.imageUrl});
-          toast.success(t('SettingsPage.upload.success'));
-      } catch (error) {
-          console.error("Banner upload failed", error);
-          toast.error(t('SettingsPage.upload.failed'));
-      } finally {
-          setIsUploading(false);
-      }
+    if (!e.target.files || !settings) return;
+    setIsUploading(true);
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const response = await api.post('/upload', formData);
+      setSettings({ ...settings, store_banner_url: response.data.imageUrl });
+      toast.success(t('SettingsPage.upload.success'));
+    } catch (error) {
+      console.error('Banner upload failed', error);
+      toast.error(t('SettingsPage.upload.failed'));
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,30 +182,36 @@ export default function SettingsPage() {
   };
   
   const handleCancelSubscription = async () => {
-  setIsSaving(true);
-  try {
-    const response = await api.post('/payments/cancel-subscription');
-    toast.success(response.data.message);
-    const subRes = await api.get('/subscriptions/status');
-    if (subRes.data) {
-      const subscriptionData = {
-        ...subRes.data,
-        price: typeof subRes.data.price === 'string' ? parseFloat(subRes.data.price) : subRes.data.price
-      };
-      setSubscription(subscriptionData);
+    setIsSaving(true);
+    try {
+      const response = await api.post('/payments/cancel-subscription');
+      toast.success(response.data.message);
+      const subRes = await api.get('/subscriptions/status');
+      if (subRes.data) {
+        const subscriptionData: SubscriptionData = {
+          id: subRes.data.id ?? 0,
+          user_id: subRes.data.user_id ?? 0,
+          status: subRes.data.status ?? 'inactive',
+          start_date: subRes.data.startDate ?? '',
+          end_date: subRes.data.endDate ?? '',
+          stripe_subscription_id: subRes.data.stripe_subscription_id ?? '',
+          plan_name: subRes.data.plan?.name ?? t('common.unknownPlan'),
+          price: subRes.data.plan?.price ?? '0.00',
+        };
+        setSubscription(subscriptionData);
+      }
+    } catch (error: unknown) {
+      let errorMessage = t('SettingsPage.subscription.cancelFailed');
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      toast.error(errorMessage);
+    } finally {
+      setIsSaving(false);
     }
-  } catch (error: unknown) {
-    let errorMessage = t('SettingsPage.subscription.cancelFailed');
-    if (axios.isAxiosError(error)) {
-      errorMessage = error.response?.data?.message || errorMessage;
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-    toast.error(errorMessage);
-  } finally {
-    setIsSaving(false);
-  }
-};
+  };
 
   const getSubscriptionStatus = (status: string) => {
     const statusConfig = {
@@ -221,22 +222,27 @@ export default function SettingsPage() {
     return statusConfig[status as keyof typeof statusConfig] || statusConfig.inactive;
   };
 
-  // دالة مساعدة لتحويل السعر إلى التنسيق الصحيح
-  const formatPrice = (price: number | string): string => {
-    if (typeof price === 'string') {
-      return parseFloat(price).toFixed(2);
-    }
-    return price.toFixed(2);
+  const formatPrice = (price: unknown): string => {
+    if (price == null) return '0.00';
+    const num = typeof price === 'string' ? parseFloat(price) : Number(price);
+    return isNaN(num) ? '0.00' : num.toFixed(2);
   };
 
-  if (loading || !settings) {
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return '—';
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? '—' : date.toLocaleDateString('ar-EG');
+  };
+
+  // 🔧 Hydration-safe loading
+  if (!hasMounted || loading || !settings) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-rose-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto mb-4 animate-pulse">
             <Settings className="w-8 h-8 text-white" />
           </div>
-          <p className="text-gray-600">{t('StoreSettings.loading')}</p>
+          <p className="text-gray-600">Loading settings...</p>
         </div>
       </div>
     );
@@ -269,7 +275,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
+          {/* Sidebar */}
           <div className="lg:col-span-1">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-3xl sticky top-6">
               <CardContent className="p-6">
@@ -335,7 +341,6 @@ export default function SettingsPage() {
 
               <CardContent className="p-6">
                 <form onSubmit={handleSubmit}>
-                  {/* General Settings */}
                   {activeTab === 'general' && (
                     <div className="space-y-6">
                       <div className="grid md:grid-cols-2 gap-6">
@@ -557,8 +562,8 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   )}
-
-                  {/* Subscription Settings */}
+                  
+                  {/* Subscription Tab */}
                   {activeTab === 'subscription' && (
                     <div className="space-y-6">
                       {subscription ? (
@@ -579,16 +584,15 @@ export default function SettingsPage() {
                             <div className="grid md:grid-cols-2 gap-4 text-sm">
                               <div className="flex items-center space-x-2 space-x-reverse">
                                 <Calendar className="w-4 h-4 text-gray-400" />
-                                <span>{t('SettingsPage.subscription.startDate')}: {new Date(subscription.start_date).toLocaleDateString('ar-EG')}</span>
+                                <span>{t('SettingsPage.subscription.startDate')}: {formatDate(subscription.start_date)}</span>
                               </div>
                               <div className="flex items-center space-x-2 space-x-reverse">
                                 <Calendar className="w-4 h-4 text-gray-400" />
-                                <span>{t('SettingsPage.subscription.endDate')}: {new Date(subscription.end_date).toLocaleDateString('ar-EG')}</span>
+                                <span>{t('SettingsPage.subscription.endDate')}: {formatDate(subscription.end_date)}</span>
                               </div>
                             </div>
                           </div>
 
-                          {/* جدول سجل الاشتراكات */}
                           <Card className="bg-white/50">
                             <CardHeader>
                               <CardTitle className="flex items-center gap-2">
@@ -620,8 +624,8 @@ export default function SettingsPage() {
                                             {getSubscriptionStatus(sub.status).label}
                                           </Badge>
                                         </TableCell>
-                                        <TableCell>{new Date(sub.start_date).toLocaleDateString('ar-EG')}</TableCell>
-                                        <TableCell>{new Date(sub.end_date).toLocaleDateString('ar-EG')}</TableCell>
+                                        <TableCell>{formatDate(sub.start_date)}</TableCell>
+                                        <TableCell>{formatDate(sub.end_date)}</TableCell>
                                         <TableCell className="text-left font-semibold">{formatPrice(sub.price)} {t('common.currency')}</TableCell>
                                       </TableRow>
                                     ))

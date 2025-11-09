@@ -1,4 +1,3 @@
-// frontend/src/components/dashboards/ManageUsersPage.tsx
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -72,12 +71,11 @@ import {
   UserX,
   Crown,
   Sparkles,
-  Target,
-  Zap,
-  BarChart3,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  ShoppingBag,
+  Briefcase,
 } from 'lucide-react';
 import AdminNav from '@/components/dashboards/AdminNav';
 import { Label } from '@/components/ui/label';
@@ -104,7 +102,10 @@ interface UserStats {
   active: number;
   banned: number;
   models: number;
+  influencers: number;
   merchants: number;
+  suppliers: number;
+  customers: number;
   admins: number;
 }
 
@@ -117,13 +118,17 @@ export default function ManageUsersPage() {
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
   const [stats, setStats] = useState<UserStats>({
     total: 0,
     active: 0,
     banned: 0,
     models: 0,
+    influencers: 0,
     merchants: 0,
-    admins: 0
+    suppliers: 0,
+    customers: 0,
+    admins: 0,
   });
 
   const fetchUsers = async () => {
@@ -145,9 +150,12 @@ export default function ManageUsersPage() {
       total: usersData.length,
       active: usersData.filter(u => !u.is_banned).length,
       banned: usersData.filter(u => u.is_banned).length,
-      models: usersData.filter(u => u.roleId === 4).length,
+      admins: usersData.filter(u => u.roleId === 1).length,
       merchants: usersData.filter(u => u.roleId === 2).length,
-      admins: usersData.filter(u => u.roleId === 1).length
+      models: usersData.filter(u => u.roleId === 3).length,
+      influencers: usersData.filter(u => u.roleId === 4).length,
+      customers: usersData.filter(u => u.roleId === 5).length,
+      suppliers: usersData.filter(u => u.roleId === 6).length,
     };
     setStats(newStats);
   };
@@ -167,14 +175,14 @@ export default function ManageUsersPage() {
         is_banned: Boolean(user.is_banned),
         [field]: value,
       };
-      
+
       const promise = api.put(`/admin/users/${user.id}`, payload);
-      
+
       toast.promise(promise, {
         loading: t('common.saving'),
         success: () => {
           fetchUsers();
-          return field === 'is_banned' 
+          return field === 'is_banned'
             ? t(value ? 'AdminUsers.toasts.banSuccess' : 'AdminUsers.toasts.unbanSuccess')
             : t('AdminUsers.toasts.roleUpdateSuccess');
         },
@@ -191,9 +199,9 @@ export default function ManageUsersPage() {
         role_id: newRoleId,
         is_banned: Boolean(user.is_banned),
       };
-      
+
       const promise = api.put(`/admin/users/${user.id}`, payload);
-      
+
       toast.promise(promise, {
         loading: t('common.saving'),
         success: () => {
@@ -212,7 +220,7 @@ export default function ManageUsersPage() {
     if (!userToDelete) return;
     try {
       const promise = api.delete(`/admin/users/${userToDelete.id}`);
-      
+
       toast.promise(promise, {
         loading: t('common.saving'),
         success: () => {
@@ -220,7 +228,10 @@ export default function ManageUsersPage() {
           setUserToDelete(null);
           return t('AdminUsers.toasts.deleteSuccess');
         },
-        error: t('AdminUsers.toasts.deleteError'),
+        error: err => {
+          const message = err.response?.data?.message || t('AdminUsers.toasts.deleteError');
+          return message;
+        },
       });
     } catch (error) {
       console.error('Failed to delete user:', error);
@@ -228,20 +239,19 @@ export default function ManageUsersPage() {
   };
 
   const uniqueRoles = useMemo(() => {
-    const roles = Array.from(new Set(users.map((u) => u.roleName))).filter(Boolean);
+    const roles = Array.from(new Set(users.map(u => u.roleName))).filter(Boolean);
     return roles;
   }, [users]);
 
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
+    return users.filter(user => {
       const matchesSearch =
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (user.phone && user.phone.includes(searchTerm));
 
       const matchesRole =
-        selectedRole === 'all' ||
-        user.roleName.toLowerCase() === selectedRole.toLowerCase();
+        selectedRole === 'all' || user.roleName.toLowerCase() === selectedRole.toLowerCase();
 
       const matchesStatus =
         statusFilter === 'all' ||
@@ -256,7 +266,7 @@ export default function ManageUsersPage() {
     new Date(dateString).toLocaleDateString(i18n.language === 'ar' ? 'ar-EG' : 'en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
 
   const formatDateTime = (dateString: string): string =>
@@ -265,32 +275,32 @@ export default function ManageUsersPage() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
 
   const exportUsers = () => {
     toast.info(t('AdminUsers.toasts.exportPreparing'));
   };
 
-  // Role display helper
   const getRoleDisplay = (roleId: number): string => {
     switch (roleId) {
-      case 1: return t('AdminUsers.roles.Admin');
-      case 2: return t('AdminUsers.roles.Merchant');
-      case 3: return t('AdminUsers.roles.Model');
-      default: return t('AdminUsers.roles.Model');
+      case 1: return t('AdminUsers.roles.Admin', 'مشرف');
+      case 2: return t('AdminUsers.roles.Merchant', 'تاجر');
+      case 3: return t('AdminUsers.roles.Model', 'موديل');
+      case 4: return t('AdminUsers.roles.Influencer', 'مؤثر');
+      case 5: return t('AdminUsers.roles.Customer', 'عميل');
+      case 6: return t('AdminUsers.roles.Supplier', 'مورد');
+      default: return t('AdminUsers.roles.Customer', 'عميل');
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-6 sm:p-8">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-      
+      <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
+      <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
+
       <AdminNav />
-      
-      {/* Header Section */}
+
       <header className="mb-8 text-center relative">
         <div className="flex items-center justify-center gap-3 mb-4">
           <div className="p-3 bg-white rounded-2xl shadow-lg">
@@ -305,12 +315,12 @@ export default function ManageUsersPage() {
         <p className="text-rose-700 text-lg max-w-2xl mx-auto">
           {t('AdminUsers.subtitle')}
         </p>
-        <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
+        <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4" />
       </header>
 
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
           <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-2xl text-center">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-rose-600 mb-1">{stats.total}</div>
@@ -329,10 +339,10 @@ export default function ManageUsersPage() {
               <div className="text-red-700 text-sm">{t('AdminUsers.stats.banned')}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow-lg rounded-2xl text-center">
+          <Card className="bg-white/80 backdrop-blur-sm border-amber-200 shadow-lg rounded-2xl text-center">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-purple-600 mb-1">{stats.models}</div>
-              <div className="text-purple-700 text-sm">{t('AdminUsers.stats.models')}</div>
+              <div className="text-2xl font-bold text-amber-600 mb-1">{stats.admins}</div>
+              <div className="text-amber-700 text-sm">{t('AdminUsers.stats.admins')}</div>
             </CardContent>
           </Card>
           <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg rounded-2xl text-center">
@@ -341,10 +351,22 @@ export default function ManageUsersPage() {
               <div className="text-blue-700 text-sm">{t('AdminUsers.stats.merchants')}</div>
             </CardContent>
           </Card>
-          <Card className="bg-white/80 backdrop-blur-sm border-amber-200 shadow-lg rounded-2xl text-center">
+          <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow-lg rounded-2xl text-center">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-amber-600 mb-1">{stats.admins}</div>
-              <div className="text-amber-700 text-sm">{t('AdminUsers.stats.admins')}</div>
+              <div className="text-2xl font-bold text-purple-600 mb-1">{stats.models}</div>
+              <div className="text-purple-700 text-sm">{t('AdminUsers.stats.models')}</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 backdrop-blur-sm border-cyan-200 shadow-lg rounded-2xl text-center">
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-cyan-600 mb-1">{stats.suppliers}</div>
+              <div className="text-cyan-700 text-sm">{t('AdminUsers.roles.Supplier', 'الموردين')}</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg rounded-2xl text-center">
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-gray-600 mb-1">{stats.customers}</div>
+              <div className="text-gray-700 text-sm">{t('AdminUsers.roles.Customer', 'العملاء')}</div>
             </CardContent>
           </Card>
         </div>
@@ -359,11 +381,11 @@ export default function ManageUsersPage() {
                   <Input
                     placeholder={t('AdminUsers.searchPlaceholder')}
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={e => setSearchTerm(e.target.value)}
                     className="pr-10 border-rose-200 focus:border-rose-400 rounded-xl"
                   />
                 </div>
-                
+
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
                   <SelectTrigger className="w-40 border-rose-200 focus:border-rose-400 rounded-xl">
                     <Filter className="w-4 h-4 ml-2 text-rose-400" />
@@ -371,7 +393,7 @@ export default function ManageUsersPage() {
                   </SelectTrigger>
                   <SelectContent className="border-rose-200 rounded-xl">
                     <SelectItem value="all">{t('AdminUsers.allRoles')}</SelectItem>
-                    {uniqueRoles.map((role) => (
+                    {uniqueRoles.map(role => (
                       <SelectItem key={role} value={role.toLowerCase()}>
                         {role}
                       </SelectItem>
@@ -390,18 +412,18 @@ export default function ManageUsersPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="flex items-center gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={exportUsers}
                   className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
                 >
                   <Download className="w-4 h-4 ml-2" />
                   {t('AdminUsers.exportData')}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={fetchUsers}
                   className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
                 >
@@ -449,13 +471,13 @@ export default function ManageUsersPage() {
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-12">
                       <div className="flex flex-col items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 mb-3"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 mb-3" />
                         <p className="text-rose-700 font-medium">{t('AdminUsers.loading')}</p>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
+                  filteredUsers.map(user => (
                     <TableRow key={user.id} className="border-rose-100 hover:bg-rose-50/30 transition-colors">
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -464,19 +486,20 @@ export default function ManageUsersPage() {
                           </div>
                           <div>
                             <div className="font-medium text-rose-900">{user.name}</div>
-                            {user.phone && (
-                              <div className="text-rose-600 text-sm">{user.phone}</div>
-                            )}
+                            {user.phone && <div className="text-rose-600 text-sm">{user.phone}</div>}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className={`
                             ${user.roleId === 1 ? 'bg-amber-100 text-amber-700 border-amber-200' : ''}
-                            ${user.roleId === 3 ? 'bg-purple-100 text-purple-700 border-purple-200' : ''}
                             ${user.roleId === 2 ? 'bg-blue-100 text-blue-700 border-blue-200' : ''}
+                            ${user.roleId === 3 ? 'bg-purple-100 text-purple-700 border-purple-200' : ''}
+                            ${user.roleId === 4 ? 'bg-pink-100 text-pink-700 border-pink-200' : ''}
+                            ${user.roleId === 5 ? 'bg-gray-100 text-gray-700 border-gray-200' : ''}
+                            ${user.roleId === 6 ? 'bg-cyan-100 text-cyan-700 border-cyan-200' : ''}
                           `}
                         >
                           {user.roleId === 1 && <Crown className="w-3 h-3 ml-1" />}
@@ -511,9 +534,7 @@ export default function ManageUsersPage() {
                       </TableCell>
                       <TableCell>
                         {user.last_login ? (
-                          <div className="text-rose-600 text-sm">
-                            {formatDateTime(user.last_login)}
-                          </div>
+                          <div className="text-rose-600 text-sm">{formatDateTime(user.last_login)}</div>
                         ) : (
                           <Badge variant="outline" className="bg-gray-100 text-gray-600 text-xs">
                             <Clock className="w-3 h-3 ml-1" />
@@ -542,10 +563,12 @@ export default function ManageUsersPage() {
                               ) : (
                                 <Ban className="w-4 h-4 ml-2" />
                               )}
-                              {user.is_banned ? t('AdminUsers.actions.unbanUser') : t('AdminUsers.actions.banUser')}
+                              {user.is_banned
+                                ? t('AdminUsers.actions.unbanUser')
+                                : t('AdminUsers.actions.banUser')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-rose-200" />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => setUserToDelete(user)}
                               className="text-red-600 focus:text-red-600"
                             >
@@ -566,8 +589,7 @@ export default function ManageUsersPage() {
                         <p className="text-rose-600 max-w-md">
                           {searchTerm || selectedRole !== 'all' || statusFilter !== 'all'
                             ? t('AdminUsers.filters.noResults')
-                            : t('AdminUsers.filters.empty')
-                          }
+                            : t('AdminUsers.filters.empty')}
                         </p>
                       </div>
                     </TableCell>
@@ -580,7 +602,7 @@ export default function ManageUsersPage() {
       </div>
 
       {/* Edit Role Dialog */}
-      <Dialog open={!!userToEdit} onOpenChange={(open) => !open && setUserToEdit(null)}>
+      <Dialog open={!!userToEdit} onOpenChange={open => !open && setUserToEdit(null)}>
         <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-rose-800">
@@ -601,25 +623,30 @@ export default function ManageUsersPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-role" className="text-rose-800 font-medium">{t('AdminUsers.dialogs.editRole.newRole')}</Label>
-              <Select 
-                defaultValue={userToEdit?.roleId.toString()} 
-                onValueChange={(value) => userToEdit && handleRoleUpdate(userToEdit, parseInt(value))}
+              <Label htmlFor="new-role" className="text-rose-800 font-medium">
+                {t('AdminUsers.dialogs.editRole.newRole')}
+              </Label>
+              <Select
+                defaultValue={userToEdit?.roleId.toString()}
+                onValueChange={value => userToEdit && handleRoleUpdate(userToEdit, parseInt(value))}
               >
                 <SelectTrigger id="new-role" className="border-rose-200 focus:border-rose-400 rounded-xl">
                   <SelectValue placeholder={t('AdminUsers.dialogs.editRole.newRole')} />
                 </SelectTrigger>
                 <SelectContent className="border-rose-200 rounded-xl">
-                  <SelectItem value="1">{t('AdminUsers.roles.Admin')}</SelectItem>
-                  <SelectItem value="2">{t('AdminUsers.roles.Merchant')}</SelectItem>
-                  <SelectItem value="3">{t('AdminUsers.roles.Model')}</SelectItem>
+                  <SelectItem value="1">{getRoleDisplay(1)}</SelectItem>
+                  <SelectItem value="2">{getRoleDisplay(2)}</SelectItem>
+                  <SelectItem value="3">{getRoleDisplay(3)}</SelectItem>
+                  <SelectItem value="4">{getRoleDisplay(4)}</SelectItem>
+                  <SelectItem value="5">{getRoleDisplay(5)}</SelectItem>
+                  <SelectItem value="6">{getRoleDisplay(6)}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setUserToEdit(null)}
               className="border-rose-200 text-rose-700 hover:bg-rose-50"
             >
@@ -630,7 +657,7 @@ export default function ManageUsersPage() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+      <AlertDialog open={!!userToDelete} onOpenChange={open => !open && setUserToDelete(null)}>
         <AlertDialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl">
           <AlertDialogHeader className="text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
@@ -647,7 +674,7 @@ export default function ManageUsersPage() {
             <AlertDialogCancel className="bg-rose-100 text-rose-700 border-rose-200 hover:bg-rose-200 rounded-2xl px-6 py-2">
               {t('AdminUsers.dialogs.deleteUser.cancel')}
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDelete}
               className="bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white rounded-2xl px-6 py-2 font-bold"
             >

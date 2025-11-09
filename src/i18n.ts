@@ -1251,6 +1251,7 @@ const resources = {
       "common": {
       "currency": "SAR",
       "retry": "Retry",
+      "add":"Add",
       "active":"Active",
       "refresh": "Refresh",
       "visible": "Visible",
@@ -1457,7 +1458,12 @@ const resources = {
       },
       "subscription": {
         "month": "month",
-        "startDate": "Start Date",
+        "history": "History",
+        "historyDescription": "Subscription history from start to end",
+        "startDate": "Started on:",
+        "planName": "Plan Name",
+        "status": "Status",
+        "price": "Price",
         "endDate": "End Date",
         "noActive": "No active subscription",
         "upgradePrompt": "Subscribe to one of our plans to unlock advanced features",
@@ -3035,7 +3041,7 @@ const resources = {
       }
     },
     "results": {
-      "count": "Showing <span class=\"font-bold text-rose-800\">{{count}}</span> models",
+      "count": "Showing {{count}} models",
       "updated": "List updated now"
     },
     "empty": {
@@ -4808,7 +4814,7 @@ const resources = {
           }
         },
         "results": {
-          "count": "عرض <span class=\"font-bold text-rose-800\">{{count}}</span> عارضة",
+          "count": "عرض {{count}} عارضة",
           "updated": "تم تحديث القائمة الآن"
         },
         "empty": {
@@ -5320,6 +5326,7 @@ const resources = {
         "currency": "ريال",
         "locale": "ar-SA",
         "active":"نشط",
+        "add":"اضافه",
         "done":"تم",
         "uploading": "جاري الرفع...",
         "saving": "جاري الحفظ...",
@@ -5409,7 +5416,12 @@ const resources = {
         },
         "subscription": {
           "month": "شهر",
+          "history":"التاريخ",
+          "historyDescription":"تاريخ الاشتراك منذ بدايته لنهايته",
           "startDate": "بدأ في:",
+          "planName":"اسم الخطة",
+          "status":"الحالة",
+          "price":"السعر",
           "endDate": "ينتهي في:",
           "noActive": "لا يوجد اشتراك نشط",
           "upgradePrompt": "اشترك في إحدى باقاتنا للاستفادة من الميزات المتقدمة",

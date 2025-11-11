@@ -103,7 +103,6 @@ export default function MerchantProfilePage() {
           <p className="text-gray-600 mt-2 max-w-lg">
             {merchant.bio || 'تاجر مسجل في منصة لينيورا.'}
           </p>
-          <Button className="mt-4">متابعة التاجر</Button>
         </div>
       </div>
       

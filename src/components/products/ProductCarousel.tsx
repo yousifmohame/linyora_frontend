@@ -4,13 +4,7 @@
 import * as React from "react";
 import { Product } from "@/types";
 import ProductCard from "@/components/ProductCard";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"; // استيراد مكون الكاروسيل من shadcn
+// [1] تم حذف استيراد مكونات الكاروسيل
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -35,10 +29,12 @@ export function ProductCarousel({
     <div className="container mb-3 bg-[#fff] mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl md:text-3xl font-bold">
-          <span className="bg-gradient-to-r from-rose-600 via-purple-600 to-pink-600 
-                           bg-clip-text text-transparent 
-                           bg-size-200 bg-pos-0
-                           transition-all duration-2000">
+          <span
+            className="bg-gradient-to-r from-rose-600 via-purple-600 to-pink-600 
+                             bg-clip-text text-transparent 
+                             bg-size-200 bg-pos-0
+                             transition-all duration-2000"
+          >
             {title}
           </span>
         </h2>
@@ -52,31 +48,20 @@ export function ProductCarousel({
           </Link>
         )}
       </div>
-      <Carousel
-        opts={{
-          align: "start",
-          direction: document.dir === 'rtl' ? 'rtl' : 'ltr', // دعم RTL
-        }}
-        className="w-full"
-      >
-        <CarouselContent className="-ml-2 md:-ml-4">
-          {products.map((product) => (
-            <CarouselItem 
-              key={product.id} 
-              className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
-            >
-              <div className="h-full">
-                <ProductCard
-                  product={product}
-                  isInitiallyWishlisted={wishlistStatus[product.id] || false}
-                />
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="hidden md:flex" />
-        <CarouselNext className="hidden md:flex" />
-      </Carousel>
+
+      {/* [2] تم استبدال الكاروسيل بـ <div> يستخدم Grid */}
+      {/* استخدمنا نفس التنسيقات التي كانت في CarouselItem (basis-1/2 -> grid-cols-2) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
+        {products.map((product) => (
+          // [3] تم حذف CarouselItem وعرض ProductCard مباشرة
+          <ProductCard
+            key={product.id}
+            product={product}
+            isInitiallyWishlisted={wishlistStatus[product.id] || false}
+          />
+        ))}
+      </div>
+      {/* [4] تم حذف أزرار التنقل (CarouselPrevious و CarouselNext) */}
     </div>
   );
 }

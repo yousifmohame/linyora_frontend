@@ -27,6 +27,8 @@ import {
   AlertCircle,
   Play,
   Camera,
+  Video,
+  ArrowLeft,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -50,45 +52,41 @@ interface User {
 }
 
 // [3] مكون مساعد لبطاقة المستخدم (للمودلز والتاجرات)
-const UserCard = ({ user, userType = 'models' }: { user: User, userType?: 'models' | 'merchants' }) => {
-  
-  // --- ✨ هذا هو التعديل المطلوب ---
-  // إذا لم يكن هناك رابط للصورة (null أو undefined أو string فارغ)
-  // لا تقم بعرض المكون (اعرض null)
-  if (!user.profile_picture_url) {
-    return null; 
-  }
-  // ---------------------------------
+const UserCard = ({
+  user,
+  userType = 'models',
+}: {
+  user: User;
+  userType?: 'models' | 'merchants';
+}) => {
+  const defaultImage = '/shop.jpg'; // ضع هنا مسار الصورة الافتراضية
 
-  // إذا وصلنا إلى هنا، فالصورة موجودة، وسنستمر في عرض الكود الأصلي
+  const imageUrl = user.profile_picture_url || defaultImage;
+
   return (
     <Link
       href={`/${userType}/${user.id}`}
       className="flex items-center align-middle p-0 rounded hover:bg-gray-100 transition-colors"
     >
-      <Avatar className="relative w-full h-25 bg-amber-200 border rounded overflow-hidden flex items-center justify-center">
-        
-        {/* هذا الكود سيعمل دائمًا الآن 
-          لأننا تأكدنا أن `profile_picture_url` موجود
-        */}
+      <Avatar className="w-full md:w-25 lg:w-20 h-25 bg-amber-200 border rounded overflow-hidden">
         <AvatarImage
-          src={user.profile_picture_url}
+          src={imageUrl}
           alt={user.name}
           className="object-cover w-full h-full"
         />
-        {/* هذا الـ Fallback سيعمل فقط إذا كان الرابط موجوداً ولكنه "مكسور" أو فشل تحميله
-        */}
-        <AvatarFallback className="text-3xl font-semibold bg-amber-200 border-none">
+        <AvatarFallback className="flex items-center justify-center text-2xl font-semibold bg-amber-200">
           {user.name?.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
-        <h4 className="hidden lg:block md:block font-semibold text-sm truncate">{user.name}</h4>
-        <p className="hidden lg:block md:block text-xs text-gray-500 truncate">@{user.name}</p>
+
+      <div className="flex-1 min-w-0 ml-3">
+        <h4 className="hidden md:block font-semibold text-sm truncate">{user.name}</h4>
+        <p className="hidden md:block text-xs text-gray-500 truncate">@{user.name}</p>
       </div>
     </Link>
   );
 };
+
 
 // [4] مكون مساعد للهيكل العظمي (Skeleton)
 const SidebarSkeleton = () => (
@@ -312,32 +310,25 @@ const ReelItem = memo<{
                 )}
               </div>
 
-              <div className="absolute top-4 left-2 right-2 z-20 flex justify-between items-start">
-                {/* زر المنتجات */}
-                {hasTaggedProducts && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full h-10 w-10 p-1"
-                      >
-                        <ShoppingBag className="w-5 h-5" />
-                        <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-[10px] bg-red-500 border-0">
-                          {reel.tagged_products.length}
-                        </Badge>
-                      </Button>
-                    </PopoverTrigger>
-                  </Popover>
-                )}
+              <div className="absolute bottom-0 right-0 left-0 justify-self-center z-20 ">
+                
 
                 {/* زر المزيد */}
                 <DropdownMenu>
-                   {/* ... (محتوى DropdownMenu) ... */}
+                  <Link href="/style-today">
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-full px-8 text-sm font-semibold group"
+                    >
+                      كل الفيديوهات
+                      {/* (بما أن الواجهة عربية، السهم لليسار يعني "التالي") */}
+                      <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
+                    </Button>
+                  </Link>
                 </DropdownMenu>
               </div>
 
-              <div className="absolute bottom-4 left-0 right-0 p-3 z-10">
+              <div className="absolute bottom-8 left-0 right-0 p-3 z-10">
                 {/* ... (معلومات المستخدم والتعليقات واللايكات) ... */}
                 <Link href={`/models/${reel.userId}`} className="flex items-center gap-2 mb-2">
                     <Avatar className="hidden lg:block md:block w-10 h-10 border-2 border-white/80 shadow-lg flex-shrink-0">

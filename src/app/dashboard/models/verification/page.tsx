@@ -22,12 +22,13 @@ import {
   Globe,
   Sparkles,
   Target,
+  Landmark,
 } from 'lucide-react';
 import Navigation from '@/components/dashboards/Navigation';
 import { Badge } from '@/components/ui/badge';
 import ModelNav from '@/components/dashboards/ModelNav';
 
-// ✅ Custom TikTok Icon
+// Custom TikTok Icon
 const TikTokIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}
@@ -39,7 +40,7 @@ const TikTokIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// ✅ Custom Snapchat Icon
+// Custom Snapchat Icon
 const SnapchatIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}
@@ -51,7 +52,7 @@ const SnapchatIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// ✅ Social Platforms with Custom Icons
+// Social Platforms with Custom Icons
 const SOCIAL_PLATFORMS = [
   { id: 'instagram', name: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/username' },
   { id: 'snapchat', name: 'Snapchat', icon: SnapchatIcon, placeholder: 'your_username' },
@@ -64,11 +65,20 @@ const SOCIAL_PLATFORMS = [
 export default function VerificationPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // States for all fields
   const [identityNumber, setIdentityNumber] = useState('');
   const [identityImage, setIdentityImage] = useState<File | null>(null);
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>({});
   const [followers, setFollowers] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Bank states
+  const [bankName, setBankName] = useState('');
+  const [accountHolderName, setAccountHolderName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [iban, setIban] = useState('');
+  const [ibanCertificate, setIbanCertificate] = useState<File | null>(null);
 
   const handleSocialLinkChange = (platform: string, value: string) => {
     setSocialLinks((prev) => ({
@@ -80,17 +90,26 @@ export default function VerificationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const hasAnyLink = Object.values(socialLinks).some((link) => link.trim() !== '');
-    if (!identityNumber || !identityImage || !hasAnyLink || !followers) {
-      toast.error(t('verification.errorAllFields'));
+
+    // Validate required fields
+    if (!identityNumber || !identityImage || !hasAnyLink || !followers || !iban || !ibanCertificate) {
+      toast.error(t('verification.errorAllFields', 'الرجاء ملء جميع الحقول الإجبارية (الهوية، المتابعين، الآيبان، وشهادة الآيبان).'));
       return;
     }
+
     setIsSubmitting(true);
 
+    // Create form data with all fields
     const formData = new FormData();
     formData.append('identity_number', identityNumber);
-    formData.append('identity_image', identityImage);
+    if (identityImage) formData.append('identity_image', identityImage);
     formData.append('social_links', JSON.stringify(socialLinks));
     formData.append('stats', JSON.stringify({ followers }));
+    
+    // Add bank data
+    formData.append('account_number', accountNumber);
+    formData.append('iban', iban);
+    if (ibanCertificate) formData.append('iban_certificate', ibanCertificate);
 
     try {
       const response = await api.post('/users/submit-verification', formData, {
@@ -109,7 +128,7 @@ export default function VerificationPage() {
     }
   };
 
-  // ✅ Verified UI
+  // Verified UI
   if (user?.verification_status === 'approved') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 p-6">
@@ -134,11 +153,11 @@ export default function VerificationPage() {
     );
   }
 
-  // ✅ Pending UI
+  // Pending UI
   if (user?.verification_status === 'pending') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 p-6">
-        <Navigation />
+        <ModelNav />
         <div className="max-w-md mx-auto mt-8">
           <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-xl rounded-3xl overflow-hidden text-center">
             <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white pb-4">
@@ -159,13 +178,13 @@ export default function VerificationPage() {
     );
   }
 
-  // ✅ Form UI
+  // Form UI
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-100 p-6">
       <div className="absolute top-0 right-0 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
 
-      <Navigation />
+      <ModelNav />
 
       <div className="max-w-2xl mx-auto mt-8">
         <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow-xl rounded-3xl overflow-hidden">
@@ -194,7 +213,7 @@ export default function VerificationPage() {
 
                 <div className="space-y-3">
                   <Label htmlFor="identityNumber" className="text-purple-700 font-medium">
-                    {t('verification.idNumber')}
+                    {t('verification.idNumber')} (إجباري)
                   </Label>
                   <Input
                     id="identityNumber"
@@ -208,7 +227,7 @@ export default function VerificationPage() {
 
                 <div className="space-y-3">
                   <Label htmlFor="identityImage" className="text-purple-700 font-medium">
-                    {t('verification.idImage')}
+                    {t('verification.idImage')} (إجباري)
                   </Label>
                   <Input
                     id="identityImage"
@@ -221,8 +240,8 @@ export default function VerificationPage() {
                 </div>
               </div>
 
-              {/* Social Media - ALL PLATFORMS */}
-              <div className="space-y-4">
+              {/* Social Media */}
+              <div className="space-y-4 pb-6 border-b border-purple-200">
                 <h3 className="text-xl font-bold text-purple-800 flex items-center gap-2">
                   <Users className="w-5 h-5" />
                   {t('verification.socialMedia')}
@@ -248,11 +267,10 @@ export default function VerificationPage() {
                   );
                 })}
 
-                {/* Followers */}
                 <div className="space-y-3 pt-4">
                   <Label htmlFor="followers" className="text-purple-700 font-medium flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    {t('verification.followers')}
+                    {t('verification.followers')} (إجباري)
                   </Label>
                   <Input
                     id="followers"
@@ -264,28 +282,58 @@ export default function VerificationPage() {
                     className="bg-white border-purple-200 focus:border-purple-400 rounded-2xl px-4 py-3"
                   />
                 </div>
+              </div>
 
-                {/* Badges for filled platforms */}
-                {Object.keys(socialLinks).some((k) => socialLinks[k]) && (
-                  <div className="pt-4">
-                    <Label className="text-purple-700 font-medium">{t('verification.addedPlatforms')}:</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {SOCIAL_PLATFORMS.map((platform) => {
-                        if (!socialLinks[platform.id]?.trim()) return null;
-                        const IconComponent = platform.icon;
-                        return (
-                          <Badge
-                            key={platform.id}
-                            className="bg-purple-100 text-purple-800 hover:bg-purple-100 rounded-xl px-3 py-1"
-                          >
-                            <IconComponent className="w-3 h-3 ml-1 inline" />
-                            {t(`social.${platform.id}`) || platform.name}
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+              {/* Bank Information */}
+              <div className="space-y-4 pb-6 border-b border-purple-200">
+                <h3 className="text-xl font-bold text-purple-800 flex items-center gap-2">
+                  <Landmark className="w-5 h-5" />
+                  {t('verification.bankInfo', 'معلومات الحساب البنكي')}
+                </h3>
+                <p className="text-sm text-purple-600">
+                  {t('verification.bankInfoDesc', 'تُستخدم هذه المعلومات لتحويل أرباحك. يرجى التأكد من دقتها.')}
+                </p>
+
+                <div className="space-y-3">
+                  <Label htmlFor="accountNumber" className="text-purple-700 font-medium">
+                    {t('verification.accountNumber', 'رقم الحساب (اجباري)')}
+                  </Label>
+                  <Input
+                    id="accountNumber"
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    className="bg-white border-purple-200 focus:border-purple-400 rounded-2xl px-4 py-3"
+                    placeholder={t('verification.accountNumberPlaceholder', 'رقم الحساب')}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="iban" className="text-purple-700 font-medium">
+                    {t('verification.iban', 'رقم الآيبان (IBAN)')} (إجباري)
+                  </Label>
+                  <Input
+                    id="iban"
+                    value={iban}
+                    onChange={(e) => setIban(e.target.value)}
+                    required
+                    className="bg-white border-purple-200 focus:border-purple-400 rounded-2xl px-4 py-3"
+                    placeholder="SAXXXXXXXXXXXXXXXXXXXXXX"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="ibanCertificate" className="text-purple-700 font-medium">
+                    {t('verification.ibanCertificate', 'شهادة الآيبان')} (إجباري)
+                  </Label>
+                  <Input
+                    id="ibanCertificate"
+                    type="file"
+                    onChange={(e) => e.target.files && setIbanCertificate(e.target.files[0])}
+                    accept="image/png, image/jpeg, image/jpg, application/pdf"
+                    required
+                    className="bg-white border-purple-200 focus:border-purple-400 rounded-2xl px-4 py-3"
+                  />
+                </div>
               </div>
 
               {/* Submit */}

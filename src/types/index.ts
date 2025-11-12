@@ -74,6 +74,9 @@ export interface ModelPayoutRequest {
   user_id: number;
   userName: string;
   userEmail: string;
+  iban: string;
+  account_number: string;
+  iban_certificate_url: string;
 }
 
 export interface Category {

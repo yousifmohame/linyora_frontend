@@ -220,12 +220,12 @@ export default function SupplierDashboard() {
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Link href={'/supplier/products'}>
+              <Link href={'/dashboard/supplier/products'}>
               <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-2xl py-3 font-bold transition-colors duration-200">
                 {t('supplierdashboard.quickActions.addProduct')}
               </Button>
               </Link>
-              <Link href={'/supplier/orders'}>
+              <Link href={'/dashboard/supplier/orders'}>
               <Button
                 variant="outline"
                 className="border-blue-200 text-blue-700 hover:bg-blue-50 rounded-2xl py-3 font-bold transition-colors duration-200"
@@ -233,7 +233,7 @@ export default function SupplierDashboard() {
                 {t('supplierdashboard.quickActions.viewOrders')}
               </Button>
               </Link>
-              <Link href={'/supplier/products'}>
+              <Link href={'/dashboard/supplier/products'}>
               <Button
                 variant="outline"
                 className="border-green-200 text-green-700 hover:bg-green-50 rounded-2xl py-3 font-bold transition-colors duration-200"

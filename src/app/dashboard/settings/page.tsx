@@ -15,7 +15,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   UploadCloud, Settings, Building, Share2, Gem, AlertTriangle, Sparkles,
   Globe, Bell, Shield, CreditCard, Download, Eye, Mail, MessageCircle,
-  Phone, Calendar, History
+  Phone, Calendar, History,
+  User,
+  Loader2
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -34,6 +36,7 @@ interface SettingsData {
   store_name: string;
   store_description: string;
   store_banner_url?: string | null;
+  profile_picture_url?: string | null;
   social_links?: SocialLinks | null;
   notifications: {
     email: boolean;
@@ -65,6 +68,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingProfile, setIsUploadingProfile] = useState(false); // <-- [4] حالة تحميل للصورة الشخصية
   const [activeTab, setActiveTab] = useState('general');
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -146,6 +150,27 @@ export default function SettingsPage() {
         [key]: value,
       },
     }));
+  };
+
+  const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !settings) return;
+    setIsUploadingProfile(true);
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file); // (نفترض استخدام نفس مسار الرفع العام)
+
+    try {
+      // 💡 (ملاحظة: يمكنك تغيير '/upload' إلى مسار مخصص إذا أردت)
+      const response = await api.post('/upload', formData); 
+      // تحديث الحالة ليتم حفظها عند الضغط على "حفظ التغييرات"
+      setSettings({ ...settings, profile_picture_url: response.data.imageUrl });
+      toast.success(t('SettingsPage.upload.profileSuccess', 'تم تحديث الصورة الشخصية'));
+    } catch (error) {
+      console.error('Profile picture upload failed', error);
+      toast.error(t('SettingsPage.upload.profileFailed', 'فشل رفع الصورة الشخصية'));
+    } finally {
+      setIsUploadingProfile(false);
+    }
   };
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -405,6 +430,49 @@ export default function SettingsPage() {
                           rows={4}
                           className="bg-white border-gray-300 focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all duration-200 rounded-xl"
                         />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="flex items-center space-x-2 space-x-reverse text-sm font-semibold">
+                          <User className="w-4 h-4 text-green-500" />
+                          <span>{t('SettingsPage.fields.profilePicture', 'الصورة الشخصية (الشعار)')}</span>
+                        </Label>
+                        <div className="flex items-center gap-4">
+                          {/* Avatar Display */}
+                          <div className="relative w-24 h-24 rounded-full flex-shrink-0">
+                            <div className="w-full h-full rounded-full border-4 border-white shadow-md flex items-center justify-center bg-gray-100 overflow-hidden">
+                              {settings.profile_picture_url ? (
+                                <Image 
+                                  src={settings.profile_picture_url} 
+                                  alt="Profile Picture" 
+                                  fill 
+                                  className="object-cover" 
+                                  unoptimized 
+                                />
+                              ) : (
+                                <User className="w-10 h-10 text-gray-400" />
+                              )}
+                            </div>
+                            {/* Upload Overlay */}
+                            <label 
+                              htmlFor="profile-picture-upload" 
+                              className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                            >
+                              {isUploadingProfile ? (
+                                <Loader2 className="w-6 h-6 animate-spin" />
+                              ) : (
+                                <UploadCloud className="w-6 h-6" />
+                              )}
+                              <input id="profile-picture-upload" type="file" className="hidden" onChange={handleProfilePictureUpload} disabled={isUploadingProfile} accept="image/png, image/jpeg, image/jpg" />
+                            </label>
+                          </div>
+                          {/* Description */}
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-600">
+                              {t('SettingsPage.upload.profileDesc', 'أضف صورة شخصية لمتجرك (شعار أو صورة). يُفضل أن تكون مربعة.')}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                       
                       <div className="space-y-2">

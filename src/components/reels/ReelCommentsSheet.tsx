@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Reel, Comment } from '@/types';
 import {
   Sheet,
@@ -16,7 +17,6 @@ import {
   Heart,
   MoreHorizontal,
   X,
-  UserPlus,
   MessageCircle,
 } from 'lucide-react';
 import api from '@/lib/axios';
@@ -43,6 +43,8 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
   isOpen,
   onOpenChange,
 }) => {
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -51,7 +53,6 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
   const [likedComments, setLikedComments] = useState<Set<number>>(new Set());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Fetch comments when sheet opens
   useEffect(() => {
     const fetchComments = async () => {
       if (isOpen && reel.id) {
@@ -61,17 +62,16 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
           setComments(response.data || []);
         } catch (error) {
           console.error('Failed to fetch comments:', error);
+          toast.error(t('ReelCommentsSheet.toast.fetchError'));
           setComments([]);
         } finally {
           setIsLoading(false);
         }
       }
     };
-
     fetchComments();
-  }, [isOpen, reel.id]);
+  }, [isOpen, reel.id, t]);
 
-  // Auto-scroll to bottom when new comments appear
   useEffect(() => {
     if (scrollAreaRef.current && comments.length > 0) {
       setTimeout(() => {
@@ -93,11 +93,11 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
       });
       setComments((prev) => [response.data, ...prev]);
       setNewComment('');
-      toast.success('Comment posted');
+      toast.success(t('ReelCommentsSheet.toast.postSuccess'));
     } catch (error: any) {
       console.error('Failed to post comment:', error);
-      toast.error('Failed to post comment', {
-        description: error.response?.data?.message || 'Please try again.',
+      toast.error(t('ReelCommentsSheet.toast.postError'), {
+        description: error.response?.data?.message || t('ReelCommentsSheet.toast.tryAgain'),
       });
     } finally {
       setIsPosting(false);
@@ -106,14 +106,13 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
 
   const handleLikeComment = async (commentId: number) => {
     if (!user) {
-      toast.error('Please login to like comments');
+      toast.error(t('ReelCommentsSheet.toast.loginToLike'));
       return;
     }
 
     const isCurrentlyLiked = likedComments.has(commentId);
     const previousState = new Set(likedComments);
 
-    // Optimistic UI update
     const updatedLiked = new Set(likedComments);
     if (isCurrentlyLiked) {
       updatedLiked.delete(commentId);
@@ -122,7 +121,6 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
     }
     setLikedComments(updatedLiked);
 
-    // API call
     try {
       if (isCurrentlyLiked) {
         await api.delete(`/comments/${commentId}/like`);
@@ -131,29 +129,18 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
       }
     } catch (error) {
       console.error('Failed to like comment:', error);
-      toast.error('Failed to like comment');
-      // Revert on failure
+      toast.error(t('ReelCommentsSheet.toast.likeError'));
       setLikedComments(previousState);
-    }
-  };
-
-  const handleFollowUser = async (userId: number, userName: string) => {
-    try {
-      await api.post(`/users/${userId}/follow`);
-      toast.success(`Following ${userName}`);
-    } catch (error) {
-      console.error('Failed to follow user:', error);
-      toast.error('Failed to follow user');
     }
   };
 
   const handleReportComment = async (commentId: number) => {
     try {
       await api.post(`/comments/${commentId}/report`);
-      toast.success('Comment reported');
+      toast.success(t('ReelCommentsSheet.toast.reportSuccess'));
     } catch (error) {
       console.error('Failed to report comment:', error);
-      toast.error('Failed to report comment');
+      toast.error(t('ReelCommentsSheet.toast.reportError'));
     }
   };
 
@@ -163,15 +150,16 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
         side="bottom"
         className="h-[65vh] rounded-t-3xl border-0 bg-gray-950 text-white"
       >
-        {/* Header */}
         <SheetHeader className="flex-row items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/10 rounded-xl">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Comments</h2>
-              <p className="text-sm text-white/60">{comments.length} comments</p>
+              <h2 className="text-xl font-bold text-white">{t('ReelCommentsSheet.title')}</h2>
+              <p className="text-sm text-white/60">
+                {t('ReelCommentsSheet.count', { count: comments.length })}
+              </p>
             </div>
           </div>
           <Button
@@ -184,12 +172,11 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
           </Button>
         </SheetHeader>
 
-        {/* Comments List */}
         <ScrollArea className="flex-grow my-4 pr-4" ref={scrollAreaRef}>
           <div className="space-y-4 px-1">
             {isLoading && (
               <div className="flex justify-center py-8">
-                <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full" />
               </div>
             )}
 
@@ -198,8 +185,8 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
                 <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <MessageCircle className="w-8 h-8 text-white/40" />
                 </div>
-                <p className="text-white/60 text-lg mb-2">No comments yet</p>
-                <p className="text-white/40 text-sm">Be the first to comment!</p>
+                <p className="text-white/60 text-lg mb-2">{t('ReelCommentsSheet.empty.title')}</p>
+                <p className="text-white/40 text-sm">{t('ReelCommentsSheet.empty.subtitle')}</p>
               </div>
             )}
 
@@ -207,10 +194,10 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
               comments.map((comment) => (
                 <div
                   key={comment.id}
-                  className="flex items-start gap-3 group hover:bg-white/5 rounded-2xl p-3 transition-all duration-200"
+                  className="flex items-start gap-3 hover:bg-white/5 rounded-2xl p-3"
                 >
                   <Link href={`/models/${comment.userId}`}>
-                    <Avatar className="w-10 h-10 border-2 border-white/20 hover:border-primary transition-all cursor-pointer">
+                    <Avatar className="w-10 h-10 border-2 border-white/20 cursor-pointer">
                       <AvatarImage src={comment.userAvatar || ''} alt={comment.userName} />
                       <AvatarFallback className="bg-gradient-to-r from-primary to-purple-600 text-white font-semibold">
                         {comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U'}
@@ -221,14 +208,14 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <Link href={`/models/${comment.userId}`}>
-                        <span className="text-white font-semibold text-sm hover:text-primary transition-colors cursor-pointer">
+                        <span className="text-white font-semibold text-sm hover:text-primary cursor-pointer">
                           {comment.userName}
                         </span>
                       </Link>
                       <span className="text-white/40 text-xs">
                         {formatDistanceToNow(new Date(comment.created_at), {
                           addSuffix: true,
-                          locale: arSA,
+                          locale: isArabic ? arSA : undefined,
                         })}
                       </span>
                     </div>
@@ -246,21 +233,11 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
                         <Heart
                           className={`w-3 h-3 mr-1 transition-all ${
                             likedComments.has(comment.id)
-                              ? 'fill-red-500 text-red-500 scale-110'
+                              ? 'fill-red-500 text-red-500'
                               : ''
                           }`}
                         />
-                        <span className="text-xs">Like</span>
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-white/60 hover:text-primary hover:bg-transparent text-xs"
-                        onClick={() => handleFollowUser(comment.userId, comment.userName)}
-                      >
-                        <UserPlus className="w-3 h-3 mr-1" />
-                        Follow
+                        <span className="text-xs">{t('ReelCommentsSheet.actions.like')}</span>
                       </Button>
                     </div>
                   </div>
@@ -270,7 +247,7 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-white/40 opacity-0 group-hover:opacity-100 hover:bg-white/20 hover:text-white rounded-full transition-all"
+                        className="h-7 w-7 text-white/40 hover:bg-white/20 hover:text-white rounded-full"
                       >
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
@@ -283,13 +260,13 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
                         className="cursor-pointer hover:bg-white/10"
                         onClick={() => navigator.clipboard.writeText(comment.comment)}
                       >
-                        Copy text
+                        {t('ReelCommentsSheet.dropdown.copy')}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="cursor-pointer hover:bg-white/10 text-red-400"
                         onClick={() => handleReportComment(comment.id)}
                       >
-                        Report
+                        {t('ReelCommentsSheet.dropdown.report')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -298,7 +275,6 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
           </div>
         </ScrollArea>
 
-        {/* Comment Input */}
         <div className="border-t border-white/10 pt-4">
           {user ? (
             <form onSubmit={handlePostComment} className="flex items-center gap-3">
@@ -311,20 +287,20 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
 
               <div className="flex-1 relative">
                 <Input
-                  placeholder="Add a comment..."
+                  placeholder={t('ReelCommentsSheet.input.placeholder')}
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   disabled={isPosting}
-                  className="bg-white/10 border-0 text-white placeholder:text-white/40 rounded-2xl px-4 py-6 pr-12 focus:bg-white/15 transition-all"
+                  className="bg-white/10 border-0 text-white placeholder:text-white/40 rounded-2xl px-4 py-6 pr-12 focus:bg-white/15"
                 />
                 <Button
                   type="submit"
                   size="icon"
                   disabled={isPosting || !newComment.trim()}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-primary hover:bg-primary/90 rounded-full transition-all duration-200 hover:scale-110"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-primary hover:bg-primary/90 rounded-full"
                 >
                   {isPosting ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
                   ) : (
                     <SendHorizonal className="w-4 h-4" />
                   )}
@@ -333,19 +309,19 @@ export const ReelCommentsSheet: React.FC<ReelCommentsSheetProps> = ({
             </form>
           ) : (
             <div className="text-center py-4">
-              <p className="text-white/60 text-sm mb-3">Join the conversation</p>
+              <p className="text-white/60 text-sm mb-3">{t('ReelCommentsSheet.loginPrompt')}</p>
               <div className="flex gap-3 justify-center">
                 <Link href="/login">
                   <Button
                     variant="outline"
                     className="bg-transparent border-white/20 text-white hover:bg-white/10 rounded-full"
                   >
-                    Log in
+                    {t('ReelCommentsSheet.actions.login')}
                   </Button>
                 </Link>
                 <Link href="/signup">
                   <Button className="bg-primary hover:bg-primary/90 text-white rounded-full">
-                    Sign up
+                    {t('ReelCommentsSheet.actions.signup')}
                   </Button>
                 </Link>
               </div>

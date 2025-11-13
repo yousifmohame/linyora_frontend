@@ -48,6 +48,7 @@ import {
 interface User {
   id: number;
   name: string;
+  store_name: string;
   profile_picture_url?: string;
 }
 
@@ -56,12 +57,31 @@ const UserCard = ({
   user,
   userType = 'models',
 }: {
-  user: User;
+  user: User; // نفترض أن User يحتوي على: id, profile_picture_url, store_name, name
   userType?: 'models' | 'merchants';
 }) => {
-  const defaultImage = '/shop.jpg'; // ضع هنا مسار الصورة الافتراضية
-
+  const defaultImage = '/shop.jpg'; // المسار الافتراضي
   const imageUrl = user.profile_picture_url || defaultImage;
+
+  // --- ✨ [1] هذا هو التعديل المطلوب ---
+  
+  // تحديد ما إذا كان المستخدم تاجراً
+  const isMerchant = userType === 'merchants';
+  
+  // 1. تحديد الاسم الرئيسي للعرض:
+  // إذا كان تاجراً، اعرض `store_name`، وإلا اعرض `name`
+  const displayName = isMerchant ? user.store_name : user.name;
+  
+  // 2. تحديد النص الاحتياطي للأفاتار (أول حرف):
+  // استخدم أول حرف من الاسم المحدد للعرض
+  const displayFallback = (displayName || '?').charAt(0).toUpperCase();
+  
+  // 3. تحديد "الهاندل" (النص الصغير @):
+  // للتاجر: نعرض @username (نفترض أنه user.name)
+  // للموديل: نعرض @username (user.name)
+  // (هذا يبقي المنطق السابق كما هو)
+  const displayHandle = user.name; 
+  // -------------------------------
 
   return (
     <Link
@@ -71,17 +91,20 @@ const UserCard = ({
       <Avatar className="w-full md:w-25 lg:w-20 h-25 bg-amber-200 border rounded overflow-hidden">
         <AvatarImage
           src={imageUrl}
-          alt={user.name}
+          alt={displayName || 'Profile Image'} // <-- ✨ تم التعديل
           className="object-cover w-full h-full"
         />
         <AvatarFallback className="flex items-center justify-center text-2xl font-semibold bg-amber-200">
-          {user.name?.charAt(0).toUpperCase()}
+          {displayFallback} {/* <-- ✨ تم التعديل */}
         </AvatarFallback>
       </Avatar>
 
-      <div className="flex-1 min-w-0 ml-3">
-        <h4 className="hidden md:block font-semibold text-sm truncate">{user.name}</h4>
-        <p className="hidden md:block text-xs text-gray-500 truncate">@{user.name}</p>
+      <div className="flex-1 min-w-0 mx-2 ml-3">
+        {/* ✨ تم التعديل: يعرض store_name للتاجر و name للموديل */}
+        <h4 className="hidden md:block font-semibold text-sm truncate">{displayName}</h4>
+        
+        {/* ✨ يعرض @user.name في كلتا الحالتين */}
+        <p className="hidden md:block text-xs text-gray-500 truncate">@{displayHandle}</p>
       </div>
     </Link>
   );

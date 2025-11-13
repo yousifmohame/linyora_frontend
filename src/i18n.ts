@@ -1391,6 +1391,22 @@ const resources = {
       "error": "Something went wrong."
     }
   },
+  "ReelProductsSheet": {
+    "title": "Shop This Look",
+    "productCount_one": "{{count}} product available",
+    "productCount_other": "{{count}} products available",
+    "empty": "No products found for this reel",
+    "badges": {
+      "sale": "Sale"
+    },
+    "actions": {
+      "retry": "Try Again",
+      "viewProduct": "View Product"
+    },
+    "toast": {
+      "fetchError": "Failed to load products"
+    }
+  },
     "StoreSettings": {
       "title": "Store Settings",
       "subtitle": "Manage your store's basic information and preferences.",
@@ -2696,6 +2712,38 @@ const resources = {
     "updateError": "Failed to update request status."
   }
 },
+"ReelCommentsSheet": {
+    "title": "Comments",
+    "count_one": "{{count}} comment",
+    "count_other": "{{count}} comments",
+    "empty": {
+      "title": "No comments yet",
+      "subtitle": "Be the first to comment!"
+    },
+    "actions": {
+      "like": "Like",
+      "login": "Log in",
+      "signup": "Sign up"
+    },
+    "dropdown": {
+      "copy": "Copy text",
+      "report": "Report"
+    },
+    "input": {
+      "placeholder": "Add a comment..."
+    },
+    "loginPrompt": "Join the conversation",
+    "toast": {
+      "fetchError": "Failed to load comments",
+      "postSuccess": "Comment posted",
+      "postError": "Failed to post comment",
+      "tryAgain": "Please try again.",
+      "loginToLike": "Please login to like comments",
+      "likeError": "Failed to like comment",
+      "reportSuccess": "Comment reported",
+      "reportError": "Failed to report comment"
+    }
+  },
 "AdminShipping": {
     "title": "Shipping Management",
     "subtitle": "Manage your shipping providers, API keys, and activation status from one central dashboard.",
@@ -5906,6 +5954,42 @@ const resources = {
     "description": "لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد من أنك تريد حذف هذا العنوان؟"
   }
 },
+"ReelCommentsSheet": {
+    "title": "التعليقات",
+    "count_zero": "{{count}} تعليق",
+    "count_one": "{{count}} تعليق",
+    "count_two": "{{count}} تعليقين",
+    "count_few": "{{count}} تعليقات",
+    "count_many": "{{count}} تعليقًا",
+    "count_other": "{{count}} تعليق",
+    "empty": {
+      "title": "لا توجد تعليقات بعد",
+      "subtitle": "كن أول من يعلق!"
+    },
+    "actions": {
+      "like": "إعجاب",
+      "login": "تسجيل الدخول",
+      "signup": "إنشاء حساب"
+    },
+    "dropdown": {
+      "copy": "نسخ النص",
+      "report": "الإبلاغ"
+    },
+    "input": {
+      "placeholder": "أضف تعليقًا..."
+    },
+    "loginPrompt": "انضم إلى المحادثة",
+    "toast": {
+      "fetchError": "فشل تحميل التعليقات",
+      "postSuccess": "تم نشر التعليق",
+      "postError": "فشل نشر التعليق",
+      "tryAgain": "يرجى المحاولة مجددًا.",
+      "loginToLike": "يرجى تسجيل الدخول للإعجاب بالتعليقات",
+      "likeError": "فشل الإعجاب بالتعليق",
+      "reportSuccess": "تم الإبلاغ عن التعليق",
+      "reportError": "فشل الإبلاغ عن التعليق"
+    }
+  },
   "MessagesPage": {
     "title": "الرسائل",
     "conversations": "المحادثات",
@@ -5925,6 +6009,26 @@ const resources = {
     "attachmentFile": "ملف مرفق",
     "selectConversation": "اختر محادثة",
     "selectConversationHint": "لعرض الرسائل أو بدء محادثة جديدة."
+  },
+  "ReelProductsSheet": {
+    "title": "تسوق هذا المظهر",
+    "productCount_zero": "{{count}} منتج متوفر",
+    "productCount_one": "{{count}} منتج متوفر",
+    "productCount_two": "{{count}} منتجين متوفران",
+    "productCount_few": "{{count}} منتجات متوفرة",
+    "productCount_many": "{{count}} منتجًا متوفرًا",
+    "productCount_other": "{{count}} منتج متوفر",
+    "empty": "لا توجد منتجات لهذا الرييل",
+    "badges": {
+      "sale": "خصم"
+    },
+    "actions": {
+      "retry": "حاول مجددًا",
+      "viewProduct": "عرض المنتج"
+    },
+    "toast": {
+      "fetchError": "فشل في تحميل المنتجات"
+    }
   },
   "AdminProductsPage": {
     "title": "إدارة المنتجات",

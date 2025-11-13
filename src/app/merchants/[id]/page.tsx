@@ -15,6 +15,7 @@ import ProductCard from '@/components/ProductCard'; // <-- 3. إضافة بطا�
 interface MerchantProfile {
   id: number;
   name: string; // اسم التاجر
+  store_name: string;
   profile_picture_url?: string; // صورته
   bio?: string; // النبذة التعريفية
   products: Product[]; // <-- 4. إضافة مصفوفة المنتجات
@@ -99,7 +100,7 @@ export default function MerchantProfilePage() {
           </AvatarFallback>
         </Avatar>
         <div className="text-center sm:text-right">
-          <h1 className="text-3xl font-bold">{merchant.name}</h1>
+          <h1 className="text-3xl font-bold">{merchant.store_name}</h1>
           <p className="text-gray-600 mt-2 max-w-lg">
             {merchant.bio || 'تاجر مسجل في منصة لينيورا.'}
           </p>

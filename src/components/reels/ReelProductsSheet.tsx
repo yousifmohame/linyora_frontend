@@ -1,6 +1,6 @@
-// linora-platform/frontend/src/components/reels/ReelProductsSheet.tsx
 "use client";
 
+import { useTranslation } from 'react-i18next';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import api from "@/lib/axios";
@@ -28,9 +28,7 @@ function ProductSkeleton() {
 }
 
 export function ReelProductsSheet({ reelId, modelId, isOpen, setIsOpen }: ReelProductsSheetProps) {
-  // ⭐️ ملاحظة: النوع 'Product' من 'types.ts' قد لا يتطابق مع ما تتوقعه هنا.
-  // قمت بتعديل الـ Backend ليرسل (id, name, price, discount_price, image_url)
-  // لذلك، قمت بتغيير 'Product[]' إلى 'any[]' ليعمل الكود
+  const { t } = useTranslation();
   const [products, setProducts] = useState<any[]>([]); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,14 +43,28 @@ export function ReelProductsSheet({ reelId, modelId, isOpen, setIsOpen }: ReelPr
           setProducts(Array.isArray(data) ? data : []);
         } catch (error) {
           console.error("Failed to fetch reel products:", error);
-          setError("Failed to load products");
+          setError(t('ReelProductsSheet.toast.fetchError'));
           setProducts([]);
         }
         setLoading(false);
       };
       fetchProducts();
     }
-  }, [isOpen, reelId]);
+  }, [isOpen, reelId, t]);
+
+  const handleRetry = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.get(`/reels/${reelId}/products`);
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch reel products:", error);
+      setError(t('ReelProductsSheet.toast.fetchError'));
+      setProducts([]);
+    }
+    setLoading(false);
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -63,9 +75,9 @@ export function ReelProductsSheet({ reelId, modelId, isOpen, setIsOpen }: ReelPr
               <ShoppingBag className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <SheetTitle className="text-left">Shop This Look</SheetTitle>
+              <SheetTitle className="text-left">{t('ReelProductsSheet.title')}</SheetTitle>
               <p className="text-sm text-gray-500">
-                {products.length} {products.length === 1 ? 'product' : 'products'} available
+                {t('ReelProductsSheet.productCount', { count: products.length })}
               </p>
             </div>
           </div>
@@ -90,30 +102,14 @@ export function ReelProductsSheet({ reelId, modelId, isOpen, setIsOpen }: ReelPr
             <div className="flex flex-col items-center justify-center h-40 text-center">
               <ShoppingBag className="w-12 h-12 text-gray-300 mb-3" />
               <p className="text-gray-500 mb-2">{error}</p>
-              <Button variant="outline" onClick={() => {
-                  // إعادة جلب البيانات
-                  const fetchProducts = async () => {
-                    setLoading(true);
-                    setError(null);
-                    try {
-                      const { data } = await api.get(`/reels/${reelId}/products`);
-                      setProducts(Array.isArray(data) ? data : []);
-                    } catch (error) {
-                      console.error("Failed to fetch reel products:", error);
-                      setError("Failed to load products");
-                      setProducts([]);
-                    }
-                    setLoading(false);
-                  };
-                  fetchProducts();
-              }}>
-                Try Again
+              <Button variant="outline" onClick={handleRetry}>
+                {t('ReelProductsSheet.actions.retry')}
               </Button>
             </div>
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-center">
               <ShoppingBag className="w-12 h-12 text-gray-300 mb-3" />
-              <p className="text-gray-500">No products found for this reel</p>
+              <p className="text-gray-500">{t('ReelProductsSheet.empty')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 pb-8">
@@ -121,7 +117,6 @@ export function ReelProductsSheet({ reelId, modelId, isOpen, setIsOpen }: ReelPr
                 <div
                   key={product.id}
                   className="group cursor-pointer bg-white rounded-xl border border-gray-200 hover:border-primary/30 transition-all duration-200 hover:shadow-lg overflow-hidden"
-                  // ⭐️ فتح الرابط في نافذة جديدة
                   onClick={() => {
                     const affiliateUrl = `/products/${product.id}?ref_model=${modelId}`;
                     window.open(affiliateUrl, '_blank');
@@ -134,10 +129,9 @@ export function ReelProductsSheet({ reelId, modelId, isOpen, setIsOpen }: ReelPr
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/f1f5f9/a1a1aa?text=Error'; }}
                     />
-                    {/* ⭐️ استخدام 'discount_price' (الذي هو compare_at_price) */}
                     {product.discount_price && product.discount_price > product.price && (
                       <Badge className="absolute top-2 left-2 bg-red-500 text-white border-0 text-xs">
-                        Sale
+                        {t('ReelProductsSheet.badges.sale')}
                       </Badge>
                     )}
                   </div>
@@ -146,14 +140,13 @@ export function ReelProductsSheet({ reelId, modelId, isOpen, setIsOpen }: ReelPr
                       {product.name}
                     </h3>
                     <div className="flex items-center gap-2">
-                      {/* ⭐️ استخدام 'discount_price' */}
                       {product.discount_price && product.discount_price > product.price ? (
                         <>
                           <span className="text-primary font-bold text-sm">
-                            ${product.price} {/* ⭐️ السعر المخفض هو 'price' */}
+                            ${product.price}
                           </span>
                           <span className="text-gray-400 text-xs line-through">
-                            ${product.discount_price} {/* ⭐️ السعر الأصلي هو 'discount_price' */}
+                            ${product.discount_price}
                           </span>
                         </>
                       ) : (
@@ -166,7 +159,7 @@ export function ReelProductsSheet({ reelId, modelId, isOpen, setIsOpen }: ReelPr
                       size="sm" 
                       className="w-full mt-2 bg-primary hover:bg-primary/90"
                     >
-                      View Product
+                      {t('ReelProductsSheet.actions.viewProduct')}
                     </Button>
                   </div>
                 </div>

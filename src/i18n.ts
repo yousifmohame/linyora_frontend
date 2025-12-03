@@ -1230,6 +1230,7 @@ const resources = {
           "overview": "Overview",
           "users": "Users",
           "messages":"Messages",
+          "sections": "Sections",
           "Footer":"Footer-setting",
           "marquee-bar":"marquee Bar",
           "main-banners": "Main Banners",
@@ -1262,6 +1263,13 @@ const resources = {
       "users":"Users",
       "system": "System",
       "back":"Back",
+      "all":"All",
+      "remove": "Remove",
+      "inactive": "Inactive",
+      "shopNow": {
+          "en": "Shop Now",
+          "ar": "تسوّق الآن"
+        },
         "locale": "en-US",
         "uploading": "Uploading...",
         "saving": "Saving...",
@@ -3754,6 +3762,160 @@ const resources = {
 
     "currency": "SAR"
   },
+  "SectionsManagement": {
+    "title": "Homepage Sections",
+    "subtitle": "Manage dynamic sections, sliders, and featured products for your homepage. Create, edit, and organize content to enhance user experience.",
+    "loading": "Loading sections...",
+    "confirm": {
+      "delete": "Are you sure you want to delete this section? This action cannot be undone."
+    },
+    "actions": {
+      "addSection": "Add New Section",
+      "createSection": "Create Section",
+      "edit": "Edit section",
+      "delete": "Delete section",
+      "clearFilters": "Clear Filters"
+    },
+    "search": {
+      "placeholder": "Search sections..."
+    },
+    "status": {
+      "active": "Active",
+      "draft": "Draft"
+    },
+    "stats": {
+      "total": "Total Sections",
+      "active": "Active",
+      "draft": "Draft",
+      "withSlides": "With Slides"
+    },
+    "manageTitle": "Manage Sections",
+    "table": {
+      "title": "Section Title",
+      "categories": "Categories",
+      "categoriesCount": "categories",
+      "slides": "Slides",
+      "slidesCount": "slides",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "No sections found",
+      "noSections": "Create your first section to get started",
+      "adjustFilters": "Try adjusting your search or filters"
+    },
+    "dialog": {
+      "createTitle": "Create New Section",
+      "editTitle": "Edit Section"
+    },
+    "toast": {
+      "fetchError": "Failed to load sections",
+      "deleteSuccess": "Section deleted successfully",
+      "deleteError": "Failed to delete section",
+      "statusUpdateSuccess": "Section {{action}} successfully",
+      "statusUpdateError": "Failed to update section status",
+      "createSuccess": "Section created successfully",
+      "updateSuccess": "Section updated successfully"
+    }
+  },
+  "SectionForm": {
+    "title": {
+      "create": "Create New Section",
+      "edit": "Edit Section"
+    },
+    "subtitle": {
+      "create": "Design and configure a new content section",
+      "edit": "Update your section details"
+    },
+    "loading": {
+      "title": "Loading form data",
+      "subtitle": "Preparing your workspace..."
+    },
+    "tabs": {
+      "basic": "Basic",
+      "content": "Content",
+      "appearance": "Appearance",
+      "advanced": "Advanced"
+    },
+    "basic": {
+      "title": "Basic Information",
+      "description": "Essential details about your section",
+      "icon": "Section Icon",
+      "iconTooltip": "Upload a square icon (recommended: 100x100px)",
+      "uploadIcon": "Upload Icon",
+      "iconHelp": "Upload a distinctive icon for your section. Supports PNG, JPG, SVG.",
+      "uploading": "Uploading...",
+      "titleEn": "English Title",
+      "titleAr": "Arabic Title",
+      "titleEnPlaceholder": "e.g., Summer Collection",
+      "titleArPlaceholder": "مثال: تشكيلة الصيف",
+      "descriptions": "Descriptions (Optional)",
+      "descEnPlaceholder": "English description for your section...",
+      "descArPlaceholder": "وصف بالعربية للقسم..."
+    },
+    "content": {
+      "title": "Slider Content",
+      "description": "Manage slides and media content",
+      "alert": "Add engaging slides with images or videos. Each slide supports dual-language content.",
+      "slide": "Slide",
+      "media": "Media Content",
+      "imageGif": "Image/GIF",
+      "video": "Video",
+      "uploadMedia": "Upload Media",
+      "dropImage": "Drop or select an image",
+      "dropVideo": "Drop or select a video file",
+      "imageFormats": "PNG, JPG, GIF up to 10MB",
+      "videoFormats": "MP4, WebM up to 50MB",
+      "titleEn": "Title (EN)",
+      "titleAr": "Title (AR)",
+      "titleEnPlaceholder": "English title",
+      "titleArPlaceholder": "عنوان بالعربية",
+      "buttonConfig": "Button Configuration",
+      "buttonEnPlaceholder": "Button text (EN)",
+      "buttonArPlaceholder": "نص الزر (AR)",
+      "addSlide": "Add New Slide"
+    },
+    "appearance": {
+      "theme": "Theme & Style",
+      "themeDesc": "Customize the visual appearance",
+      "color": "Theme Color",
+      "categories": "Categories",
+      "categoriesDesc": "Link relevant categories",
+      "selectedCategories": "Selected categories:"
+    },
+    "advanced": {
+      "title": "Advanced Settings",
+      "description": "Additional configuration options",
+      "featuredProduct": "Featured Product",
+      "productPlaceholder": "Select a product to feature",
+      "noProduct": "No featured product",
+      "productHelp": "This product will be highlighted in the section",
+      "status": "Section Status",
+      "statusHelp": "Control visibility of this section"
+    },
+    "actions": {
+      "createPrompt": "Create a new section",
+      "updatePrompt": "Update your section",
+      "create": "Create Section",
+      "update": "Update Section"
+    },
+    "validation": {
+      "titleEnRequired": "English title is required",
+      "titleArRequired": "Arabic title is required"
+    },
+    "media": {
+      "videoTypeWarning": "Please change media type to \"Video\" for video files"
+    },
+    "toast": {
+      "initError": "Failed to load form data",
+      "uploadSuccess": "Media uploaded successfully",
+      "uploadError": "Failed to upload media",
+      "createSuccess": "Section created successfully",
+      "updateSuccess": "Section updated successfully",
+      "submitError": "Failed to save section"
+    }
+  },
+  
   "CategoriesPage": {
     "search": {
       "placeholder": "Search categories...",
@@ -5352,6 +5514,7 @@ const resources = {
           "overview": "نظرة عامة",
           "users": "المستخدمون",
           "messages":"المحادثات",
+          "sections": "الأقسام", 
           "main-banners": "البنرات الرئيسية",
           "Footer":"إعدادات الفوتر",
           "marquee-bar":"الشريط الإعلاني",
@@ -5390,7 +5553,14 @@ const resources = {
         "edit": "تعديل",
         "delete": "حذف",
         "cancel": "إلغاء",
+        "all":"الكل",
+        "remove": "حذف",
+        "inactive": "غير نشط",
         "back": "الرجوع",
+        "shopNow": {
+          "en": "Shop Now",
+          "ar": "تسوّق الآن"
+        },
         "subscriptionStatus": {
           "active": "نشط",
           "cancelled": "ملغي",
@@ -7821,7 +7991,159 @@ const resources = {
     },
     "copyright": "منصة لينورا. جميع الحقوق محفوظة."
   },
-  
+  "SectionsManagement": {
+    "title": "أقسام الصفحة الرئيسية",
+    "subtitle": "قم بإدارة الأقسام الديناميكية، والشرائح، والمنتجات المميزة لصفحتك الرئيسية. أنشئ وحرّر ونظّم المحتوى لتحسين تجربة المستخدم.",
+    "loading": "جارٍ تحميل الأقسام...",
+    "confirm": {
+      "delete": "هل أنت متأكد من أنك تريد حذف هذا القسم؟ لا يمكن التراجع عن هذا الإجراء."
+    },
+    "actions": {
+      "addSection": "إضافة قسم جديد",
+      "createSection": "إنشاء قسم",
+      "edit": "تحرير القسم",
+      "delete": "حذف القسم",
+      "clearFilters": "مسح الفلاتر"
+    },
+    "search": {
+      "placeholder": "البحث في الأقسام..."
+    },
+    "status": {
+      "active": "نشط",
+      "draft": "مسودة"
+    },
+    "stats": {
+      "total": "إجمالي الأقسام",
+      "active": "نشط",
+      "draft": "مسودة",
+      "withSlides": "مع شرائح"
+    },
+    "manageTitle": "إدارة الأقسام",
+    "table": {
+      "title": "عنوان القسم",
+      "categories": "التصنيفات",
+      "categoriesCount": "تصنيفات",
+      "slides": "الشرائح",
+      "slidesCount": "شرائح",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "empty": {
+      "title": "لم يتم العثور على أقسام",
+      "noSections": "أنشئ قسمك الأول للبدء",
+      "adjustFilters": "جرّب تعديل البحث أو الفلاتر"
+    },
+    "dialog": {
+      "createTitle": "إنشاء قسم جديد",
+      "editTitle": "تحرير القسم"
+    },
+    "toast": {
+      "fetchError": "فشل تحميل الأقسام",
+      "deleteSuccess": "تم حذف القسم بنجاح",
+      "deleteError": "فشل حذف القسم",
+      "statusUpdateSuccess": "تم {{action}} القسم بنجاح",
+      "statusUpdateError": "فشل تحديث حالة القسم",
+      "createSuccess": "تم إنشاء القسم بنجاح",
+      "updateSuccess": "تم تحديث القسم بنجاح"
+    }
+  },
+  "SectionForm": {
+    "title": {
+      "create": "إنشاء قسم جديد",
+      "edit": "تحرير القسم"
+    },
+    "subtitle": {
+      "create": "صمّم وضبط قسم محتوى جديد",
+      "edit": "حدّث تفاصيل قسمك"
+    },
+    "loading": {
+      "title": "جارٍ تحميل بيانات النموذج",
+      "subtitle": "نُعدّ مساحتك للعمل..."
+    },
+    "tabs": {
+      "basic": "أساسي",
+      "content": "المحتوى",
+      "appearance": "المظهر",
+      "advanced": "متقدم"
+    },
+    "basic": {
+      "title": "المعلومات الأساسية",
+      "description": "تفاصيل أساسية حول قسمك",
+      "icon": "أيقونة القسم",
+      "iconTooltip": "ارفع أيقونة مربعة (مُوصى بها: 100×100 بكسل)",
+      "uploadIcon": "رفع أيقونة",
+      "iconHelp": "ارفع أيقونة مميزة لقسمك. يدعم PNG، JPG، SVG.",
+      "uploading": "جارٍ الرفع...",
+      "titleEn": "العنوان بالإنجليزية",
+      "titleAr": "العنوان بالعربية",
+      "titleEnPlaceholder": "مثال: تشكيلة الصيف",
+      "titleArPlaceholder": "e.g., Summer Collection",
+      "descriptions": "الأوصاف (اختياري)",
+      "descEnPlaceholder": "وصف بالإنجليزية للقسم...",
+      "descArPlaceholder": "وصف بالعربية للقسم..."
+    },
+    "content": {
+      "title": "محتوى الشريحة",
+      "description": "إدارة الشرائح ووسائط المحتوى",
+      "alert": "أضف شرائح جذابة بصور أو مقاطع فيديو. تدعم كل شريحة لغتين.",
+      "slide": "شريحة",
+      "media": "محتوى الوسائط",
+      "imageGif": "صورة/GIF",
+      "video": "فيديو",
+      "uploadMedia": "رفع وسائط",
+      "dropImage": "إفلات أو اختيار صورة",
+      "dropVideo": "إفلات أو اختيار ملف فيديو",
+      "imageFormats": "PNG، JPG، GIF حتى 10 ميجابايت",
+      "videoFormats": "MP4، WebM حتى 50 ميجابايت",
+      "titleEn": "العنوان (EN)",
+      "titleAr": "العنوان (AR)",
+      "titleEnPlaceholder": "عنوان بالإنجليزية",
+      "titleArPlaceholder": "English title",
+      "buttonConfig": "إعدادات الزر",
+      "buttonEnPlaceholder": "نص الزر (EN)",
+      "buttonArPlaceholder": "Button text (EN)",
+      "addSlide": "إضافة شريحة جديدة"
+    },
+    "appearance": {
+      "theme": "السمة والأسلوب",
+      "themeDesc": "خصّص المظهر البصري",
+      "color": "لون السمة",
+      "categories": "التصنيفات",
+      "categoriesDesc": "ربط التصنيفات ذات الصلة",
+      "selectedCategories": "التصنيفات المحددة:"
+    },
+    "advanced": {
+      "title": "الإعدادات المتقدمة",
+      "description": "خيارات تكوين إضافية",
+      "featuredProduct": "المنتج المميز",
+      "productPlaceholder": "اختر منتجًا ليكون مميزًا",
+      "noProduct": "لا يوجد منتج مميز",
+      "productHelp": "سيتم عرض هذا المنتج بشكل بارز في القسم",
+      "status": "حالة القسم",
+      "statusHelp": "التحكم في ظهور هذا القسم"
+    },
+    "actions": {
+      "createPrompt": "أنشئ قسمًا جديدًا",
+      "updatePrompt": "حدّث قسمك",
+      "create": "إنشاء قسم",
+      "update": "تحديث القسم"
+    },
+    "validation": {
+      "titleEnRequired": "العنوان بالإنجليزية مطلوب",
+      "titleArRequired": "العنوان بالعربية مطلوب"
+    },
+    "media": {
+      "videoTypeWarning": "الرجاء تغيير نوع الوسائط إلى \"فيديو\" لملفات الفيديو"
+    },
+    "toast": {
+      "initError": "فشل تحميل بيانات النموذج",
+      "uploadSuccess": "تم رفع الوسائط بنجاح",
+      "uploadError": "فشل رفع الوسائط",
+      "createSuccess": "تم إنشاء القسم بنجاح",
+      "updateSuccess": "تم تحديث القسم بنجاح",
+      "submitError": "فشل حفظ القسم"
+    }
+  },
     }
   }
 };

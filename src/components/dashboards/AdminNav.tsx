@@ -46,6 +46,7 @@ export default function AdminNav() {
     { key: 'messages', href: '/dashboard/admin/messages', icon: MessageCircle },
     { key: 'products', href: '/dashboard/admin/products', icon: Package },
     { key: 'categories', href: '/dashboard/admin/categories', icon: List },
+    { key: 'sections', href: '/dashboard/admin/sections', icon: List },
     { key: 'orders', href: '/dashboard/admin/orders', icon: ShoppingCart },
     { key: 'agreements', href: '/dashboard/admin/agreements', icon: Handshake },
     { key: 'subscriptions', href: '/dashboard/admin/subscriptions', icon: Gem },

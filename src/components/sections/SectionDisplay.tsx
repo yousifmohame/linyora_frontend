@@ -196,12 +196,12 @@ function adjustHexColor(
                   {section.categories && section.categories.length > 0 ? (
                     section.categories.map((cat: any) => (
                       <Link key={cat.id} href={`/categories/${cat.name}`} className="group">
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-orange-200 transition-all duration-300 group-hover:scale-105">
-                          <div className="flex flex-col items-center text-center">
+                        <div style={{ color: themeColor, backgroundColor : themeColor+'10', border:themeColor }} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-orange-200 transition-all duration-300 group-hover:scale-105">
+                          <div  className="flex flex-col items-center text-center">
                             <div className="w-16 h-16 mb-3 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
                               <img
                                 src={cat.image_url || '/placeholder-category.svg'}
-                                alt={isRTL ? cat.name_ar : cat.name_en}
+                                alt={cat.name}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                               />
                             </div>
@@ -210,7 +210,7 @@ function adjustHexColor(
                               className="px-3 py-1 hover:bg-orange-100 font-medium"
                               style={{ color: themeColor, backgroundColor : themeColor+'10', border:themeColor }}
                             >
-                              {isRTL ? cat.name : cat.name}
+                              {cat.name}
                             </Badge>
                           </div>
                         </div>

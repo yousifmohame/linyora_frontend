@@ -37,6 +37,7 @@ export interface Variant {
 }
 
 export interface Product {
+  price: number;
   merchant_id: number; // ✅ Replaced `any` with `number`
   id: number;
   name: string;

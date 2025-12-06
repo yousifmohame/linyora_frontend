@@ -1254,6 +1254,7 @@ const resources = {
       "common": {
       "currency": "SAR",
       "retry": "Retry",
+      "verified_account":"Verified Account",
       "add":"Add",
       "active":"Active",
       "refresh": "Refresh",
@@ -1386,6 +1387,9 @@ const resources = {
       "following": "Following"
     },
     "tabs": {
+      "reels":"Reels",
+      "portfolio":"Publications",
+      "services":"Services",
       "reels_one": "Reels ({{count}})",
       "reels_other": "Reels ({{count}})",
       "portfolio_one": "Portfolio ({{count}})",
@@ -2397,7 +2401,8 @@ const resources = {
     "tabs": {
       "portfolio": "Portfolio",
       "packages": "Packages",
-      "offers": "Offers"
+      "offers": "Offers",
+      "reels": "Reels"
     },
     "portfolio": {
       "empty": {
@@ -5736,6 +5741,7 @@ const resources = {
       "common": {
         "currency": "ريال",
         "locale": "ar-SA",
+        "verified_account":"حساب معتمد",
         "active":"نشط",
         "add":"اضافه",
         "done":"تم",
@@ -5969,6 +5975,9 @@ const resources = {
       "following": "متابَع"
     },
     "tabs": {
+      "reels":"الفديوهات",
+      "portfolio":"المنشورات",
+      "services":"الخدمات",
       "reels_zero": "رييلات ({{count}})",
       "reels_one": "رييل ({{count}})",
       "reels_two": "رييلين ({{count}})",

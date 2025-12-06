@@ -17,7 +17,8 @@ import {
   Wallet,
   User,
   CreditCard,
-  Truck
+  Truck,
+  CircleDashed
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -46,6 +47,7 @@ const Navigation = () => {
     { key: 'verification', href: '/dashboard/verification', icon: ShieldCheck, show: !isVerified },
     { key: 'products', href: '/dashboard/products', icon: Package, show: isVerified },
     { key: 'orders', href: '/dashboard/orders', icon: ShoppingCart, show: isVerified },
+    { key: 'stories', href: '/dashboard/stories', icon: CircleDashed },
     { key: 'agreements', href: '/dashboard/agreements', icon: User, show: isVerified },
     { key: 'models', href: '/dashboard/models', icon: ShoppingCart, show: isVerified },
     { key: 'shipping', href: '/dashboard/shipping', icon: Truck, show: isVerified }, // ✅ Fixed: was ShoppingCart, now Truck

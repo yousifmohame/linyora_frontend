@@ -15,6 +15,8 @@ import { ProductCarousel } from '@/components/products/ProductCarousel';
 import { getRecentlyViewed } from '@/lib/viewHistory';
 import { Skeleton } from '@/components/ui/skeleton';
 import SectionDisplay from '@/components/sections/SectionDisplay'; // استيراد مكون الأقسام
+import StoriesFeed from '@/components/stories/StoriesFeed';
+
 
 // مكون Skeleton لتحسين تجربة التحميل
 const ProductCarouselSkeleton = () => (
@@ -116,6 +118,7 @@ export default function HomePage() {
     <main className="min-h-screen px-0 bg-white">
       {/* 1. الأقسام الثابتة العلوية */}
       <div className="bg-gray-50 pb-8">
+        <StoriesFeed />
         <PromotedProductsSection />
         <CategorySlider />
       </div>

@@ -29,5 +29,6 @@ export interface Section {
   product_name_ar?: string;
   product_image?: string;
   product_price?: number;
+  product_description:string;
   categories?: any[];
 }

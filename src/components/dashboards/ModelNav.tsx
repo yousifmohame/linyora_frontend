@@ -18,7 +18,8 @@ import {
   ShoppingCart,
   CreditCard,
   ShieldCheck,
-  Video
+  Video,
+  CircleDashed
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -49,6 +50,7 @@ export default function ModelNav() {
   const verifiedOnlyLinks = [
     { key: 'offers', href: '/dashboard/models/modelsoffers', icon: Package },
     { key: 'requests', href: '/dashboard/models/requests', icon: Handshake },
+    { key: 'stories', href: '/dashboard/models/stories', icon: CircleDashed },
     { key: 'wallet', href: '/dashboard/models/wallet', icon: Wallet },
     { key: 'reels', href: '/dashboard/models/reels', icon: Video },
     { key: 'analytics', href: '/dashboard/models/analytics', icon: BarChart2 },

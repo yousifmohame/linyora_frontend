@@ -1,50 +1,20 @@
-// src/components/reels/ReelsSlider.tsx
-// --- هذا هو الكود الكامل والجديد والمدمج ---
-
 'use client';
 
-// [1] استيراد المكونات اللازمة
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Reel } from '@/types';
 import api from '@/lib/axios';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-
-// ✨ [إضافة] استيراد الأيقونات والحالات التي يحتاجها ReelItem
-import {
-  Heart,
-  PlayCircle,
-  MessageCircle,
-  ShoppingBag,
-  MoreVertical,
-  Share2,
-  Flag,
-  Eye,
-  Pause,
-  AlertCircle,
-  Play,
-  Camera,
-  Video,
-  ArrowLeft,
-} from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import { ReelCommentsSheet } from './ReelCommentsSheet';
-import Image from 'next/image';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-// [2] تعريف نوع المستخدم (User)
+// استيراد المكونات التي فصلناها
+import { UserCard } from './UserCard';
+import { RadioTower, Share2Icon, TrendingUp } from 'lucide-react';
+import { ReelSection } from './ReelSection2';
+
 interface User {
   id: number;
   name: string;
@@ -52,367 +22,21 @@ interface User {
   profile_picture_url?: string;
 }
 
-// [3] مكون مساعد لبطاقة المستخدم (للمودلز والتاجرات)
-const UserCard = ({
-  user,
-  userType = 'models',
-}: {
-  user: User; // نفترض أن User يحتوي على: id, profile_picture_url, store_name, name
-  userType?: 'models' | 'merchants';
-}) => {
-  const defaultImage = '/shop.jpg'; // المسار الافتراضي
-  const imageUrl = user.profile_picture_url || defaultImage;
-
-  // --- ✨ [1] هذا هو التعديل المطلوب ---
-  
-  // تحديد ما إذا كان المستخدم تاجراً
-  const isMerchant = userType === 'merchants';
-  
-  // 1. تحديد الاسم الرئيسي للعرض:
-  // إذا كان تاجراً، اعرض `store_name`، وإلا اعرض `name`
-  const displayName = isMerchant ? user.store_name : user.name;
-  
-  // 2. تحديد النص الاحتياطي للأفاتار (أول حرف):
-  // استخدم أول حرف من الاسم المحدد للعرض
-  const displayFallback = (displayName || '?').charAt(0).toUpperCase();
-  
-  // 3. تحديد "الهاندل" (النص الصغير @):
-  // للتاجر: نعرض @username (نفترض أنه user.name)
-  // للموديل: نعرض @username (user.name)
-  // (هذا يبقي المنطق السابق كما هو)
-  const displayHandle = user.name; 
-  // -------------------------------
-
-  return (
-    <Link
-      href={`/${userType}/${user.id}`}
-      className="flex items-center align-middle p-0 rounded hover:bg-gray-100 transition-colors"
-    >
-      <Avatar className="w-full md:w-25 lg:w-20 h-25 bg-amber-200 border rounded overflow-hidden">
-        <AvatarImage
-          src={imageUrl}
-          alt={displayName || 'Profile Image'} // <-- ✨ تم التعديل
-          className="object-cover w-full h-full"
-        />
-        <AvatarFallback className="flex items-center justify-center text-2xl font-semibold bg-amber-200">
-          {displayFallback} {/* <-- ✨ تم التعديل */}
-        </AvatarFallback>
-      </Avatar>
-
-      <div className="flex-1 min-w-0 mx-2 ml-3">
-        {/* ✨ تم التعديل: يعرض store_name للتاجر و name للموديل */}
-        <h4 className="hidden md:block font-semibold text-sm truncate">{displayName}</h4>
-        
-        {/* ✨ يعرض @user.name في كلتا الحالتين */}
-        <p className="hidden md:block text-xs text-gray-500 truncate">@{displayHandle}</p>
-      </div>
-    </Link>
-  );
-};
-
-
-// [4] مكون مساعد للهيكل العظمي (Skeleton)
-const SidebarSkeleton = () => (
-  <div className="space-y-4">
-    {[...Array(8)].map((_, i) => (
-      <div key={i} className="flex items-center gap-3">
-        <Skeleton className="w-10 h-10 rounded-full" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-3 w-1/2" />
-        </div>
-        <Skeleton className="w-20 h-8 rounded-md" />
-      </div>
-    ))}
-  </div>
-);
-
-// ✨ [5] إضافة مكون ReelItem الذي كان ناقصاً
-// (هذا هو الكود الذي أرسلته سابقاً، وهو المسؤول عن عرض الفيديو)
-const ReelItem = memo<{
-  reel: Reel;
-  isLiked: boolean;
-  onLikeToggle: (id: number) => void;
-  onOpenComments: (reel: Reel) => void;
-  onShare: (reel: Reel) => void;
-  onReport: (id: number) => void;
-  isPlaying: boolean;
-  onTogglePlayPause: (id: number, videoElement: HTMLVideoElement | null) => void;
-  onVideoMount: (id: number, element: HTMLVideoElement) => void;
-  onVideoUnmount: (id: number) => void;
-}>(
-  ({
-    reel,
-    isLiked,
-    onLikeToggle,
-    onOpenComments,
-    onShare,
-    onReport,
-    isPlaying,
-    onTogglePlayPause,
-    onVideoMount,
-    onVideoUnmount,
-  }) => {
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const [hasError, setHasError] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-    const [retryCount, setRetryCount] = useState(0);
-    const hasTaggedProducts = reel.tagged_products && reel.tagged_products.length > 0;
-
-    useEffect(() => {
-      if (videoRef.current) {
-        onVideoMount(reel.id, videoRef.current);
-      }
-      return () => {
-        onVideoUnmount(reel.id);
-      };
-    }, [reel.id, onVideoMount, onVideoUnmount]);
-
-    useEffect(() => {
-      const video = videoRef.current;
-      if (!video) return;
-
-      if (isPlaying && video.paused) {
-        video.currentTime = 0;
-        video.play().catch(() => {});
-      } else if (!isPlaying && !video.paused) {
-        video.pause();
-      }
-    }, [isPlaying]);
-
-    const formatNumber = useCallback((num: number): string => {
-      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-      return num.toString();
-    }, []);
-
-    const handleVideoError = useCallback(
-      (e: React.SyntheticEvent<HTMLVideoElement>) => {
-        console.warn(`Video error for reel ${reel.id}:`, reel.video_url);
-        setHasError(true);
-        setIsLoading(false);
-        if (retryCount < 2) {
-          setTimeout(() => {
-            setRetryCount((prev) => prev + 1);
-            setHasError(false);
-            setIsLoading(true);
-            if (videoRef.current) {
-              videoRef.current.load();
-            }
-          }, 1000 * (retryCount + 1));
-        }
-      },
-      [reel.id, reel.video_url, retryCount]
-    );
-
-    const handleVideoLoad = useCallback(() => {
-      setIsLoading(false);
-      setHasError(false);
-    }, []);
-
-    const handleVideoLoadStart = useCallback(() => {
-      setIsLoading(true);
-    }, []);
-
-    const handleVideoCanPlay = useCallback(() => {
-      setIsLoading(false);
-    }, []);
-
-    const handleTogglePlayPause = useCallback(() => {
-      onTogglePlayPause(reel.id, videoRef.current);
-    }, [reel.id, onTogglePlayPause]);
-
-    const handleLikeClick = useCallback(
-      (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onLikeToggle(reel.id);
-      },
-      [reel.id, onLikeToggle]
-    );
-
-    const handleCommentsClick = useCallback(
-      (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onOpenComments(reel);
-      },
-      [reel, onOpenComments]
-    );
-
-    const isValidVideoUrl =
-      reel.video_url &&
-      (reel.video_url.startsWith('http') ||
-        reel.video_url.startsWith('blob') ||
-        reel.video_url.startsWith('/') ||
-        reel.video_url.startsWith('https'));
-
-    const handleRetry = useCallback((e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setRetryCount(0);
-      setHasError(false);
-      setIsLoading(true);
-      if (videoRef.current) {
-        videoRef.current.load();
-      }
-    }, []);
-
-    // هذا هو كود عرض الفيديو
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-black">
-        <Card className="overflow-hidden w-auto h-full aspect-[9/16] relative border-0 bg-black">
-          <CardContent className="p-0 relative h-full">
-            <div className="relative h-full bg-gray-900 rounded-lg overflow-hidden">
-              {isValidVideoUrl && !hasError ? (
-                <>
-                  <video
-                    ref={videoRef}
-                    data-reel-id={reel.id}
-                    src={reel.video_url}
-                    className="w-full h-full object-contain"
-                    poster={reel.thumbnail_url || undefined}
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    onLoadStart={handleVideoLoadStart}
-                    onLoadedData={handleVideoLoad}
-                    onError={handleVideoError}
-                    onCanPlay={handleVideoCanPlay}
-                    onEmptied={handleVideoError}
-                    onStalled={handleVideoError}
-                    crossOrigin="anonymous"
-                  />
-                  {isLoading && (
-                    <div className="absolute inset-0 bg-black flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-2" />
-                        <p className="text-xs text-gray-400">جاري التحميل...</p>
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                  <div className="text-center p-4">
-                    <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400 text-sm mb-2">تعذر تحميل الفيديو</p>
-                    {retryCount < 2 ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRetry}
-                        className="text-xs border-gray-600 text-gray-300"
-                      >
-                        إعادة المحاولة
-                      </Button>
-                    ) : (
-                      <p className="text-gray-500 text-xs">يرجى تحديث الصفحة</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* ... (باقي أزرار الواجهة للفيديو) ... */}
-              {isValidVideoUrl && !hasError && !isLoading && (
-                <>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-70" />
-                  <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/30 to-transparent" />
-                </>
-              )}
-
-              <div
-                className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                onClick={handleTogglePlayPause}
-              >
-                {!isPlaying && (
-                  <div className="bg-black/50 backdrop-blur-sm rounded-full p-4 transition-transform hover:scale-110 opacity-80">
-                    <PlayCircle className="w-8 h-8 text-white" />
-                  </div>
-                )}
-              </div>
-
-              <div className="absolute bottom-0 right-0 left-0 justify-self-center z-20 ">
-                
-
-                {/* زر المزيد */}
-                <DropdownMenu>
-                  <Link href="/style-today">
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-full px-8 text-sm font-semibold group"
-                    >
-                      كل الفيديوهات
-                      {/* (بما أن الواجهة عربية، السهم لليسار يعني "التالي") */}
-                      <ArrowLeft className="w-4 h-4 mr-2 transition-transform group-hover:-translate-x-1" />
-                    </Button>
-                  </Link>
-                </DropdownMenu>
-              </div>
-
-              <div className="absolute bottom-8 left-0 right-0 p-3 z-10">
-                {/* ... (معلومات المستخدم والتعليقات واللايكات) ... */}
-                <Link href={`/models/${reel.userId}`} className="flex items-center gap-2 mb-2">
-                    <Avatar className="hidden lg:block md:block w-10 h-10 border-2 border-white/80 shadow-lg flex-shrink-0">
-                      <AvatarImage src={reel.userAvatar || ''} alt={reel.userName} />
-                      <AvatarFallback>{reel.userName ? reel.userName.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <span className="hidden lg:block md:block text-white text-sm font-bold truncate">{reel.userName}</span>
-                      {reel.caption && (<p className="hidden lg:block md:block text-white/90 text-xs truncate mt-0.5">{reel.caption}</p>)}
-                    </div>
-                </Link>
-
-                <div className="flex items-center justify-between">
-                  <div className="hidden lg:flex md:flex items-center gap-1">
-                    <Button variant="ghost" size="sm" className="text-white" onClick={handleCommentsClick}>
-                      <MessageCircle className="w-5 h-5" />
-                      <span className="text-xs font-medium min-w-[18px]">{reel.comments_count > 0 ? formatNumber(reel.comments_count) : ''}</span>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-white" onClick={handleLikeClick}>
-                      <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`} />
-                      <span className="text-xs font-medium min-w-[18px]">{reel.likes_count > 0 ? formatNumber(reel.likes_count) : ''}</span>
-                    </Button>
-                  </div>
-                  {reel.views_count > 0 && (
-                    <div className="text-white/90 text-xs font-medium bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1.5">
-                      <Eye className="w-4 h-4" />
-                      {formatNumber(reel.views_count)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-);
-ReelItem.displayName = 'ReelItem';
-
-
-// --- المكون الرئيسي: ReelsSlider ---
 interface ReelsSliderProps {
-  reels: Reel[]; // الريلز التي تم جلبها من الصفحة الرئيسية (page.tsx)
+  reels: Reel[];
 }
 
 export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels }) => {
   const { user } = useAuth();
+  
+  // State
   const [reels, setReels] = useState<Reel[]>([]);
   const [models, setModels] = useState<User[]>([]);
   const [merchants, setMerchants] = useState<User[]>([]);
   const [loadingSidebars, setLoadingSidebars] = useState(true);
+  
 
-  // ✨ [إضافة] الحالات (State) اللازمة لـ ReelItem
-  const [likedStatus, setLikedStatus] = useState<Record<number, boolean>>({});
-  const [selectedReel, setSelectedReel] = useState<Reel | null>(null);
-  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
-  const [activeReelId, setActiveReelId] = useState<number | null>(null);
-  const videoElementsRef = useRef<Map<number, HTMLVideoElement>>(new Map());
-
-  // [7] جلب بيانات الأعمدة الجانبية
+  // --- 1. Fetch Sidebar Data ---
   useEffect(() => {
     const fetchSidebarData = async () => {
       try {
@@ -425,8 +49,6 @@ export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels })
         setMerchants(merchantsRes.data || []);
       } catch (error) {
         console.error("Failed to fetch sidebar data:", error);
-        setModels([]);
-        setMerchants([]);
       } finally {
         setLoadingSidebars(false);
       }
@@ -434,157 +56,100 @@ export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels })
     fetchSidebarData();
   }, []);
 
-  // ✨ [إضافة] تهيئة الريلز وتعيين الفيديو النشط
-  useEffect(() => {
-    const validReels = (initialReels || []).filter(reel => reel.video_url);
-    setReels(validReels);
-    if (validReels.length > 0) {
-      // تشغيل الفيديو الأول تلقائياً
-      setActiveReelId(validReels[0].id);
-    }
-  }, [initialReels]);
-
-  // ✨ [إضافة] جلب حالة اللايكات
+  // --- 3. Fetch Like Status ---
   useEffect(() => {
     if (!user || reels.length === 0) {
-      setLikedStatus({});
       return;
     }
     const fetchLikeStatus = async () => {
       try {
         const reelIds = reels.map(r => r.id);
         const response = await api.post('/reels/like-status', { reelIds });
-        setLikedStatus(response.data || {});
       } catch (error) {
-        console.error("Failed to fetch initial like status:", error);
+        console.error("Failed to fetch like status:", error);
       }
     };
     fetchLikeStatus();
   }, [user, reels]);
-  
-  // ✨ [إضافة] الدوال المساعدة لـ ReelItem
-  const handleVideoMount = useCallback((id: number, element: HTMLVideoElement) => {
-    videoElementsRef.current.set(id, element);
-  }, []);
 
-  const handleVideoUnmount = useCallback((id: number) => {
-    videoElementsRef.current.delete(id);
-  }, []);
-
-  const togglePlayPause = useCallback(async (reelId: number, videoElement: HTMLVideoElement | null) => {
-    if (!videoElement) return;
-    if (videoElement.paused) {
-      await videoElement.play().catch(() => {});
-      setActiveReelId(reelId);
-    } else {
-      videoElement.pause();
-      setActiveReelId(null);
-    }
-  }, []);
-
-  const handleLikeToggle = useCallback(async (reelId: number) => {
-    if (!user) {
-      toast.error('يرجى تسجيل الدخول للإعجاب بالفيديوهات.');
-      return;
-    }
-    const currentlyLiked = likedStatus[reelId] || false;
-    const newLikedStatus = !currentlyLiked;
-    setLikedStatus(prev => ({ ...prev, [reelId]: newLikedStatus }));
-    // ... (باقي كود تحديث اللايكات في السيرفر)
-  }, [user, likedStatus]);
-
-  const openComments = useCallback((reel: Reel) => {
-    setSelectedReel(reel);
-    setIsCommentsOpen(true);
-  }, []);
-
-  const handleShare = useCallback(async (reel: Reel) => {
-    // ... (كود المشاركة)
-  }, []);
-
-  const handleReport = useCallback(async (reelId: number) => {
-    // ... (كود الإبلاغ)
-  }, []);
-
-  // --- [8] العرض (Return) ---
-  
-  // نجد الفيديو الأول لعرضه
-  const firstReel = reels.length > 0 ? reels[0] : null;
 
   return (
     <>
-      <section className="bg-white mb-3 py-4">
-        <div className="container mx-auto px-0">
-          <div className="text-center mb-4">
-            <Badge variant="secondary" className="mb-3 px-3 py-1 text-xs bg-primary/10 text-primary border-0">
-              🎥 الريلات الجديدة
-            </Badge>
+      <section className="bg-rose-50 py-0 mb-8">
+        <div className="container mx-auto px-4 space-y-12">
+          
+          {/* ================= القسم الأول: أشهر المودلز ================= */}
+          <div className="space-y-4 bg-white py-8 px-8 animate-fade-in-up">
+            <div className="flex items-center gap-3">
+                <div className='relative'>
+                  <TrendingUp className='h-7 w-7 text-purple-500' />
+                  <div className='absolute inset-0 bg-purple-400 blur-lg opacity-50'></div>
+                </div>
+                <div>
+                  <h2 className="text-2xl text-gray-900">أشهر المودلز</h2>
+                  <p className="text-gray-600 text-sm">تابعي أفضل المودلز</p>
+                </div>
+            </div>
+            
+            <ScrollArea dir='rtl' className="w-full whitespace-nowrap rounded-xl p-4">
+                <div className="flex w-max space-x-4 space-x-reverse pb-2">
+                    {loadingSidebars ? (
+                        [...Array(6)].map((_, i) => (
+                            <div key={i} className="flex flex-col items-center gap-2 min-w-[100px]">
+                                <Skeleton className="h-20 w-20 rounded-full" />
+                                <Skeleton className="h-4 w-16" />
+                            </div>
+                        ))
+                    ) : models.length > 0 ? (
+                        models.map(user => (
+                            <UserCard key={user.id} user={user} userType="models" />
+                        ))
+                    ) : (
+                        <p className="text-sm text-gray-500 w-full text-center py-4">لا يوجد مودلز حالياً</p>
+                    )}
+                </div>
+                <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
 
-          {/* --- التصميم ثلاثي الأعمدة --- */}
-          <div className="grid grid-cols-4 md:grid-cols-3 lg:grid-cols-5 h-[45vh] lg:h-[70vh] max-h-[800px] border rounded-lg overflow-hidden">
-            {/* عمود المودلز - الهاتف: 1 | MD: 1 | LG: 2 */}
-            <aside className="col-span-1 md:col-span-1 lg:col-span-2 justify-items-center h-full overflow-y-auto p-1 border-l bg-white">
-              <h3 className="font-bold text-[12px] text-[#BA0393] lg:text-[15px] text-lg mb-4 sticky top-0 bg-white py-2">أشهر المودلز</h3>
-              {loadingSidebars ? <SidebarSkeleton /> : (
-                <div className="space-y-2">
-                  {models.length > 0 ? (
-                    models.map(user => <UserCard key={user.id} user={user} userType="models" />)
-                  ) : (
-                    <p className="text-sm text-gray-500 text-center py-4">لا يوجد مودلز لعرضهم</p>
-                  )}
+          <ReelSection />
+          
+          {/* ================= القسم الثالث: أشهر التاجرات ================= */}
+          <div className="space-y-4 bg-white py-8 px-8 animate-fade-in-up delay-200">
+            <div className="flex items-center gap-3">
+                <div className='relative'>
+                  <TrendingUp className='h-7 w-7 text-purple-500' />
+                  <div className='absolute inset-0 bg-purple-400 blur-lg opacity-50'></div>
                 </div>
-              )}
-            </aside>
+                <div>
+                  <h2 className="text-2xl text-gray-900">أشهر التاجرات</h2>
+                  <p className="text-gray-600 text-sm">تابعي أفضل البائعات</p>
+                </div>
+            </div>
 
-            {/* العمود الأوسط - الهاتف: 2 | MD: 1 | LG: 1 */}
-            <main className="col-span-2 md:col-span-1 lg:col-span-1 h-full bg-black relative">
-              {firstReel ? (
-                <ReelItem
-                  key={firstReel.id}
-                  reel={firstReel}
-                  isLiked={likedStatus[firstReel.id] || false}
-                  onLikeToggle={handleLikeToggle}
-                  onOpenComments={openComments}
-                  onShare={handleShare}
-                  onReport={handleReport}
-                  isPlaying={activeReelId === firstReel.id}
-                  onTogglePlayPause={togglePlayPause}
-                  onVideoMount={handleVideoMount}
-                  onVideoUnmount={handleVideoUnmount}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-white">
-                  لا توجد ريلز لعرضها
+            <ScrollArea dir='rtl' className="w-full whitespace-nowrap rounded-xl p-4">
+                <div className="flex w-max space-x-4 space-x-reverse pb-2">
+                    {loadingSidebars ? (
+                        [...Array(6)].map((_, i) => (
+                            <div key={i} className="flex flex-col items-center gap-2 min-w-[100px]">
+                                <Skeleton className="h-20 w-20 rounded-full" />
+                                <Skeleton className="h-4 w-16" />
+                            </div>
+                        ))
+                    ) : merchants.length > 0 ? (
+                        merchants.map(user => (
+                            <UserCard key={user.id} user={user} userType="merchants" />
+                        ))
+                    ) : (
+                        <p className="text-sm text-gray-500 w-full text-center py-4">لا يوجد تاجرات حالياً</p>
+                    )}
                 </div>
-              )}
-            </main>
-
-            {/* عمود التاجرات - الهاتف: 1 | MD: 1 | LG: 2 */}
-            <aside className="col-span-1 md:col-span-1 lg:col-span-2 justify-items-center h-full overflow-y-auto p-1 border-r bg-white">
-              <h3 className="font-bold text-[12px] text-[#BA0393] lg:text-[15px] mb-4 sticky top-0 bg-white py-2">أشهر التاجرات</h3>
-              {loadingSidebars ? <SidebarSkeleton /> : (
-                <div className="space-y-2">
-                  {merchants.length > 0 ? (
-                    merchants.map(user => <UserCard key={user.id} user={user} userType="merchants" />)
-                  ) : (
-                    <p className="text-sm text-gray-500 text-center py-4">لا يوجد تاجرات لعرضهم</p>
-                  )}
-                </div>
-              )}
-            </aside>
+                <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
+
         </div>
       </section>
-
-      {/* ✨ [إضافة] Sheet التعليقات الذي يحتاجه ReelItem */}
-      {selectedReel && (
-        <ReelCommentsSheet
-          reel={selectedReel}
-          isOpen={isCommentsOpen}
-          onOpenChange={setIsCommentsOpen}
-        />
-      )}
     </>
   );
 };

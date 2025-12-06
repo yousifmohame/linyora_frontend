@@ -22,6 +22,8 @@ import {
   List,
   PickaxeIcon,
   MessageCircle,
+  Layout,
+  CircleDashed,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -40,13 +42,14 @@ export default function AdminNav() {
   const adminLinks = [
     { key: 'overview', href: '/dashboard', icon: Home },
     { key: 'users', href: '/dashboard/admin/users', icon: Users },
+    { key: 'stories', href: '/dashboard/admin/stories', icon: CircleDashed },
     { key: 'main-banners', href: '/dashboard/admin/main-banners', icon: PickaxeIcon },
     { key: 'marquee-bar', href: '/dashboard/admin/marquee-bar', icon: PickaxeIcon },
     { key: 'verification', href: '/dashboard/admin/verifications', icon: Users },
     { key: 'messages', href: '/dashboard/admin/messages', icon: MessageCircle },
     { key: 'products', href: '/dashboard/admin/products', icon: Package },
     { key: 'categories', href: '/dashboard/admin/categories', icon: List },
-    { key: 'sections', href: '/dashboard/admin/sections', icon: List },
+    { key: 'sections', href: '/dashboard/admin/sections', icon: Layout },
     { key: 'orders', href: '/dashboard/admin/orders', icon: ShoppingCart },
     { key: 'agreements', href: '/dashboard/admin/agreements', icon: Handshake },
     { key: 'subscriptions', href: '/dashboard/admin/subscriptions', icon: Gem },

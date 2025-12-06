@@ -34,6 +34,7 @@ const resources = {
         "nav": {
           "overview": "Overview",
           "products": "Products",
+          "stories": "Stories",
           "orders": "Orders",
           "shipping":"Shipping",
           "agreements":"Agreements",
@@ -1230,6 +1231,7 @@ const resources = {
           "overview": "Overview",
           "users": "Users",
           "messages":"Messages",
+          "stories":"Stories",
           "sections": "Sections",
           "Footer":"Footer-setting",
           "marquee-bar":"marquee Bar",
@@ -1584,6 +1586,7 @@ const resources = {
           "overview": "Overview",
           "offers": "My Offers",
           "requests": "Requests",
+          "stories": "Stories",
           "reels":"Reels",
           "wallet": "Wallet",
           "verification": "Verification",
@@ -3414,6 +3417,7 @@ const resources = {
     "nav": {
       "Overview": "Overview",
       "Products": "Products",
+      "stories": "Stories",
       "Orders": "Orders",
       "Shipping": "Shipping",
       "Wallet": "Wallet",
@@ -4062,6 +4066,200 @@ const resources = {
       "categoriesError": "❌ Failed to load category list."
     }
   },
+  "StoriesPage": {
+    "title": "Stories Management",
+    "welcome": "Hello {{name}}, manage your daily stories and engage with your audience"
+  },
+  "StoriesManager": {
+    "title": "My Stories",
+    "activeStories": "My Active Stories",
+    "description": "Stories are visible for 24 hours only. You can track views or delete a story before it expires.",
+    "empty": {
+      "title": "No active stories",
+      "subtitle": "Share moments or promote your products now!"
+    },
+    "type": {
+      "image": "Image",
+      "video": "Video",
+      "text": "Text"
+    },
+    "table": {
+      "preview": "Preview",
+      "type": "Type",
+      "views": "Views",
+      "publishedAt": "Published At",
+      "expiresAt": "Expires At",
+      "actions": "Actions"
+    },
+    "delete": {
+      "confirmTitle": "Delete Story?",
+      "confirmMessage": "Are you sure you want to delete this story? It will be removed immediately from the homepage and no one will be able to view it.",
+      "delete": "Delete",
+      "deleting": "Deleting..."
+    },
+    "toast": {
+      "fetchError": "Failed to load stories",
+      "deleteSuccess": "Story deleted successfully",
+      "deleteError": "Failed to delete story"
+    }
+  },
+  "CreateStoryModal": {
+    "title": "Create New Story",
+    "subtitle": "Share your moments with your audience for 24 hours",
+    "actions": {
+      "addStory": "Add New Story",
+      "story": "Story",
+      "publishNow": "Publish Story Now",
+      "publishing": "Publishing..."
+    },
+    "type": {
+      "image": "Image",
+      "imageShort": "Img",
+      "video": "Video",
+      "videoShort": "Vid",
+      "text": "Text",
+      "textShort": "Txt"
+    },
+    "labels": {
+      "textContent": "Text / Description",
+      "backgroundColor": "Background Color"
+    },
+    "placeholders": {
+      "textContent": "Write a description for your story..."
+    },
+    "file": {
+      "clickToUpload": "Click to upload {{type}}",
+      "selected": "✓ Selected: {{filename}}",
+      "selectedShort": "Selected: {{filename}}",
+      "formats": "PNG, JPG, MP4 up to 50MB"
+    },
+    "colors": {
+      "black": "Black",
+      "blue": "Blue",
+      "green": "Green",
+      "purple": "Purple",
+      "red": "Red",
+      "gold": "Gold",
+      "custom": "Custom"
+    },
+    "admin": {
+      "title": "Admin Settings",
+      "sectionPlaceholder": "Publish in a specific section (optional)",
+      "personalStory": "Personal story (no section)",
+      "noSections": "No active sections",
+      "helpText": "If you select a section, the story will appear at the beginning of the feed within the chosen section."
+    },
+    "validation": {
+      "fileRequired": "Please select a file to upload",
+      "textContentRequired": "Please write story text"
+    },
+    "toast": {
+      "createSuccess": "Story published successfully",
+      "createError": "Failed to publish story"
+    }
+  },
+  "AdminStories": {
+    "title": "Stories Management",
+    "subtitle": "Control featured sections and stories shown on the homepage",
+    "deleting": "Deleting...",
+    "dashboard": {
+      "title": "Dashboard",
+      "stats": "{{sections}} sections • {{stories}} active stories"
+    },
+    "sections": {
+      "title": "Featured Story Sections",
+      "subtitle": "These sections appear as highlighted circles at the start of the stories feed (e.g., Offers, New, Trending)",
+      "empty": {
+        "title": "No active sections",
+        "subtitle": "Create a new section to get started"
+      },
+      "storyCount": "{{count}} stories",
+      "delete": {
+        "confirmTitle": "Delete Section?",
+        "confirmMessage": "The section \"{{title}}\" and all its associated stories will be permanently deleted. This action cannot be undone.",
+        "delete": "Delete Section"
+      }
+    },
+    "stories": {
+      "activeTitle": "My Active Stories",
+      "subtitle": "Stories you've published as admin that are still visible (expire after 24 hours)",
+      "empty": {
+        "title": "No active stories",
+        "subtitle": "Create a new story to get started"
+      },
+      "personal": "Personal",
+      "table": {
+        "preview": "Preview",
+        "type": "Type",
+        "section": "Section",
+        "views": "Views",
+        "publishedAt": "Published At",
+        "expiresAt": "Expires At",
+        "actions": "Actions"
+      },
+      "delete": {
+        "confirmTitle": "Delete Story?",
+        "confirmMessage": "Are you sure you want to delete this story? It will be removed immediately from the homepage and no one will be able to view it."
+      }
+    },
+    "type": {
+      "image": "Image",
+      "video": "Video",
+      "text": "Text"
+    },
+    "toast": {
+      "fetchError": "Failed to load data",
+      "sectionDeleted": "Section deleted successfully",
+      "sectionDeleteError": "Failed to delete section",
+      "storyDeleted": "Story deleted successfully",
+      "storyDeleteError": "Failed to delete story"
+    }
+  },
+  "CreateSectionModal": {
+    "title": "Create Featured Story Section",
+    "subtitle": "This section will appear as a highlighted circle at the start of the stories feed on the homepage",
+    "actions": {
+      "newSection": "Create New Section",
+      "newSectionMobile": "New Section",
+      "create": "Create Section",
+      "creating": "Creating..."
+    },
+    "form": {
+      "title": {
+        "label": "Section Title",
+        "placeholder": "e.g., Friday Deals, Just Arrived..."
+      },
+      "description": {
+        "label": "Section Description (Optional)",
+        "placeholder": "A short description of this section's content..."
+      },
+      "coverImage": {
+        "label": "Section Cover Image"
+      },
+      "file": {
+        "clickToUpload": "Click to upload cover image",
+        "formats": "JPG, PNG up to 10MB",
+        "displayNote": "Image will appear as a circle on the homepage",
+        "selected": "✓ Selected: {{filename}}",
+        "tip": "✓ Use an attractive, high-quality image to boost engagement"
+      }
+    },
+    "validation": {
+      "titleMinLength": "Title must be at least 2 characters",
+      "imageOnly": "Please select an image only",
+      "coverImageRequired": "Please select a cover image for the section"
+    },
+    "toast": {
+      "createSuccess": "Section created successfully",
+      "createError": "Failed to create section"
+    },
+    "info": {
+      "title": "Important Information:",
+      "visible": "The section will be visible to all users",
+      "addStories": "You can add stories to it when creating a story",
+      "squareImage": "Square image recommended"
+    }
+  },
     }
   },
   ar: {
@@ -4097,6 +4295,7 @@ const resources = {
         "nav": {
           "overview": "نظرة عامة",
           "verification":"التحقق",
+          "stories": "القصص",
           "products": "المنتجات",
           "wallet":"المحفظه",
           "agreements":"الإتفاقيات",
@@ -5514,6 +5713,7 @@ const resources = {
           "overview": "نظرة عامة",
           "users": "المستخدمون",
           "messages":"المحادثات",
+          "stories": "القصص",
           "sections": "الأقسام", 
           "main-banners": "البنرات الرئيسية",
           "Footer":"إعدادات الفوتر",
@@ -5658,6 +5858,7 @@ const resources = {
           "overview": "نظرة عامة",
           "offers": "عروضي",
           "wallet": "محفظتي",
+          "stories": "القصص",
           "reels":"ريلز",
           "mySubscription": "إشتراكي",
           "verification": "التحقق",
@@ -6827,6 +7028,7 @@ const resources = {
     "nav": {
       "Overview": "نظرة عامة",
       "Products": "المنتجات",
+      "stories": "القصص",
       "Orders": "الطلبات",
       "Shipping": "الشحن",
       "Wallet": "المحفظة",
@@ -8142,6 +8344,200 @@ const resources = {
       "createSuccess": "تم إنشاء القسم بنجاح",
       "updateSuccess": "تم تحديث القسم بنجاح",
       "submitError": "فشل حفظ القسم"
+    }
+  },
+  "StoriesPage": {
+    "title": "إدارة القصص",
+    "welcome": "أهلاً {{name}}، قم بإدارة قصصك اليومية وتفاعل مع جمهورك"
+  },
+  "StoriesManager": {
+    "title": "قصصي النشطة (Stories)",
+    "activeStories": "قصصي النشطة",
+    "description": "القصص تظهر لمدة 24 ساعة فقط. يمكنك متابعة المشاهدات أو حذف القصة قبل انتهائها.",
+    "empty": {
+      "title": "لا توجد قصص نشطة حالياً",
+      "subtitle": "شارك لحظاتك أو روج لمنتجاتك الآن!"
+    },
+    "type": {
+      "image": "صورة",
+      "video": "فيديو",
+      "text": "نص"
+    },
+    "table": {
+      "preview": "المعاينة",
+      "type": "النوع",
+      "views": "المشاهدات",
+      "publishedAt": "تاريخ النشر",
+      "expiresAt": "تنتهي في",
+      "actions": "الإجراءات"
+    },
+    "delete": {
+      "confirmTitle": "حذف القصة؟",
+      "confirmMessage": "هل أنت متأكد من رغبتك في حذف هذه القصة؟ سيتم إزالتها فوراً من الصفحة الرئيسية ولن يتمكن أحد من مشاهدتها.",
+      "delete": "حذف",
+      "deleting": "جارٍ الحذف..."
+    },
+    "toast": {
+      "fetchError": "فشل جلب القصص",
+      "deleteSuccess": "تم حذف القصة بنجاح",
+      "deleteError": "فشل حذف القصة"
+    }
+  },
+  "CreateStoryModal": {
+    "title": "إنشاء قصة جديدة",
+    "subtitle": "شارك لحظاتك مع جمهورك لمدة 24 ساعة",
+    "actions": {
+      "addStory": "إضافة قصة جديدة",
+      "story": "قصة",
+      "publishNow": "نشر القصة الآن",
+      "publishing": "جارٍ النشر..."
+    },
+    "type": {
+      "image": "صورة",
+      "imageShort": "صور",
+      "video": "فيديو",
+      "videoShort": "فيد",
+      "text": "نص",
+      "textShort": "نص"
+    },
+    "labels": {
+      "textContent": "النص / الشرح",
+      "backgroundColor": "لون الخلفية"
+    },
+    "placeholders": {
+      "textContent": "اكتب وصفاً للقصة..."
+    },
+    "file": {
+      "clickToUpload": "اضغط لرفع {{type}}",
+      "selected": "✓ تم اختيار: {{filename}}",
+      "selectedShort": "تم اختيار: {{filename}}",
+      "formats": "PNG، JPG، MP4 حتى 50 ميجابايت"
+    },
+    "colors": {
+      "black": "أسود",
+      "blue": "أزرق",
+      "green": "أخضر",
+      "purple": "بنفسجي",
+      "red": "أحمر",
+      "gold": "ذهبي",
+      "custom": "مخصص"
+    },
+    "admin": {
+      "title": "إعدادات الأدمن",
+      "sectionPlaceholder": "نشر في قسم محدد (اختياري)",
+      "personalStory": "قصة شخصية (بدون قسم)",
+      "noSections": "لا توجد أقسام نشطة",
+      "helpText": "إذا اخترت قسماً، ستظهر القصة في بداية الشريط ضمن القسم المختار."
+    },
+    "validation": {
+      "fileRequired": "الرجاء اختيار ملف للرفع",
+      "textContentRequired": "الرجاء كتابة نص القصة"
+    },
+    "toast": {
+      "createSuccess": "تم نشر القصة بنجاح",
+      "createError": "فشل نشر القصة"
+    }
+  },
+  "AdminStories": {
+    "title": "إدارة القصص (Stories)",
+    "subtitle": "تحكم في الأقسام المميزة والقصص التي تظهر في الصفحة الرئيسية",
+    "deleting": "جارٍ الحذف...",
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "stats": "{{sections}} قسم • {{stories}} قصة نشطة"
+    },
+    "sections": {
+      "title": "أقسام القصص المميزة",
+      "subtitle": "هذه الأقسام تظهر كدوائر مميزة في بداية شريط القصص (مثل: عروض، جديد، تريند)",
+      "empty": {
+        "title": "لا توجد أقسام نشطة حالياً",
+        "subtitle": "أنشئ قسماً جديداً للبدء"
+      },
+      "storyCount": "{{count}} قصص",
+      "delete": {
+        "confirmTitle": "حذف القسم؟",
+        "confirmMessage": "سيتم حذف القسم \"{{title}}\" وجميع القصص المرتبطة به. لا يمكن التراجع عن هذا الإجراء.",
+        "delete": "حذف القسم"
+      }
+    },
+    "stories": {
+      "activeTitle": "قصصي النشطة",
+      "subtitle": "القصص التي قمت بنشرها كأدمن وما زالت معروضة (تنتهي صلاحيتها بعد 24 ساعة)",
+      "empty": {
+        "title": "لا توجد قصص نشطة حالياً",
+        "subtitle": "أنشئ قصة جديدة للبدء"
+      },
+      "personal": "شخصي",
+      "table": {
+        "preview": "المعاينة",
+        "type": "النوع",
+        "section": "القسم",
+        "views": "المشاهدات",
+        "publishedAt": "تاريخ النشر",
+        "expiresAt": "ينتهي في",
+        "actions": "الإجراءات"
+      },
+      "delete": {
+        "confirmTitle": "حذف القصة؟",
+        "confirmMessage": "هل أنت متأكد من رغبتك في حذف هذه القصة؟ سيتم إزالتها فوراً من الصفحة الرئيسية ولن يتمكن أحد من مشاهدتها."
+      }
+    },
+    "type": {
+      "image": "صورة",
+      "video": "فيديو",
+      "text": "نص"
+    },
+    "toast": {
+      "fetchError": "فشل جلب البيانات",
+      "sectionDeleted": "تم حذف القسم بنجاح",
+      "sectionDeleteError": "فشل حذف القسم",
+      "storyDeleted": "تم حذف القصة",
+      "storyDeleteError": "فشل حذف القصة"
+    }
+  },
+  "CreateSectionModal": {
+    "title": "إنشاء قسم قصص مميز",
+    "subtitle": "هذا القسم سيظهر كدائرة مميزة في بداية شريط القصص في الصفحة الرئيسية",
+    "actions": {
+      "newSection": "إنشاء قسم جديد",
+      "newSectionMobile": "قسم جديد",
+      "create": "إنشاء القسم",
+      "creating": "جارٍ الإنشاء..."
+    },
+    "form": {
+      "title": {
+        "label": "عنوان القسم",
+        "placeholder": "مثال: عروض الجمعة، وصل حديثاً..."
+      },
+      "description": {
+        "label": "وصف القسم (اختياري)",
+        "placeholder": "وصف قصير عن محتوى هذا القسم..."
+      },
+      "coverImage": {
+        "label": "صورة غلاف القسم"
+      },
+      "file": {
+        "clickToUpload": "اضغط لرفع صورة الغلاف",
+        "formats": "JPG، PNG حتى 10 ميجابايت",
+        "displayNote": "الصورة ستظهر كدائرة في الصفحة الرئيسية",
+        "selected": "✓ تم اختيار: {{filename}}",
+        "tip": "✓ اختر صورة جذابة وعالية الجودة لزيادة التفاعل مع القسم"
+      }
+    },
+    "validation": {
+      "titleMinLength": "العنوان يجب أن يكون حرفين على الأقل",
+      "imageOnly": "الرجاء اختيار صورة فقط",
+      "coverImageRequired": "الرجاء اختيار صورة غلاف للقسم"
+    },
+    "toast": {
+      "createSuccess": "تم إنشاء القسم بنجاح",
+      "createError": "فشل إنشاء القسم"
+    },
+    "info": {
+      "title": "معلومات مهمة:",
+      "visible": "القسم سيكون مرئياً لجميع المستخدمين",
+      "addStories": "يمكنك إضافة قصص إليه عند إنشاء قصة",
+      "squareImage": "ينصح باستخدام صورة مربعة"
     }
   },
     }

@@ -185,7 +185,7 @@ function adjustHexColor(
       </div>
 
       {/* === Main Content Card === */}
-      <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 hover:shadow-2xl transition-all duration-500 rounded-3xl">
+      <Card className="overflow-hidden p-0 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 hover:shadow-2xl transition-all duration-500 rounded-3xl">
         <CardContent className="p-0">
           <div className="flex flex-col lg:flex-row">
 
@@ -230,45 +230,64 @@ function adjustHexColor(
             {/* Right: Featured Product / Slides */}
             <div className="lg:w-2/5 xl:w-1/3 relative min-h-[400px]">
               {section.featured_product_id ? (
-                <Link href={`/products/${section.featured_product_id}`} className="block h-full">
-                  <div className="relative h-full min-h-[400px] flex flex-col items-center justify-center p-8">
-                    <div className="absolute top-6 z-10 left-1/2 transform -translate-x-1/2">
-                      <Badge 
-                        className="text-white px-4 py-2 rounded-full shadow-lg" 
-                        style={{ background: `linear-gradient(to right, ${themeColor}cc, ${themeColor})` }}
+                <Link
+                  href={`/products/${section.featured_product_id}`}
+                  className="block col-span-2 row-span-2 group cursor-pointer rounded-xl border border-gray-200 overflow-hidden hover:shadow-2xl transition-all"
+                >
+                  <div className="relative h-full min-h-[400px]">
+
+                    {/* Product Image */}
+                    <img
+                      src={
+                        section.product_image ||
+                        "https://via.placeholder.com/400x600?text=No+Image"
+                      }
+                      alt={isRTL ? section.product_name_ar : section.product_name_en}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+
+                    {/* Dark Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/40 to-transparent"></div>
+
+                    {/* Badge */}
+                    <div className="absolute top-4 right-4 z-20">
+                      <Badge
+                        className="px-4 py-2 text-white text-base font-medium shadow-xl rounded-md border-0"
+                        style={{
+                          background: `linear-gradient(to right, ${themeColor}cc, ${themeColor})`
+                        }}
                       >
-                        <Star className="w-4 h-4 mr-1 fill-current" />
+                        <Star className="w-4 h-4 mr-1 fill-white" />
                         {t('Featured', 'مميز')}
                       </Badge>
                     </div>
 
-                    <div className="relative w-full max-w-[280px]">
-                      <div className="relative aspect-[3/4] bg-white rounded-3xl shadow-2xl overflow-hidden">
-                        {section.product_image ? (
-                          <img 
-                            src={section.product_image} 
-                            alt={isRTL ? section.product_name_ar : section.product_name_en}
-                            className="w-full h-full object-contain p-4 transition-transform duration-700 hover:scale-105"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">
-                            <ShoppingBag className="w-16 h-16" />
-                          </div>
-                        )}
+                    {/* Bottom Info Area */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
+                      <h3 className="text-2xl text-white font-bold mb-3 line-clamp-1">
+                        {isRTL ? section.product_name_ar : section.product_name_en}
+                      </h3>
 
-                        <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm p-6 rounded-t-3xl">
-                          <h4 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1">
-                            {isRTL ? section.product_name_ar : section.product_name_en}
-                          </h4>
-                          <div className="flex items-center justify-between">
-                            <p className="font-bold text-xl" style={{ color: themeColor }}>
-                              {section.product_price} EGP
-                            </p>
-                            <Button size="sm" className="rounded-full" style={{ backgroundColor: themeColor }}>
-                              {t('ShopNow', 'تسوق الآن')}
-                            </Button>
-                          </div>
-                        </div>
+                      <p className="text-white/90 text-lg mb-5">
+                        {section.product_description || t("DiscoverNow", "تعرف على التفاصيل")}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="text-xl font-bold"
+                          style={{ color: themeColor }}
+                        >
+                          {section.product_price} EGP
+                        </span>
+
+                        <Button
+                          className="rounded-md shadow-xl border-0 text-white font-medium px-6 py-2"
+                          style={{
+                            background: `linear-gradient(to right, ${themeColor}cc, ${themeColor})`
+                          }}
+                        >
+                          {t("ShopNow", "تسوق الآن")}
+                        </Button>
                       </div>
                     </div>
                   </div>

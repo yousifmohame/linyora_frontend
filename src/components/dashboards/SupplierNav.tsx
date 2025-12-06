@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Truck,
   Wallet,
+  CircleDashed,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -27,6 +28,7 @@ export default function SupplierNav() {
 
   const navLinks = [
     { href: '/dashboard', icon: Home, key: 'Overview' },
+    { href: '/dashboard/supplier/stories', icon: CircleDashed, key: 'stories' },
     { href: '/dashboard/supplier/products', icon: Package, key: 'Products' },
     { href: '/dashboard/supplier/orders', icon: ShoppingCart, key: 'Orders' },
     { href: '/dashboard/supplier/shipping', icon: Truck, key: 'Shipping' },

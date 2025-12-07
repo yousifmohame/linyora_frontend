@@ -11,9 +11,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  eslint: {
-    ignoreDuringBuilds: true, // ✅ تعطيل ESLint أخطاء/تحذيرات في Vercel
-  },
   typescript: {
     ignoreBuildErrors: true, // ✅ تعطيل TypeScript أخطاء/تحذيرات في Vercel
   },

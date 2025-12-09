@@ -215,14 +215,16 @@ export default function StoryViewer({ feedItems, initialIndex, onClose }: StoryV
                 )}
 
                 {activeStory.type === 'text' && (
-                    <div 
-                        className="w-full h-full flex items-center justify-center p-8 text-center"
-                        style={{ backgroundColor: activeStory.background_color || '#000' }}
-                    >
-                        <p className="text-2xl md:text-3xl font-bold text-white whitespace-pre-wrap leading-relaxed">
-                            {activeStory.text_content}
-                        </p>
+                  <div 
+                    className="w-full h-full flex items-center justify-center p-6 text-center"
+                    style={{ backgroundColor: activeStory.background_color || '#000' }}
+                  >
+                    <div className="max-w-[90%] bg-black/40 backdrop-blur-sm rounded-2xl shadow-lg p-6">
+                      <p className="text-xl md:text-2xl font-semibold text-white whitespace-pre-wrap leading-relaxed break-words">
+                        {activeStory.text_content}
+                      </p>
                     </div>
+                  </div>
                 )}
                 
                 {activeStory.type !== 'text' && activeStory.text_content && (
@@ -241,30 +243,46 @@ export default function StoryViewer({ feedItems, initialIndex, onClose }: StoryV
 
             {/* Product Link */}
             {activeStory.product_id && (
-                <div className="absolute bottom-8 left-4 right-4 z-40">
-                    <Link href={`/products/${activeStory.product_id}`} passHref>
-                        <div className="bg-white/95 backdrop-blur-sm p-3 rounded-xl flex items-center gap-4 shadow-lg hover:bg-white transition-colors cursor-pointer group">
-                             {activeStory.product_image && (
-                                 <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-gray-200">
-                                     <Image src={activeStory.product_image} alt="Product" fill className="object-cover" />
-                                 </div>
-                             )}
-                             <div className="flex-1">
-                                 <p className="text-xs font-semibold text-primary mb-0.5">ترويج منتج</p>
-                                 <p className="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">
-                                     {activeStory.product_name}
-                                 </p>
-                                 {activeStory.product_price && (
-                                     <p className="text-xs text-gray-600">{activeStory.product_price} ج.م</p>
-                                 )}
-                             </div>
-                             <div className="bg-primary text-white p-2 rounded-full">
-                                 <ShoppingBag size={20} />
-                             </div>
-                        </div>
-                    </Link>
-                </div>
+              <div className="absolute bottom-4 left-10 right-10 z-50">
+                <Link href={`/products/${activeStory.product_id}`} passHref>
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-xl border border-gray-100 cursor-pointer hover:scale-[1.01] transition-transform">
+                    
+                    {/* صورة المنتج */}
+                    <div className="relative w-full h-80">
+                      <Image
+                        src={activeStory.product_image || "/placeholder-story.jpg"}
+                        alt="product"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
+                    {/* المحتوى */}
+                    <div className="p-4 text-center">
+
+                      {/* السعر الجديد */}
+                      {activeStory.product_price && (
+                        <p className="text-xl font-extrabold text-primary mb-1">
+                          {activeStory.product_price} ر.س
+                        </p>
+                      )}
+
+                      {/* اسم المنتج */}
+                      <p className="text-sm font-bold text-gray-900 truncate mb-3">
+                        {activeStory.product_name}
+                      </p>
+
+                      {/* زر شراء */}
+                      <div className="bg-primary text-white py-2 rounded-lg font-bold text-sm hover:bg-primary/90">
+                        شراء الآن
+                      </div>
+                    </div>
+
+                  </div>
+                </Link>
+              </div>
             )}
+
           </>
         )}
       </div>

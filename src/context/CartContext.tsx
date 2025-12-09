@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 
 interface CartContextType {
   cartItems: CartItem[];
-  // --- ✨ 1. تم تحديث الدالة لتقبل الكمية ---
   addToCart: (product: Product, variant: Variant, quantity: number) => void;
   removeFromCart: (variantId: number) => void;
   updateQuantity: (variantId: number, quantity: number) => void;
@@ -35,20 +34,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // --- ✨ 2. تم إعادة كتابة منطق الدالة بالكامل ---
   const addToCart = (product: Product, variant: Variant, quantity: number) => {
+    // 🔍 Debug: Check incoming data
+    console.log("🛒 [CartContext] addToCart called", { 
+        productName: product.name,
+        merchantId: product.merchant_id,
+        supplierId: (product as any).supplier_id,
+        isDropshipping: !!(product as any).supplier_id,
+        variantId: variant.id
+    });
+
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === variant.id);
-
-      // التحقق من المخزون المتاح
       const availableStock = variant.stock_quantity ?? Infinity;
+
       if (!existingItem && quantity > availableStock) {
           toast.error(`الكمية المطلوبة غير متوفرة. المتاح: ${availableStock} قطعة`);
           return prevItems;
       }
 
       if (existingItem) {
-        // إذا كان العنصر موجودًا، قم بزيادة الكمية
         const newQuantity = existingItem.quantity + quantity;
         if (newQuantity > availableStock) {
             toast.warning(`تم الوصول للحد الأقصى للمخزون. المتاح: ${availableStock} قطعة`);
@@ -61,7 +66,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         );
 
       } else {
-        // إذا كان العنصر جديدًا، قم بإضافته
+        // Create new item with strict type checking for IDs
         const newItem: CartItem = {
             id: variant.id,
             productId: product.id,
@@ -71,8 +76,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             image: variant.images?.[0],
             merchantName: product.merchantName,
             
+            // ✅ Ensure these fields are captured correctly
+            merchantId: product.merchant_id, 
+            
+            // ✅ Capture Dropshipping Details
+            isDropshipping: !!(product as any).supplier_id, 
+            supplierId: (product as any).supplier_id || null,
+            supplierName: (product as any).supplier_name || null,
+            
             product: product, 
         };
+
+        // 🔍 Debug: Verify the item being added
+        console.log("➕ [CartContext] Adding new item to state:", newItem);
+
         return [...prevItems, newItem];
       }
     });

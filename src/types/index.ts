@@ -39,6 +39,8 @@ export interface Variant {
 export interface Product {
   price: number;
   merchant_id: number; // ✅ Replaced `any` with `number`
+  supplier_id: number;
+  supplier_name: string;
   id: number;
   name: string;
   description: string;
@@ -59,7 +61,11 @@ export interface CartItem {
   quantity: number;
   image?: string;
   merchantName: string;
+  merchantId: number;
   product: Product;
+  isDropshipping?: boolean;
+  supplierId?: number; 
+  supplierName?: string;
 }
 
 export interface ModelWallet {

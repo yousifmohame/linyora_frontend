@@ -52,7 +52,8 @@ import {
   Zap,
   Star,
   Shield,
-  Rocket
+  Rocket,
+  Megaphone // أيقونة الترويج الجديدة
 } from 'lucide-react';
 import AdminNav from '@/components/dashboards/AdminNav';
 
@@ -65,6 +66,7 @@ interface Plan {
   price: number;
   features: string[];
   includes_dropshipping: boolean;
+  allows_promotion_in_stories: boolean; // 🔥 الحقل الجديد
   is_active: boolean;
 }
 
@@ -84,6 +86,7 @@ const ManageSubscriptionPlansPage = () => {
     price: '',
     features: '',
     includes_dropshipping: false,
+    allows_promotion_in_stories: false, // 🔥 القيمة الافتراضية للحقل الجديد
     is_active: true,
   });
 
@@ -116,6 +119,7 @@ const ManageSubscriptionPlansPage = () => {
           price,
           features,
           includes_dropshipping: Boolean(plan.includes_dropshipping),
+          allows_promotion_in_stories: Boolean(plan.allows_promotion_in_stories), // 🔥 تعيين القيمة من الاستجابة
           is_active: Boolean(plan.is_active),
         };
       });
@@ -142,6 +146,7 @@ const ManageSubscriptionPlansPage = () => {
         price: plan.price.toString(),
         features: plan.features.join(', '),
         includes_dropshipping: plan.includes_dropshipping,
+        allows_promotion_in_stories: plan.allows_promotion_in_stories, // 🔥 تعيين القيمة عند التعديل
         is_active: plan.is_active,
       });
     } else {
@@ -152,6 +157,7 @@ const ManageSubscriptionPlansPage = () => {
         price: '',
         features: '',
         includes_dropshipping: false,
+        allows_promotion_in_stories: false, // 🔥 إعادة التعيين
         is_active: true,
       });
     }
@@ -208,6 +214,7 @@ const ManageSubscriptionPlansPage = () => {
       price: priceNum,
       features,
       includes_dropshipping: formData.includes_dropshipping,
+      allows_promotion_in_stories: formData.allows_promotion_in_stories, // 🔥 إرسال القيمة الجديدة
       is_active: formData.is_active,
     };
 
@@ -450,6 +457,9 @@ const ManageSubscriptionPlansPage = () => {
                   <TableHead className="text-rose-800 font-bold text-xs px-3 py-2.5">{t('AdminSubscriptionPlans.table.role')}</TableHead>
                   <TableHead className="text-rose-800 font-bold text-xs px-3 py-2.5">{t('AdminSubscriptionPlans.table.price')}</TableHead>
                   <TableHead className="text-rose-800 font-bold text-xs px-3 py-2.5">{t('AdminSubscriptionPlans.table.features')}</TableHead>
+                  <TableHead className="text-rose-800 font-bold text-xs px-3 py-2.5 text-center">
+                    {t('AdminSubscriptionPlans.table.storyPromotion', { defaultValue: 'Story Promo' })}
+                  </TableHead>
                   <TableHead className="text-rose-800 font-bold text-xs px-3 py-2.5">{t('AdminSubscriptionPlans.table.status')}</TableHead>
                   <TableHead className="text-rose-800 font-bold text-left text-xs px-3 py-2.5">{t('AdminSubscriptionPlans.table.actions')}</TableHead>
                 </TableRow>
@@ -457,7 +467,7 @@ const ManageSubscriptionPlansPage = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex flex-col items-center justify-center">
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rose-500 mb-2"></div>
                         <p className="text-rose-700 font-medium text-xs">{t('AdminSubscriptionPlans.plans.loading')}</p>
@@ -466,7 +476,7 @@ const ManageSubscriptionPlansPage = () => {
                   </TableRow>
                 ) : filteredPlans.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex flex-col items-center justify-center">
                         <Rocket className="w-12 h-12 text-rose-300 mb-2.5" />
                         <h3 className="font-bold text-base text-rose-800 mb-1">{t('AdminSubscriptionPlans.plans.noPlans')}</h3>
@@ -516,6 +526,18 @@ const ManageSubscriptionPlansPage = () => {
                             </Badge>
                           )}
                         </div>
+                      </TableCell>
+                      {/* 🔥 New Column for Story Promotion Status */}
+                      <TableCell className="px-3 py-2.5 text-center">
+                        {plan.allows_promotion_in_stories ? (
+                          <div className="flex justify-center">
+                            <Badge variant="outline" className="bg-indigo-100 text-indigo-700 border-indigo-200 p-1">
+                              <Megaphone className="w-3.5 h-3.5" />
+                            </Badge>
+                          </div>
+                        ) : (
+                          <span className="text-gray-300 text-xs">-</span>
+                        )}
                       </TableCell>
                       <TableCell className="px-3 py-2.5">
                         {getStatusBadge(plan.is_active)}
@@ -635,6 +657,27 @@ const ManageSubscriptionPlansPage = () => {
                   <label htmlFor="includes_dropshipping" className="text-rose-800 font-medium text-xs">
                     {t('AdminSubscriptionPlans.form.includesDropshipping')}
                   </label>
+                </div>
+              </div>
+
+              {/* 🔥 New Checkbox for Story Promotion */}
+              <div className="flex items-start space-x-2 rounded-lg border border-indigo-200 p-2.5 bg-indigo-50/50">
+                <Checkbox
+                  id="allows_promotion_in_stories"
+                  checked={formData.allows_promotion_in_stories}
+                  onCheckedChange={() => handleCheckboxChange('allows_promotion_in_stories')}
+                  className="data-[state=checked]:bg-indigo-500 border-indigo-300 h-4 w-4"
+                />
+                <div className="space-y-0.5 leading-none">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Megaphone className="w-3 h-3 text-indigo-600" />
+                    <label htmlFor="allows_promotion_in_stories" className="text-indigo-900 font-medium text-xs">
+                      {t('AdminSubscriptionPlans.form.allowsPromotion', { defaultValue: 'Allow Story Product Promotion' })}
+                    </label>
+                  </div>
+                  <p className="text-[10px] text-indigo-700">
+                    {t('AdminSubscriptionPlans.form.allowsPromotionHint', { defaultValue: 'Users on this plan can tag products in stories' })}
+                  </p>
                 </div>
               </div>
 

@@ -4123,7 +4123,9 @@ const resources = {
       "video": "Video",
       "videoShort": "Vid",
       "text": "Text",
-      "textShort": "Txt"
+      "textShort": "Txt",
+      "product":"Product",
+      "productShort":"Prod",
     },
     "labels": {
       "textContent": "Text / Description",
@@ -4137,6 +4139,16 @@ const resources = {
       "selected": "✓ Selected: {{filename}}",
       "selectedShort": "Selected: {{filename}}",
       "formats": "PNG, JPG, MP4 up to 50MB"
+    },
+    "product":{
+      "selectProduct":"Select Product",
+      "previewPlaceholder":"preview Placeholder",
+      "placeholder":"Placeholder",
+      "buyNow":"Buy Now",
+      "noProducts":"No Products",
+    },
+    "preview":{
+      "emptyText":"Empty Text"
     },
     "colors": {
       "black": "Black",
@@ -8407,7 +8419,9 @@ const resources = {
       "video": "فيديو",
       "videoShort": "فيد",
       "text": "نص",
-      "textShort": "نص"
+      "textShort": "نص",
+      "product": "منتج",
+      "productShort": "منتج"
     },
     "labels": {
       "textContent": "النص / الشرح",
@@ -8421,6 +8435,16 @@ const resources = {
       "selected": "✓ تم اختيار: {{filename}}",
       "selectedShort": "تم اختيار: {{filename}}",
       "formats": "PNG، JPG، MP4 حتى 50 ميجابايت"
+    },
+    "product":{
+      "selectProduct":"اختار المنتج",
+      "previewPlaceholder":"رؤيه شكل المنتج",
+      "placeholder":"اضغط للإختيار",
+      "buyNow":"الشراء الأن",
+      "noProducts":"لا يوجد منتجات",
+    },
+    "preview":{
+      "emptyText":"نص فارغ"
     },
     "colors": {
       "black": "أسود",

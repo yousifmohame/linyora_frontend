@@ -26,7 +26,9 @@ import {
   Crown,
   ShoppingBag,
   MapPin,
-  Phone
+  Phone,
+  CreditCard, // ✨ أيقونة البطاقة
+  Wallet // ✨ أيقونة المحفظة/الدفع
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Navigation from '@/components/dashboards/Navigation';
@@ -41,6 +43,8 @@ interface OrderDetails {
   customerPhone?: string;
   shippingAddress?: string;
   totalAmount: number;
+  payment_status: string; // ✨ حالة الدفع
+  payment_method: string; // ✨ طريقة الدفع
 }
 
 interface OrderItem {
@@ -143,6 +147,26 @@ export default function MerchantOrderDetailsPage() {
     return statusMap[status] || statusMap.pending;
   };
 
+  // ✨ دالة مساعدة لتنسيق حالة الدفع
+  const getPaymentStatusConfig = (status: string) => {
+    const map: Record<string, { label: string; className: string }> = {
+        paid: { label: t('OrderDetails.paymentStatus.paid', { defaultValue: 'مدفوع' }), className: 'text-green-600 bg-green-50 border-green-200' },
+        unpaid: { label: t('OrderDetails.paymentStatus.unpaid', { defaultValue: 'غير مدفوع' }), className: 'text-amber-600 bg-amber-50 border-amber-200' },
+        refunded: { label: t('OrderDetails.paymentStatus.refunded', { defaultValue: 'مسترجع' }), className: 'text-red-600 bg-red-50 border-red-200' },
+    };
+    return map[status] || map.unpaid;
+  };
+
+  // ✨ دالة مساعدة لتنسيق طريقة الدفع
+  const getPaymentMethodLabel = (method: string) => {
+      const map: Record<string, string> = {
+          card: t('OrderDetails.paymentMethod.card', { defaultValue: 'بطاقة ائتمان' }),
+          cod: t('OrderDetails.paymentMethod.cod', { defaultValue: 'دفع عند الاستلام' }),
+          wallet: t('OrderDetails.paymentMethod.wallet', { defaultValue: 'المحفظة' }),
+      };
+      return map[method] || method;
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(i18n.language, {
       year: 'numeric',
@@ -197,6 +221,7 @@ export default function MerchantOrderDetailsPage() {
   const currentStatus = getStatusConfig(details.status);
   const StatusIcon = currentStatus.icon;
   const totalAmount = items.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
+  const paymentStatusConfig = getPaymentStatusConfig(details.payment_status);
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-rose-50 to-white p-4 sm:p-6 lg:p-8 ${isRTL ? 'rtl' : 'ltr'}`}>
@@ -369,7 +394,7 @@ export default function MerchantOrderDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* Order Summary */}
+          {/* Order Summary & Payment */}
           <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl">
             <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-t-3xl">
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -379,6 +404,7 @@ export default function MerchantOrderDetailsPage() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
+                {/* التاريخ */}
                 <div className="flex items-center gap-3 p-3 bg-rose-50 rounded-xl">
                   <Calendar className="w-5 h-5 text-rose-600" />
                   <div>
@@ -386,6 +412,8 @@ export default function MerchantOrderDetailsPage() {
                     <p className="text-rose-600 text-sm">{t('OrderDetails.summaryCard.orderDate')}</p>
                   </div>
                 </div>
+
+                {/* عدد العناصر */}
                 <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-xl">
                   <ShoppingBag className="w-5 h-5 text-amber-600" />
                   <div>
@@ -395,6 +423,34 @@ export default function MerchantOrderDetailsPage() {
                     <p className="text-amber-600 text-sm">{t('OrderDetails.summaryCard.items')}</p>
                   </div>
                 </div>
+
+                {/* ✨ طريقة الدفع */}
+                <div className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl">
+                  <CreditCard className="w-5 h-5 text-indigo-600" />
+                  <div>
+                    <p className="font-semibold text-indigo-900">
+                      {getPaymentMethodLabel(details.payment_method)}
+                    </p>
+                    <p className="text-indigo-600 text-sm">
+                      {t('OrderDetails.summaryCard.paymentMethod', {defaultValue: 'طريقة الدفع'})}
+                    </p>
+                  </div>
+                </div>
+
+                {/* ✨ حالة الدفع */}
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <Wallet className="w-5 h-5 text-gray-600" />
+                  <div>
+                    <Badge variant="outline" className={`${paymentStatusConfig.className} mb-1 border`}>
+                      {paymentStatusConfig.label}
+                    </Badge>
+                    <p className="text-gray-600 text-sm">
+                      {t('OrderDetails.summaryCard.paymentStatus', {defaultValue: 'حالة الدفع'})}
+                    </p>
+                  </div>
+                </div>
+
+                {/* الإجمالي */}
                 <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200">
                   <DollarSign className="w-5 h-5 text-rose-600" />
                   <div>

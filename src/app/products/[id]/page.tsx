@@ -3,12 +3,20 @@
 import { Metadata } from 'next';
 import api from '@/lib/axios';
 import { Product } from '@/types';
-import ProductDetailClient from './ProductDetailClient'; // سنقوم بإنشاء هذا المكون
+import ProductDetailClient from './ProductDetailClient';
+
+// تعريف النوع الصحيح للـ Props في Next.js 15
+type Props = {
+  params: Promise<{ id: string }>;
+};
 
 // --- 1. البيانات الوصفية (تعمل على الخادم) ---
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const { data: product } = await api.get<Product>(`/products/${params.id}`);
+    // ✅ يجب انتظار الـ params أولاً
+    const { id } = await params;
+
+    const { data: product } = await api.get<Product>(`/products/${id}`);
 
     if (!product) {
       return {
@@ -45,16 +53,16 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 // --- 2. مكون الصفحة الرئيسي (يعمل على الخادم) ---
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+export default async function ProductDetailPage({ params }: Props) {
   try {
-    const { data: product } = await api.get<Product>(`/products/${params.id}`);
+    // ✅ يجب انتظار الـ params أولاً هنا أيضاً
+    const { id } = await params;
+
+    const { data: product } = await api.get<Product>(`/products/${id}`);
     
-    // تمرير البيانات التي تم جلبها من الخادم إلى المكون الخاص بالمتصفح
     return <ProductDetailClient product={product} />;
 
   } catch (error) {
-    // في حالة فشل جلب المنتج، يمكننا عرض صفحة "غير موجود" مباشرة من الخادم
-    // يمكنك إنشاء مكون مخصص لعرض هذا الخطأ بشكل أفضل
     return (
         <div className="min-h-screen flex items-center justify-center text-center p-4">
             <div>

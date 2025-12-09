@@ -67,7 +67,7 @@ export const ReelSection = () => {
           </div>
 
           {/* Play Button Circle */}
-          <Link href="/reels">
+          <Link href="/style-today">
           <div className="mr-6">
             <div className="relative">
               <div className="absolute inset-0 bg-white/20 blur-xl animate-pulse"></div>

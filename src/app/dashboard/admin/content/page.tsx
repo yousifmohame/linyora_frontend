@@ -55,7 +55,7 @@ const ContentManagementPage = () => {
   const fetchContentList = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('/content');
+      const response = await axios.get('/admin/content');
       setContentList(response.data);
       if (response.data.length > 0) {
         fetchContentDetails(response.data[0].section_key);
@@ -69,7 +69,7 @@ const ContentManagementPage = () => {
 
   const fetchContentDetails = async (key: string) => {
     try {
-      const response = await axios.get(`/content/${key}`);
+      const response = await axios.get(`/admin/content/${key}`);
       const fullContent: ContentItem = {
         ...contentList.find(c => c.section_key === key)!,
         content: response.data.content,
@@ -84,7 +84,7 @@ const ContentManagementPage = () => {
     if (!selectedContent) return;
     try {
       setIsUpdating(true);
-      await axios.put(`/content/${selectedContent.section_key}`, {
+      await axios.put(`/admin/content/${selectedContent.section_key}`, {
         title: selectedContent.title,
         content: selectedContent.content,
         is_visible: selectedContent.is_visible,

@@ -158,7 +158,7 @@ export default function FooterSettingsPage() {
     const fetchContent = async () => {
       setLoading(true);
       try {
-        const response = await api.get('/content/footer');
+        const response = await api.get('/admin/content/footer');
         if (response.data && response.data.content) {
           setContent(JSON.parse(response.data.content));
         } else {
@@ -281,7 +281,7 @@ export default function FooterSettingsPage() {
         content: JSON.stringify(content),
       };
 
-      await api.put(`/content/${key}`, payload);
+      await api.put(`/admin/content/${key}`, payload);
       toast.success('تم حفظ إعدادات الفوتر بنجاح!');
     } catch (error) {
       console.error('Failed to save footer settings:', error);

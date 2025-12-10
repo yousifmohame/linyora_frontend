@@ -236,10 +236,10 @@ export default function SectionForm({ initialData, onSuccess, onCancel }: Sectio
       const payload = { ...data, featured_product_id: productId };
 
       if (initialData) {
-        await api.put(`/sections/${initialData.id}`, payload);
+        await api.put(`/admin/sections/${initialData.id}`, payload);
         toast.success(t('SectionForm.toast.updateSuccess'));
       } else {
-        await api.post('/sections', payload);
+        await api.post('/admin/sections', payload);
         toast.success(t('SectionForm.toast.createSuccess'));
       }
       onSuccess();

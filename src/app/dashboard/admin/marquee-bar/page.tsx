@@ -31,8 +31,8 @@ export default function MarqueeBarPage() {
   const fetchData = async () => {
     try {
       const [msgRes, speedRes] = await Promise.all([
-        api.get('/marquee'),
-        api.get('/settings/marquee_speed')
+        api.get('/admin/marquee'),
+        api.get('/admin/marquee/settings/marquee_speed')
       ]);
       setMessages(msgRes.data);
       setSpeed(parseInt(speedRes.data, 10) || 20);
@@ -59,7 +59,7 @@ export default function MarqueeBarPage() {
 
     setAddingMessage(true);
     try {
-      const res = await api.post('/marquee', { message_text: newMessage });
+      const res = await api.post('/admin/marquee', { message_text: newMessage });
       setMessages([res.data, ...messages]);
       setNewMessage('');
       toast.success(t('MarqueeBarPage.toast.addSuccess'));
@@ -72,7 +72,7 @@ export default function MarqueeBarPage() {
 
   const handleToggleActive = async (id: number, currentStatus: boolean) => {
     try {
-      const res = await api.put(`/marquee/${id}`, { is_active: !currentStatus });
+      const res = await api.put(`/admin/marquee/${id}`, { is_active: !currentStatus });
       setMessages(messages.map(msg => (msg.id === id ? res.data : msg)));
       toast.success(t('MarqueeBarPage.toast.statusUpdated', { status: !currentStatus ? t('common.active') : t('common.inactive') }));
     } catch (error) {
@@ -83,7 +83,7 @@ export default function MarqueeBarPage() {
   const handleDeleteMessage = async (id: number) => {
     if (!confirm(t('MarqueeBarPage.confirm.delete'))) return;
     try {
-      await api.delete(`/marquee/${id}`);
+      await api.delete(`/admin/marquee/${id}`);
       setMessages(messages.filter(msg => msg.id !== id));
       toast.success(t('MarqueeBarPage.toast.deleteSuccess'));
     } catch (error) {
@@ -97,7 +97,7 @@ export default function MarqueeBarPage() {
     setIsSpeedSaving(true);
 
     try {
-      await api.put('/settings/marquee_speed', { value: newSpeed.toString() });
+      await api.put('/admin/marquee/settings/marquee_speed', { value: newSpeed.toString() });
       toast.success(t('MarqueeBarPage.toast.speedUpdated', { speed: newSpeed }));
     } catch (error) {
       toast.error(t('MarqueeBarPage.toast.speedUpdateError'));

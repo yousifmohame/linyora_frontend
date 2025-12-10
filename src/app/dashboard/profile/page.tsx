@@ -24,7 +24,8 @@ import {
   Bell,
   Edit,
   Trash2,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 
 // Components
@@ -45,6 +46,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import dynamic from 'next/dynamic';
 
 // Types
 type ProfileFormValues = { name: string; email: string; phone?: string };
@@ -70,6 +72,11 @@ interface UserStats {
   nextLevelPoints: number;
 }
 
+const MapPicker = dynamic(() => import('@/components/ui/MapPicker'), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-gray-100 flex items-center justify-center">Loading Map...</div>
+});
+
 // ========== AddressForm ==========
 const AddressForm = ({
   address,
@@ -83,6 +90,8 @@ const AddressForm = ({
   onOpenChange?: (open: boolean) => void;
 }) => {
   const { t } = useTranslation();
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false); // حالة تحميل العنوان
+
   const form = useForm<AddressFormValues>({
     defaultValues: address || {
       country: 'Saudi Arabia',
@@ -108,6 +117,42 @@ const AddressForm = ({
       );
     }
   }, [address, open, form]);
+
+  // 👈 دالة التعامل مع اختيار الموقع من الخريطة
+  const handleLocationSelect = async (lat: number, lng: number) => {
+    setIsLoadingLocation(true);
+    try {
+      // استخدام خدمة OpenStreetMap المجانية لجلب العنوان من الإحداثيات (Reverse Geocoding)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`
+      );
+      const data = await response.json();
+      
+      if (data && data.address) {
+        // تعبئة الحقول تلقائياً
+        form.setValue('city', data.address.city || data.address.town || data.address.state || '');
+        form.setValue('state', data.address.state || data.address.region || '');
+        form.setValue('postal_code', data.address.postcode || '');
+        form.setValue('country', data.address.country || 'Saudi Arabia');
+        
+        // تجميع العنوان الكامل
+        const fullAddress = [
+            data.address.road,
+            data.address.suburb,
+            data.address.neighbourhood
+        ].filter(Boolean).join(', ');
+        
+        form.setValue('address_line1', fullAddress || t('ProfilePage.addressForm.addressPlaceholder'));
+        
+        toast.success(t('Address updated from map'));
+      }
+    } catch (error) {
+      console.error('Error fetching address:', error);
+      toast.error(t('Failed to get address details'));
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
 
   const onSubmit = async (values: AddressFormValues) => {
     const promise = values.id
@@ -137,6 +182,18 @@ const AddressForm = ({
               : t('ProfilePage.addressForm.addTitle')}
           </DialogTitle>
         </DialogHeader>
+
+        <div className="mb-4">
+           <p className="text-sm text-gray-500 mb-2">{t('Select location on map to auto-fill')}</p>
+           <MapPicker onLocationSelect={handleLocationSelect} />
+           {isLoadingLocation && (
+             <div className="text-xs text-purple-600 flex items-center gap-1 mt-1">
+               <Loader2 className="w-3 h-3 animate-spin" />
+               {t('Fetching address details...')}
+             </div>
+           )}
+        </div>
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -250,7 +307,7 @@ const AddressForm = ({
 const EditProfileModal = ({ user, onSave, open, onOpenChange }: { user: any; onSave: () => void; open: boolean; onOpenChange: (open: boolean) => void; }) => {
   const { t } = useTranslation();
   const form = useForm<ProfileFormValues>({
-    defaultValues: { name: user.name, email: user.email, phone: user.phone || '' },
+    defaultValues: { name: user.name, email: user.email, phone: user.phone_number || '' },
   });
 
   const onSubmit = async (data: ProfileFormValues) => {

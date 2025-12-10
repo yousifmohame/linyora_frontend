@@ -47,7 +47,7 @@ export default function SectionsManagementPage() {
   const fetchSections = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/sections/admin/all');
+      const res = await api.get('/admin/sections/admin/all');
       setSections(res.data);
       setFilteredSections(res.data);
     } catch (error) {
@@ -87,7 +87,7 @@ export default function SectionsManagementPage() {
     
     try {
       setDeleteLoading(id);
-      await api.delete(`/sections/${id}`);
+      await api.delete(`/admin/sections/${id}`);
       toast.success(t('SectionsManagement.toast.deleteSuccess'));
       fetchSections();
     } catch (error) {
@@ -99,7 +99,7 @@ export default function SectionsManagementPage() {
 
   const toggleSectionStatus = async (section: Section) => {
     try {
-      await api.patch(`/sections/${section.id}`, {
+      await api.patch(`/admin/sections/${section.id}`, {
         is_active: !section.is_active
       });
       toast.success(t('SectionsManagement.toast.statusUpdateSuccess', { 

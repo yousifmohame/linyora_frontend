@@ -82,7 +82,7 @@ export default function ManageMainBannersPage() {
   const fetchPromotions = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/main-banners');
+      const response = await api.get('/admin/main-banners');
       setPromotions(response.data);
     } catch (error) {
       console.error('Error fetching banners:', error);
@@ -136,8 +136,8 @@ export default function ManageMainBannersPage() {
       }
 
       const url = editingPromotion 
-        ? `/main-banners/${editingPromotion.id}` 
-        : '/main-banners';
+        ? `/admin/main-banners/${editingPromotion.id}` 
+        : '/admin/main-banners';
       const method = editingPromotion ? 'put' : 'post';
 
       const promise = api[method](url, formData, {
@@ -173,7 +173,7 @@ export default function ManageMainBannersPage() {
     if (!promotionToDelete) return;
     
     try {
-      const promise = api.delete(`/main-banners/${promotionToDelete.id}`);
+      const promise = api.delete(`/admin/main-banners/${promotionToDelete.id}`);
       
       toast.promise(promise, {
         loading: t('common.saving'),

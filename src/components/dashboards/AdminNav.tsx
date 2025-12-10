@@ -1,4 +1,4 @@
-// components/dashboards/AdminNav.tsx
+// src/components/dashboards/AdminNav.tsx
 'use client';
 
 import { useState } from 'react';
@@ -24,6 +24,7 @@ import {
   MessageCircle,
   Layout,
   CircleDashed,
+  Shield // Imported Shield for Sub-Admin icon
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -38,8 +39,25 @@ export default function AdminNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isRTL = i18n.language === 'ar';
 
-  // قائمة الروابط الخاصة بالمشرفة فقط
-  const adminLinks = [
+  // Helper to check if user can view a specific resource
+  const canView = (resourceKey: string) => {
+    // 1. Super Admin sees everything
+    if (user?.is_super_admin) return true;
+    
+    // 2. Overview is always visible
+    if (resourceKey === 'overview') return true;
+
+    // 3. Check permissions JSON
+    // Note: Ensure user.permissions is parsed in AuthContext or backend
+    const perms = user?.permissions;
+    if (!perms) return false;
+
+    const accessLevel = perms[resourceKey];
+    return accessLevel === 'read' || accessLevel === 'write';
+  };
+
+  // Full list of links
+  const allAdminLinks = [
     { key: 'overview', href: '/dashboard', icon: Home },
     { key: 'users', href: '/dashboard/admin/users', icon: Users },
     { key: 'stories', href: '/dashboard/admin/stories', icon: CircleDashed },
@@ -63,6 +81,19 @@ export default function AdminNav() {
     { key: 'settings', href: '/dashboard/admin/settings', icon: Settings },
   ];
 
+  // Filter links based on permissions
+  const visibleLinks = allAdminLinks.filter(link => canView(link.key));
+
+  // Add "Manage Sub-Admins" link only for Super Admin
+  if (user?.is_super_admin) {
+    // Insert it before settings or at specific position
+    visibleLinks.push({ 
+        key: 'sub-admins', 
+        href: '/dashboard/admin/sub-admins', 
+        icon: Shield 
+    });
+  }
+
   const handleLogout = () => {
     logout();
   };
@@ -73,7 +104,7 @@ export default function AdminNav() {
       <Card className="hidden lg:block shadow-lg border-0 bg-white/90 backdrop-blur-sm mb-5 lg:mb-6">
         <CardContent className="p-3 sm:p-4">
           <div className="flex flex-wrap items-center justify-center gap-1">
-            {adminLinks.map((link) => {
+            {visibleLinks.map((link) => {
               const isActive = pathname === link.href;
               const Icon = link.icon;
               
@@ -95,7 +126,7 @@ export default function AdminNav() {
                   <span className={`font-medium truncate max-w-[100px] sm:max-w-none ${
                     isActive ? 'text-white' : 'group-hover:text-gray-900'
                   }`}>
-                    {t(`AdminNav.nav.${link.key}`)}
+                    {t(`AdminNav.nav.${link.key}`, {defaultValue: link.key.replace(/-/g, ' ')})}
                   </span>
                 </Link>
               );
@@ -136,7 +167,7 @@ export default function AdminNav() {
         {isMobileMenuOpen && (
           <CardContent className="border-t border-gray-200/50 p-2.5 max-h-[70vh] overflow-y-auto">
             <div className="space-y-0.5">
-              {adminLinks.map((link) => {
+              {visibleLinks.map((link) => {
                 const isActive = pathname === link.href;
                 const Icon = link.icon;
                 return (
@@ -152,7 +183,7 @@ export default function AdminNav() {
                   >
                     <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-white' : 'text-gray-600'}`} />
                     <span className={`font-medium ${isRTL ? 'mr-2' : 'ml-2'} truncate`}>
-                      {t(`AdminNav.nav.${link.key}`)}
+                      {t(`AdminNav.nav.${link.key}`, {defaultValue: link.key.replace(/-/g, ' ')})}
                     </span>
                   </Link>
                 );

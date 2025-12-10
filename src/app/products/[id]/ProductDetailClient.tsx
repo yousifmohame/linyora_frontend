@@ -33,6 +33,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
+import RelatedProductsSection from '@/components/products/RelatedProductsSection';
 
 // --- Star Rating Component ---
 const StarRating = ({ 
@@ -566,6 +567,13 @@ export default function ProductDetailClient({ product: initialProduct }: { produ
             </div>
           </div>
         </div>
+
+          <RelatedProductsSection 
+          categoryId={product.category_id} 
+          merchantId={product.merchant_id}
+          currentProductId={product.id} 
+          title="قد يعجبك ايضا"
+        />
 
         {product.reviews && (
           <ProductReviews 

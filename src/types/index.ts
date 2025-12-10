@@ -37,6 +37,7 @@ export interface Variant {
 }
 
 export interface Product {
+  category_id: number;
   price: number;
   merchant_id: number; // ✅ Replaced `any` with `number`
   supplier_id: number;
@@ -158,6 +159,9 @@ export interface User {
   address?: string | null; // قد لا نحتاجه في الملف العام
   profile_picture_url?: string | null;
   bio?: string | null;
+  // Roles & Permissions (Sub-Admin System)
+  is_super_admin: boolean;
+  permissions: Record<string, 'none' | 'read' | 'write'> | any; // Flexible to handle JSON from DB
   is_banned?: boolean;
   is_email_verified?: boolean;
   store_name?: string | null; // للتجار

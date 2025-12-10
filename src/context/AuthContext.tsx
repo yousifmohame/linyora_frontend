@@ -28,6 +28,8 @@ export interface User {
   role_id: number;
   verification_status: 'not_submitted' | 'pending' | 'approved' | 'rejected';
   has_accepted_agreement: boolean;
+  is_super_admin: boolean;
+  permissions: Record<string, 'none' | 'read' | 'write'> | any; // Flexible to handle JSON from DB
   subscription: SubscriptionState;
 }
 

@@ -73,8 +73,8 @@ export default function AdminStoriesPage() {
     try {
       setLoading(true);
       const [sectionsRes, storiesRes] = await Promise.all([
-        axios.get('/stories/sections'),
-        axios.get('/stories/my-stories')
+        axios.get('/admin/my-stories/sections'),
+        axios.get('/admin/my-stories')
       ]);
 
       setSections(sectionsRes.data);
@@ -94,7 +94,7 @@ export default function AdminStoriesPage() {
   const handleDeleteSection = async (id: number) => {
     try {
       setDeleteLoading({ type: 'section', id });
-      await axios.delete(`/stories/sections/${id}`);
+      await axios.delete(`/admin/my-stories/sections/${id}`);
       toast.success(t('AdminStories.toast.sectionDeleted'));
       setSections(prev => prev.filter(s => s.id !== id));
     } catch (error) {
@@ -107,7 +107,7 @@ export default function AdminStoriesPage() {
   const handleDeleteStory = async (id: number) => {
     try {
       setDeleteLoading({ type: 'story', id });
-      await axios.delete(`/stories/${id}`);
+      await axios.delete(`/admin/my-stories/${id}`);
       toast.success(t('AdminStories.toast.storyDeleted'));
       setActiveStories(prev => prev.filter(s => s.id !== id));
     } catch (error) {

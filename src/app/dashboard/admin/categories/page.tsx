@@ -339,7 +339,7 @@ export default function ManageCategoriesPage() {
   const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.get('/categories');
+      const response = await api.get('/admin/categories');
       setCategories(response.data);
       setFlatCategories(flattenCategories(response.data));
       if (expandedCategories.size === 0) {
@@ -359,7 +359,7 @@ export default function ManageCategoriesPage() {
 
   const handleSave = async (formData: FormData) => {
     const isEditing = !!formData.get('id');
-    const url = isEditing ? `/categories/${formData.get('id')}` : '/categories';
+    const url = isEditing ? `/admin/categories/${formData.get('id')}` : '/admin/categories';
     const method = isEditing ? 'put' : 'post';
 
     toast.promise(api[method](url, formData, { headers: { 'Content-Type': 'multipart/form-data' } }), {
@@ -376,7 +376,7 @@ export default function ManageCategoriesPage() {
   const handleDelete = async () => {
     if (!categoryToDelete) return;
     
-    toast.promise(api.delete(`/categories/${categoryToDelete.id}`), {
+    toast.promise(api.delete(`/admin/categories/${categoryToDelete.id}`), {
       loading: t('ManageCategories.toast.deleting'),
       success: () => {
         fetchCategories();

@@ -114,7 +114,7 @@ export default function CreateSectionModal() {
     formData.append('cover_image', file);
 
     try {
-      await axios.post('/stories/sections', formData, {
+      await axios.post('/admin/my-stories/sections', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success(t('CreateSectionModal.toast.createSuccess'));

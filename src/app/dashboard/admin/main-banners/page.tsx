@@ -24,7 +24,9 @@ import {
   Palette,
   Link as LinkIcon,
   TextCursor,
-  Badge as BadgeIcon
+  Badge as BadgeIcon,
+  Video, // ✨ أيقونة الفيديو
+  PlayCircle // ✨ أيقونة التشغيل
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -54,16 +56,22 @@ type PromotionFormValues = {
 interface Promotion extends Omit<PromotionFormValues, 'image'> {
   id: number;
   image_url: string;
+  media_type: 'image' | 'video'; // ✨ حقل جديد لتحديد النوع (اختياري إذا كان الباك إند يكتشفه)
   created_at?: string;
   updated_at?: string;
 }
+
+// ✨ دالة مساعدة للتحقق مما إذا كان الرابط فيديو
+const isVideoUrl = (url: string) => {
+  return url?.match(/\.(mp4|webm|ogg)$/i);
+};
 
 export default function ManageMainBannersPage() {
   const { t, i18n } = useTranslation();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(null);
   const [loading, setLoading] = useState(true);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<{ url: string, type: 'image' | 'video' } | null>(null); // ✨ تحديث نوع المعاينة
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [promotionToDelete, setPromotionToDelete] = useState<Promotion | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -99,16 +107,24 @@ export default function ManageMainBannersPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-        toast.error(t('AdminBanners.validation.imageType'));
+      // ✨ التحقق من النوع (صور + فيديو)
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+
+      if (!isImage && !isVideo) {
+        toast.error(t('AdminBanners.validation.fileType', { defaultValue: 'Only images and videos are allowed' }));
         return;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error(t('AdminBanners.validation.imageSize'));
+
+      // ✨ التحقق من الحجم (مثلاً 20MB للفيديو، 5MB للصور)
+      const maxSize = isVideo ? 20 * 1024 * 1024 : 5 * 1024 * 1024;
+      if (file.size > maxSize) { 
+        toast.error(t('AdminBanners.validation.fileSize', { defaultValue: 'File is too large' }));
         return;
       }
+
       const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
+      setMediaPreview({ url: previewUrl, type: isVideo ? 'video' : 'image' }); // ✨ تعيين نوع المعاينة
       form.setValue('image', file);
     }
   };
@@ -117,19 +133,16 @@ export default function ManageMainBannersPage() {
     try {
       const formData = new FormData();
       
-      // Append all text fields
       Object.entries(values).forEach(([key, value]) => {
         if (key !== 'image' && value !== undefined && value !== null) {
           formData.append(key, String(value));
         }
       });
       
-      // Append the file if it exists
       if (values.image instanceof File) {
         formData.append('image', values.image);
       } else if (editingPromotion) {
-        // When editing, if no new image is selected, we don't need to send anything for the image.
-        // The backend will keep the old one.
+        // Keep existing
       } else {
         toast.error(t('AdminBanners.validation.imageRequired'));
         return;
@@ -200,14 +213,21 @@ export default function ManageMainBannersPage() {
       badge_text: promotion.badge_text || '',
       is_active: Boolean(promotion.is_active),
     });
-    setImagePreview(promotion.image_url);
+    
+    // ✨ تحديد نوع الوسائط للمعاينة عند التعديل
+    const isVideo = isVideoUrl(promotion.image_url);
+    setMediaPreview({ 
+        url: promotion.image_url, 
+        type: isVideo ? 'video' : 'image' 
+    });
+    
     document.getElementById('banner-form')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const resetForm = () => {
     setEditingPromotion(null);
     form.reset();
-    setImagePreview(null);
+    setMediaPreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -231,7 +251,8 @@ export default function ManageMainBannersPage() {
       <div className="relative text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-4">
             <div className="p-3 bg-white rounded-2xl shadow-lg">
-                <ImageIcon className="h-8 w-8 text-rose-500" />
+                {/* ✨ تغيير الأيقونة لتدل على الوسائط المتعددة */}
+                <Sparkles className="h-8 w-8 text-rose-500" />
             </div>
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-3">
@@ -264,7 +285,7 @@ export default function ManageMainBannersPage() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="space-y-6">
-                    {/* All Text Fields */}
+                    {/* All Text Fields (Same as before) */}
                     <FormField control={form.control} name="title" render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2 text-rose-800 font-semibold"><TextCursor className="w-4 h-4" />{t('AdminBanners.fields.title')}</FormLabel>
@@ -308,28 +329,55 @@ export default function ManageMainBannersPage() {
                   </div>
 
                   <div className="space-y-6">
-                    {/* Image Upload */}
+                    {/* Media Upload (Images & Videos) */}
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-rose-800 font-semibold"><ImageIcon className="w-4 h-4" />{t('AdminBanners.fields.image')}</FormLabel>
-                      <FormControl><Input type="file" accept="image/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} /></FormControl>
+                      <FormLabel className="flex items-center gap-2 text-rose-800 font-semibold">
+                        <ImageIcon className="w-4 h-4" />
+                        {/* ✨ تغيير النص ليشمل الفيديو */}
+                        {t('AdminBanners.fields.media', { defaultValue: 'Media (Image/Video)' })}
+                      </FormLabel>
+                      {/* ✨ السماح بملفات الفيديو */}
+                      <FormControl><Input type="file" accept="image/*,video/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} /></FormControl>
                       <div 
-                        className="w-full h-80 border-2 border-dashed border-rose-300 rounded-2xl flex flex-col justify-center items-center cursor-pointer bg-rose-50/50 hover:bg-rose-100/50 transition-all duration-300 group"
+                        className="w-full h-80 border-2 border-dashed border-rose-300 rounded-2xl flex flex-col justify-center items-center cursor-pointer bg-rose-50/50 hover:bg-rose-100/50 transition-all duration-300 group relative"
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        {imagePreview ? (
-                          <div className="relative w-full h-full rounded-2xl overflow-hidden">
-                            <Image src={imagePreview} alt="Preview" fill className="object-cover" />
+                        {mediaPreview ? (
+                          <div className="relative w-full h-full rounded-2xl overflow-hidden bg-black/5">
+                            {/* ✨ عرض مشغل الفيديو إذا كان النوع فيديو */}
+                            {mediaPreview.type === 'video' ? (
+                                <video 
+                                    src={mediaPreview.url} 
+                                    className="w-full h-full object-contain" 
+                                    controls 
+                                    autoPlay 
+                                    muted 
+                                    loop 
+                                />
+                            ) : (
+                                <Image src={mediaPreview.url} alt="Preview" fill className="object-cover" />
+                            )}
+                            
+                            {/* زر تغيير الميديا */}
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div className="bg-white/90 p-2 rounded-full">
+                                    <UploadCloud className="w-6 h-6 text-rose-600" />
+                                </div>
+                            </div>
                           </div>
                         ) : (
                           <div className="text-center text-rose-600 p-6">
-                            <UploadCloud className="mx-auto h-12 w-12 mb-4 text-rose-400" />
+                            <div className="flex justify-center gap-2 mb-4">
+                                <ImageIcon className="h-12 w-12 text-rose-400" />
+                                <Video className="h-12 w-12 text-rose-400 opacity-50" />
+                            </div>
                             <p className="font-semibold mb-2">{t('common.uploading')}</p>
-                            <p className="text-sm text-rose-500">PNG, JPG, GIF up to 5MB</p>
+                            <p className="text-sm text-rose-500">Images (PNG, JPG) or Videos (MP4, WebM)</p>
                           </div>
                         )}
                       </div>
                     </FormItem>
-                     <FormField control={form.control} name="is_active" render={({ field }) => (
+                      <FormField control={form.control} name="is_active" render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-2xl border border-rose-200 p-4 bg-rose-50/50">
                             <FormLabel className="flex items-center gap-2 text-rose-800 font-semibold">
                                 {field.value ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
@@ -375,14 +423,28 @@ export default function ManageMainBannersPage() {
                 ) : promotions.length === 0 ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-12">{t('AdminBanners.list.empty')}</TableCell></TableRow>
                 ) : (
-                  promotions.map((promo) => (
+                  promotions.map((promo) => {
+                    // ✨ تحديد النوع للعرض في القائمة
+                    const isVideo = isVideoUrl(promo.image_url);
+                    
+                    return (
                     <TableRow key={promo.id} className="border-rose-100">
                       <TableCell>
-                        <div className="relative w-24 h-14 rounded-lg overflow-hidden border">
-                          <Image src={promo.image_url} alt={promo.title} fill className="object-cover" />
+                        <div className="relative w-24 h-14 rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center group">
+                          {/* ✨ عرض مصغر للفيديو أو الصورة */}
+                          {isVideo ? (
+                            <>
+                                <video src={promo.image_url} className="w-full h-full object-cover" muted />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                    <PlayCircle className="w-6 h-6 text-white opacity-80" />
+                                </div>
+                            </>
+                          ) : (
+                            <Image src={promo.image_url} alt={promo.title} fill className="object-cover" />
+                          )}
                         </div>
                       </TableCell>
-                       <TableCell className="font-semibold text-gray-700">{promo.title}</TableCell>
+                        <TableCell className="font-semibold text-gray-700">{promo.title}</TableCell>
                       <TableCell>
                         <Badge variant={promo.is_active ? "default" : "outline"} className={promo.is_active ? "bg-green-100 text-green-700" : ""}>
                           {promo.is_active ? t('AdminBanners.status.active') : t('AdminBanners.status.inactive')}
@@ -396,7 +458,7 @@ export default function ManageMainBannersPage() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
+                  )})
                 )}
               </TableBody>
             </Table>

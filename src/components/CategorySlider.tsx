@@ -103,7 +103,7 @@ export default function CategorySwiper() {
   };
 
   return (
-    <section className="relative py-2 mb-3 lg:py-4 bg-white w-full">
+    <section className="relative py-2 mb-1 lg:py-4 bg-white w-full">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         
         {loading ? (

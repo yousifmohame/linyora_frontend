@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Product, Variant } from '@/types';
 import Image from 'next/image';
-import { Star, Heart, ShoppingBag, Sparkles } from 'lucide-react';
+import { Star, Heart, ShoppingBag, Sparkles, ShoppingCart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '@/lib/axios';
 import { useAuth } from '@/context/AuthContext';
@@ -180,27 +180,24 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
           {product.name}
         </CardTitle>
         
-        {/* Merchant Name */}
-        {/* <p className="text-[10px] font-medium text-rose-500 mb-1 uppercase tracking-wide">
-          {product.merchantName}
-        </p> */}
+        
 
-        {/* Price Section */}
-        <div className="mt-auto">
-          <div className="flex items-baseline gap-1 mb-0.5">
-            <span className="text-[10px] font-bold text-gray-900">
+        {/* Price */}
+        <div className="mt-1">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[12px] font-bold text-gray-900">
               {price.toFixed(2)} {currency}
             </span>
             {hasDiscount && (
-              <span className="text-[8px] text-gray-500 line-through">
+              <span className="text-[11px] text-gray-500 line-through">
                 {comparePrice?.toFixed(2)} {currency}
               </span>
             )}
           </div>
-          
+
           {product?.variants?.length > 1 && (
-            <p className="text-[10px] text-gray-500 font-medium">
-              +{product?.variants?.length - 1} {t('ProductCard.variants')}
+            <p className="text-[11px] text-gray-500 font-medium mt-1">
+              +{product?.variants?.length - 1} {t("ProductCard.variants", "variants")}
             </p>
           )}
         </div>
@@ -208,9 +205,11 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
 
         <div className="w-full flex items-center justify-between mt-2">
           {/* Add to Cart */}
-          <Button 
-            size="sm"
-            className="h-7 bg-[#00A500] hover:bg-[#009000] text-white text-[13px] font-medium px-3 rounded-xl transition-colors duration-200"
+          <Button
+            size="icon"
+            className="h-8 w-8 flex items-center justify-center 
+                      rounded-full bg-[#00A500] hover:bg-[#009000] 
+                      text-white transition-colors duration-200"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -220,8 +219,9 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
               }
             }}
           >
-            {t('ProductCard.add', 'Add')}
+            <ShoppingCart className="h-4 w-4" />
           </Button>
+
 
           {/* Rating */}
           <div className="flex items-center gap-1">

@@ -13,9 +13,10 @@ interface ModelProfileData {
   offers: Offer[];
 }
 
+// 1. تحديث الدالة لتنتظر الكوكيز (Async/Await)
 async function getModelProfileData(id: string): Promise<ModelProfileData | null> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies(); // ✅ يجب استخدام await هنا
     const token = cookieStore.get('token')?.value;
 
     const headersObj: { [key: string]: string } = {
@@ -32,13 +33,13 @@ async function getModelProfileData(id: string): Promise<ModelProfileData | null>
   }
 }
 
-// Detect locale from headers (basic detection)
-function detectLocale(): 'en' | 'ar' {
-  const acceptLang = headers().get('accept-language') || '';
+// 2. تحديث الدالة لتنتظر الهيدرز (Async/Await)
+async function detectLocale(): Promise<'en' | 'ar'> {
+  const headersList = await headers(); // ✅ يجب استخدام await هنا
+  const acceptLang = headersList.get('accept-language') || '';
   return acceptLang.startsWith('ar') ? 'ar' : 'en';
 }
 
-// Translation helper (static)
 const getTranslations = (locale: 'en' | 'ar') => {
   if (locale === 'ar') {
     return {
@@ -54,17 +55,21 @@ const getTranslations = (locale: 'en' | 'ar') => {
   };
 };
 
+// 3. تحديث نوع الـ Props لأن params أصبح Promise
 interface ModelPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>; // ✅ Promise بدلاً من كائن مباشر
 }
 
+// 4. تحديث generateMetadata
 export async function generateMetadata({ params }: ModelPageProps): Promise<Metadata> {
-  const locale = detectLocale();
+  const { id } = await params; // ✅ انتظار الـ params
+  const locale = await detectLocale(); // ✅ انتظار اللغة
+  
   const t = getTranslations(locale);
-  const data = await getModelProfileData(params.id);
+  const data = await getModelProfileData(id);
 
-  const baseUrl = 'https://linyora.com'; // ← Replace with your actual domain
-  const profileUrl = `${baseUrl}/models/${params.id}`;
+  const baseUrl = 'https://linyora.com';
+  const profileUrl = `${baseUrl}/models/${id}`;
 
   if (!data) {
     return {
@@ -101,8 +106,12 @@ export async function generateMetadata({ params }: ModelPageProps): Promise<Meta
   };
 }
 
+// 5. تحديث مكون الصفحة الرئيسي
 export default async function ModelPage({ params }: ModelPageProps) {
-  const data = await getModelProfileData(params.id);
+  const { id } = await params; // ✅ انتظار الـ params لفك الـ id
+  
+  const data = await getModelProfileData(id);
   if (!data) notFound();
+  
   return <ModelProfileClient profileData={data} />;
 }

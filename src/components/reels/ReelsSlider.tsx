@@ -75,11 +75,11 @@ export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels })
 
   return (
     <>
-      <section className="bg-rose-50 py-0 mb-8">
+      <section className="bg-rose-50 py-2 mb-4">
         <div className="container mx-auto px-4 space-y-12">
           
           {/* ================= القسم الأول: أشهر المودلز ================= */}
-          <div className="space-y-4 bg-white py-8 px-8 animate-fade-in-up">
+          <div className="space-y-4 mb-2 bg-white py-2 px-8 rounded-2xl animate-fade-in-up">
             <div className="flex items-center gap-3">
                 <div className='relative'>
                   <TrendingUp className='h-7 w-7 text-purple-500' />
@@ -91,7 +91,7 @@ export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels })
                 </div>
             </div>
             
-            <ScrollArea dir='rtl' className="w-full whitespace-nowrap rounded-xl p-4">
+            <ScrollArea dir='rtl' className="w-full whitespace-nowrap rounded-xl p-2">
                 <div className="flex w-max space-x-4 space-x-reverse pb-2">
                     {loadingSidebars ? (
                         [...Array(6)].map((_, i) => (
@@ -115,7 +115,7 @@ export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels })
           <ReelSection />
           
           {/* ================= القسم الثالث: أشهر التاجرات ================= */}
-          <div className="space-y-4 bg-white py-8 px-8 animate-fade-in-up delay-200">
+          <div className="space-y-4 bg-white py-2 rounded-2xl px-8 animate-fade-in-up delay-200">
             <div className="flex items-center gap-3">
                 <div className='relative'>
                   <TrendingUp className='h-7 w-7 text-purple-500' />
@@ -127,7 +127,7 @@ export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels })
                 </div>
             </div>
 
-            <ScrollArea dir='rtl' className="w-full whitespace-nowrap rounded-xl p-4">
+            <ScrollArea dir='rtl' className="w-full whitespace-nowrap rounded-xl p-2">
                 <div className="flex w-max space-x-4 space-x-reverse pb-2">
                     {loadingSidebars ? (
                         [...Array(6)].map((_, i) => (

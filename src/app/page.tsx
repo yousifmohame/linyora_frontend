@@ -117,14 +117,14 @@ export default function HomePage() {
   return (
     <main className="min-h-screen px-0 bg-white">
       {/* 1. الأقسام الثابتة العلوية */}
-      <div className="bg-gray-50 pb-8">
+      <div className="bg-gray-50 pb-2">
         <StoriesFeed />
         <PromotedProductsSection />
         <CategorySlider />
       </div>
 
       {loading ? (
-        <div className="space-y-8 mt-8">
+        <div className="space-y-8 mt-2">
           <ProductCarouselSkeleton />
           <ProductCarouselSkeleton />
           <ProductCarouselSkeleton />
@@ -151,7 +151,7 @@ export default function HomePage() {
           ))}
 
           {/* 4. فاصل الريلز */}
-          <div className="py-8 bg-black/5">
+          <div className="py-0 bg-black/5">
             <ReelsSlider reels={reels} />
           </div>
 

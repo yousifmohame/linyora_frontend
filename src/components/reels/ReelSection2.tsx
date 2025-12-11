@@ -5,7 +5,7 @@ import React from 'react';
 
 export const ReelSection = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto mb-0 px-4 py-8">
       <button
         className="relative w-full overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-pink-500 to-rose-500 p-8 shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 group"
       >

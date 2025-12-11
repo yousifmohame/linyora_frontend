@@ -16,6 +16,7 @@ import { getRecentlyViewed } from '@/lib/viewHistory';
 import { Skeleton } from '@/components/ui/skeleton';
 import SectionDisplay from '@/components/sections/SectionDisplay'; // استيراد مكون الأقسام
 import StoriesFeed from '@/components/stories/StoriesFeed';
+import MainSlider from '@/components/MainSlider';
 
 
 // مكون Skeleton لتحسين تجربة التحميل
@@ -119,6 +120,7 @@ export default function HomePage() {
       {/* 1. الأقسام الثابتة العلوية */}
       <div className="bg-gray-50 pb-2">
         <StoriesFeed />
+        <MainSlider />
         <PromotedProductsSection />
         <CategorySlider />
       </div>

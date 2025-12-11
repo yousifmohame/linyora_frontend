@@ -132,13 +132,7 @@ export default function HomePage() {
       ) : (
         <div className="space-y-12">
 
-          {/* 2. قسم وصل حديثاً */}
-          <ProductCarousel
-            title={t('HomePage.newArrivals', 'وصل حديثاً')}
-            products={newArrivals}
-            wishlistStatus={wishlistStatus}
-            viewAllLink="/products?sort=newest"
-          />
+          
 
           {/* 3. الأقسام الديناميكية (Dynamic Sections) - الجزء الذي أضفناه */}
           {/* نعرض الأقسام هنا. يمكننا وضعها بين الأقسام الثابتة أو جميعها متتالية */}
@@ -154,6 +148,14 @@ export default function HomePage() {
           <div className="py-0 bg-black/5">
             <ReelsSlider reels={reels} />
           </div>
+
+          {/* 2. قسم وصل حديثاً */}
+          <ProductCarousel
+            title={t('HomePage.newArrivals', 'وصل حديثاً')}
+            products={newArrivals}
+            wishlistStatus={wishlistStatus}
+            viewAllLink="/products?sort=newest"
+          />
 
           {/* 5. باقي الأقسام الثابتة */}
           <ProductCarousel

@@ -124,76 +124,103 @@ export default function ModelNav() {
         </CardContent>
       </Card>
 
-      {/* Mobile Navigation */}
-      <Card 
-        className="lg:hidden shadow-xl border-0 bg-white/90 backdrop-blur-sm mb-4 sticky top-2 z-40"
-        aria-label="Mobile navigation menu"
-      >
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-expanded={isMobileMenuOpen}
-              aria-controls="mobile-menu"
-              className="w-9 h-9 rounded-xl border border-gray-200"
-            >
-              {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </Button>
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-gradient-to-br from-rose-500 to-purple-600 rounded-lg">
-                <Crown className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-gray-900 text-sm">لوحة التحكم</span>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white text-xs font-bold">
-                {user?.name?.charAt(0)?.toUpperCase() || 'M'}
-              </span>
-            </div>
-          </div>
-        </CardContent>
+      {/* Mobile Floating Button Navigation */}
+        <div className="lg:hidden">
 
-        {/* Mobile Menu Dropdown */}
-        {isMobileMenuOpen && (
-          <div 
-            id="mobile-menu"
-            className="border-t border-gray-200/50 pt-2 pb-3 max-h-[70vh] overflow-y-auto"
+          {/* Floating Toggle Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className={`
+              fixed bottom-5 z-50
+              bg-gradient-to-br from-rose-500 to-purple-600 
+              shadow-xl text-white 
+              w-12 h-12 rounded-2xl
+              flex items-center justify-center
+              backdrop-blur-md
+              active:scale-90 transition-transform
+              border border-white/20
+              ${isRTL ? 'left-5' : 'right-5'}
+            `}
+            aria-label="Open mobile menu"
           >
-            <div className="space-y-1 px-3">
-              {modelLinks.map((link) => {
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Overlay */}
+          {isMobileMenuOpen && (
+            <div
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+          )}
+
+          {/* Sliding Drawer */}
+          <div
+            className={`
+              fixed top-0 
+              ${isRTL ? 'left-0' : 'right-0'}
+              w-72 h-full 
+              bg-white shadow-xl z-50
+              transform transition-transform duration-300
+              ${isMobileMenuOpen ? 'translate-x-0' : isRTL ? '-translate-x-full' : 'translate-x-full'}
+              rounded-s-3xl
+            `}
+          >
+
+            {/* Drawer Header */}
+            <div className="p-4 flex items-center justify-between border-b bg-gray-50">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-gradient-to-br from-rose-500 to-purple-600 rounded-lg">
+                  <Crown className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-bold text-gray-900 text-sm">لوحة التحكم</span>
+              </div>
+
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 active:scale-90"
+              >
+                <X className="w-4 h-4 text-gray-700" />
+              </button>
+            </div>
+
+            {/* Drawer Links */}
+            <div className="py-3 space-y-1 overflow-y-auto max-h-[85vh] px-3">
+              {modelLinks.map(link => {
                 const isActive = pathname === link.href;
                 const Icon = link.icon;
+
                 return (
                   <Link
                     key={link.key}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`
-                      flex items-center w-full px-4 py-3 rounded-xl transition-colors text-sm
+                      flex items-center gap-3 p-3 rounded-xl text-sm transition-all
                       ${isActive 
                         ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white shadow-sm' 
                         : 'text-gray-700 hover:bg-gray-100'
                       }
                     `}
                   >
-                    <Icon className={`h-4.5 w-4.5 ${isActive ? 'text-white' : 'text-gray-600'}`} />
-                    <span className="mr-3 font-medium">{t(`ModelNav.nav.${link.key}`)}</span>
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{t(`ModelNav.nav.${link.key}`)}</span>
                   </Link>
                 );
               })}
+
+              {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full px-4 py-3 rounded-xl text-sm text-red-600 hover:bg-red-50 transition-colors text-right"
+                className="flex items-center gap-3 p-3 rounded-xl text-sm text-red-600 hover:bg-red-50"
               >
-                <LogOut className="h-4.5 w-4.5" />
-                <span className="mr-3 font-medium">{t('Sidebar.logout')}</span>
+                <LogOut className="w-5 h-5" />
+                <span className="font-medium">{t('Sidebar.logout')}</span>
               </button>
             </div>
           </div>
-        )}
-      </Card>
+        </div>
+
     </>
   );
 }

@@ -83,65 +83,103 @@ export default function SupplierNav() {
         </CardContent>
       </Card>
 
-      {/* Mobile Header */}
-      <Card className="lg:hidden shadow-xl border-0 bg-white/90 backdrop-blur-sm mb-4 sticky top-2 z-40">
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="w-9 h-9 rounded-xl border border-gray-200"
-            >
-              {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </Button>
-            <div className="flex items-center space-x-2 space-x-reverse">
+      {/* Mobile Floating Navigation */}
+      <div className="lg:hidden">
+
+        {/* Floating Toggle Button */}
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className={`
+            fixed bottom-5 z-50
+            bg-gradient-to-br from-rose-500 to-purple-600
+            shadow-xl text-white 
+            w-12 h-12 rounded-2xl
+            flex items-center justify-center
+            backdrop-blur-md
+            active:scale-90 transition-transform
+            border border-white/20
+            right-5
+          `}
+          aria-label="Open mobile menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        {/* Overlay */}
+        {isMobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* Sliding Drawer */}
+        <div
+          className={`
+            fixed top-0 right-0
+            w-72 h-full 
+            bg-white shadow-xl z-50
+            transform transition-transform duration-300
+            ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+            rounded-l-3xl
+          `}
+        >
+
+          {/* Drawer Header */}
+          <div className="p-4 flex items-center justify-between border-b bg-gray-50">
+            <div className="flex items-center gap-2">
               <div className="p-1.5 bg-gradient-to-br from-rose-500 to-purple-600 rounded-lg">
                 <Truck className="w-4 h-4 text-white" />
               </div>
-              {/* Optional: Replace hardcoded text with t('suppliernav.mobileTitle') */}
-              <span className="font-bold text-gray-900 text-sm">لوحة تحكم المورد</span>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-500 to-purple-600 flex items-center justify-center">
-              <span className="text-white text-xs font-bold">
-                {user?.name?.charAt(0)?.toUpperCase() || 'S'}
+              <span className="font-bold text-gray-900 text-sm">
+                لوحة تحكم المورد
               </span>
             </div>
+
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 active:scale-90"
+            >
+              <X className="w-4 h-4 text-gray-700" />
+            </button>
           </div>
-        </CardContent>
-        {isMobileMenuOpen && (
-          <CardContent className="border-t border-gray-200/50 pt-3">
-            <div className="space-y-1">
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href;
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.key}
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center p-3 rounded-xl transition-all duration-200 text-sm ${
-                      isActive
-                        ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white shadow-lg'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-gray-600'}`} />
-                    <span className="mr-2 font-medium">{t(`suppliernav.nav.${link.key}`)}</span>
-                  </Link>
-                );
-              })}
-              <button
-                onClick={handleLogout}
-                className="flex items-center p-3 rounded-xl transition-all duration-200 text-sm text-red-600 hover:bg-red-50 w-full text-right"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="mr-2 font-medium">{t('Sidebar.logout')}</span>
-              </button>
-            </div>
-          </CardContent>
-        )}
-      </Card>
+
+          {/* Drawer Links */}
+          <div className="py-3 space-y-1 overflow-y-auto max-h-[85vh] px-3">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.key}
+                  href={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`
+                    flex items-center gap-3 p-3 rounded-xl text-sm transition-all
+                    ${isActive
+                      ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white shadow-sm'
+                      : 'text-gray-700 hover:bg-gray-100'
+                    }
+                  `}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{t(`suppliernav.nav.${link.key}`)}</span>
+                </Link>
+              );
+            })}
+
+            {/* Logout button */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 p-3 rounded-xl text-sm text-red-600 hover:bg-red-50 w-full"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">{t('Sidebar.logout')}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </>
   );
 }

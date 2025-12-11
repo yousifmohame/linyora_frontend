@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Trash2, Plus, MessageSquare, Sparkles, Eye, EyeOff, Minus, Loader2 } from 'lucide-react';
+import { Trash2, Plus, MessageSquare, Sparkles, Eye, EyeOff, Minus, Loader2, Palette, Settings2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import AdminNav from '@/components/dashboards/AdminNav';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Label } from '@/components/ui/label';
 
 interface MarqueeMessage {
   id: number;
@@ -25,17 +26,25 @@ export default function MarqueeBarPage() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [addingMessage, setAddingMessage] = useState(false);
+  
+  // Settings State
   const [speed, setSpeed] = useState(20);
-  const [isSpeedSaving, setIsSpeedSaving] = useState(false);
+  const [bgColor, setBgColor] = useState('#000000'); // اللون الافتراضي أسود
+  const [isSettingsSaving, setIsSettingsSaving] = useState(false);
 
   const fetchData = async () => {
     try {
-      const [msgRes, speedRes] = await Promise.all([
+      // جلب الرسائل + السرعة + اللون
+      const [msgRes, speedRes, colorRes] = await Promise.all([
         api.get('/admin/marquee'),
-        api.get('/admin/marquee/settings/marquee_speed')
+        api.get('/admin/marquee/settings/marquee_speed'),
+        api.get('/admin/marquee/settings/marquee_bg_color')
       ]);
+
       setMessages(msgRes.data);
       setSpeed(parseInt(speedRes.data, 10) || 20);
+      setBgColor(colorRes.data || '#000000'); // تعيين اللون القادم من السيرفر
+
     } catch (error) {
       toast.error(t('MarqueeBarPage.toast.fetchError'));
     } finally {
@@ -91,19 +100,19 @@ export default function MarqueeBarPage() {
     }
   };
 
-  const handleSpeedChange = async (delta: number) => {
-    const newSpeed = Math.max(5, speed + delta);
-    setSpeed(newSpeed);
-    setIsSpeedSaving(true);
-
+  // دالة موحدة لحفظ الإعدادات (السرعة واللون)
+  const saveSettings = async () => {
+    setIsSettingsSaving(true);
     try {
-      await api.put('/admin/marquee/settings/marquee_speed', { value: newSpeed.toString() });
-      toast.success(t('MarqueeBarPage.toast.speedUpdated', { speed: newSpeed }));
+      await Promise.all([
+        api.put('/admin/marquee/settings/marquee_speed', { value: speed.toString() }),
+        api.put('/admin/marquee/settings/marquee_bg_color', { value: bgColor })
+      ]);
+      toast.success(t('MarqueeBarPage.toast.settingsUpdated', {defaultValue: 'Settings updated successfully'}));
     } catch (error) {
-      toast.error(t('MarqueeBarPage.toast.speedUpdateError'));
-      setSpeed(newSpeed - delta);
+      toast.error(t('MarqueeBarPage.toast.settingsUpdateError', {defaultValue: 'Failed to update settings'}));
     } finally {
-      setIsSpeedSaving(false);
+      setIsSettingsSaving(false);
     }
   };
 
@@ -150,48 +159,109 @@ export default function MarqueeBarPage() {
           </Card>
         </div>
 
-        {/* Speed Control Card */}
+        {/* Global Settings Card (Speed & Color) */}
         <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white pb-4">
+          <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white pb-4">
             <CardTitle className="text-xl font-bold flex items-center gap-3">
-              {t('MarqueeBarPage.speedCard.title')}
+              <Settings2 className="h-5 w-5 text-indigo-100" />
+              {t('MarqueeBarPage.settings.title', {defaultValue: 'Bar Settings'})}
             </CardTitle>
             <CardDescription className="text-indigo-100">
-              {t('MarqueeBarPage.speedCard.subtitle', 'Control the duration of the scroll (in seconds). Lower is faster.')}
+              {t('MarqueeBarPage.settings.subtitle', {defaultValue: 'Customize appearance and behavior'})}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="flex items-center justify-center gap-4">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handleSpeedChange(1)}
-                disabled={isSpeedSaving}
-                className="rounded-xl"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-              <div className="text-3xl font-bold w-20 text-center relative text-indigo-700">
-                {isSpeedSaving && (
-                  <Loader2 className="h-6 w-6 animate-spin absolute top-1 left-1/2 -ml-3 text-indigo-500" />
-                )}
-                <span className={isSpeedSaving ? 'opacity-20' : ''}>
-                  {speed}s
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handleSpeedChange(-1)}
-                disabled={isSpeedSaving || speed <= 5}
-                className="rounded-xl"
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
+            
+            {/* Live Preview */}
+            <div className="mb-8">
+               <Label className="text-gray-700 mb-2 block font-semibold">{t('MarqueeBarPage.preview', {defaultValue: 'Live Preview'})}</Label>
+               <div 
+                 className="w-full py-3 px-4 rounded-lg text-white text-center text-sm font-medium shadow-inner overflow-hidden whitespace-nowrap"
+                 style={{ backgroundColor: bgColor }}
+               >
+                 {messages.length > 0 ? messages[0].message_text : "Example Marquee Text goes here..."}
+               </div>
             </div>
-            <p className="text-center text-sm text-indigo-600 mt-3">
-              {t('MarqueeBarPage.speedCard.hint', 'Recommended: 15-30 seconds. Minimum: 5 seconds.')}
-            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* 1. Speed Control */}
+                <div className="space-y-3">
+                    <Label className="flex items-center gap-2 text-gray-700 font-semibold">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        {t('MarqueeBarPage.speed.label', {defaultValue: 'Animation Duration (Sec)'})}
+                    </Label>
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setSpeed(Math.max(5, speed + 1))}
+                            className="rounded-xl h-10 w-10"
+                        >
+                            <Plus className="h-4 w-4" />
+                        </Button>
+                        <div className="text-2xl font-bold w-16 text-center text-indigo-700 bg-indigo-50 py-1 rounded-lg border border-indigo-100">
+                            {speed}s
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setSpeed(Math.max(5, speed - 1))}
+                            disabled={speed <= 5}
+                            className="rounded-xl h-10 w-10"
+                        >
+                            <Minus className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">{t('MarqueeBarPage.speed.hint', {defaultValue: 'Lower is faster'})}</p>
+                </div>
+
+                {/* 2. Color Control */}
+                <div className="space-y-3">
+                    <Label className="flex items-center gap-2 text-gray-700 font-semibold">
+                        <Palette className="w-4 h-4 text-rose-500" />
+                        {t('MarqueeBarPage.color.label', {defaultValue: 'Background Color'})}
+                    </Label>
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <input 
+                                type="color" 
+                                value={bgColor} 
+                                onChange={(e) => setBgColor(e.target.value)}
+                                className="h-12 w-12 rounded-xl border-2 border-gray-200 cursor-pointer p-1 bg-white"
+                            />
+                        </div>
+                        <Input 
+                            value={bgColor} 
+                            onChange={(e) => setBgColor(e.target.value)} 
+                            className="w-32 uppercase font-mono tracking-widest border-gray-300"
+                            placeholder="#000000"
+                        />
+                    </div>
+                    <p className="text-xs text-gray-500">{t('MarqueeBarPage.color.hint', {defaultValue: 'Supports HEX codes'})}</p>
+                </div>
+            </div>
+
+            {/* Save Button */}
+            <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
+                <Button 
+                    onClick={saveSettings} 
+                    disabled={isSettingsSaving}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[140px]"
+                >
+                    {isSettingsSaving ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {t('common.saving')}
+                        </>
+                    ) : (
+                        <>
+                            <Save className="mr-2 h-4 w-4" />
+                            {t('common.saveChanges')}
+                        </>
+                    )}
+                </Button>
+            </div>
+
           </CardContent>
         </Card>
 
@@ -343,7 +413,7 @@ export default function MarqueeBarPage() {
           </CardContent>
         </Card>
 
-        {/* Best Practices Card */}
+        {/* Best Practices Card (Same as before) */}
         <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 rounded-2xl">
           <CardContent className="p-6">
             <div className="flex items-start gap-3">

@@ -2,7 +2,7 @@
 'use client'; 
 
 import { useState, useEffect } from 'react';
-import api from '@/lib/axios'; //
+import api from '@/lib/axios';
 
 interface MarqueeMessage {
   id: number;
@@ -11,17 +11,19 @@ interface MarqueeMessage {
 
 export const MarqueeBar = () => {
   const [messages, setMessages] = useState<string[]>([]);
-  // --- 1. إضافة حالة للسرعة ---
-  const [speed, setSpeed] = useState(20); // (قيمة افتراضية)
+  const [speed, setSpeed] = useState(20);
+  // 1. إضافة حالة للون الخلفية (القيمة الافتراضية أسود أو لون الهوية)
+  const [bgColor, setBgColor] = useState('#000000'); 
   const [loading, setLoading] = useState(true);
 
-  // 2. جلب البيانات (الرسائل والسرعة)
   useEffect(() => {
     const getMarqueeData = async () => {
       try {
-        const [msgRes, speedRes] = await Promise.all([
-          api.get('/marquee/active'), //
-          api.get('/settings/marquee_speed') // (الAPI الجديد)
+        // 2. جلب الرسائل، السرعة، واللون في طلب واحد
+        const [msgRes, speedRes, colorRes] = await Promise.all([
+          api.get('/marquee/active'),
+          api.get('/settings/marquee_speed'),
+          api.get('/settings/marquee_bg_color') // جلب إعداد اللون
         ]);
 
         const activeMessages = msgRes.data.map((msg: MarqueeMessage) => msg.message_text);
@@ -33,6 +35,11 @@ export const MarqueeBar = () => {
         }
         
         setSpeed(parseInt(speedRes.data, 10) || 20);
+        
+        // تعيين اللون إذا وجد، وإلا استخدام الافتراضي
+        if (colorRes.data) {
+            setBgColor(colorRes.data);
+        }
 
       } catch (error) {
         console.error("Failed to fetch marquee data:", error);
@@ -50,18 +57,30 @@ export const MarqueeBar = () => {
   }
 
   return (
-    <div className="bg-primary text-primary-foreground overflow-hidden">
-      {/* --- 3. تطبيق السرعة باستخدام Inline Style --- */}
+    // 3. تطبيق لون الخلفية ديناميكياً هنا
+    // قمنا بإزالة bg-primary واستبدالها بـ style={{ backgroundColor: bgColor }}
+    // أضفنا text-white لضمان ظهور النص (يمكنك تغييره حسب الحاجة)
+    <div 
+      className="overflow-hidden text-white transition-colors duration-500" 
+      style={{ backgroundColor: bgColor }}
+    >
       <div 
-        className="animate-marquee whitespace-nowrap py-2 text-sm font-medium"
+        className="animate-marquee whitespace-nowrap py-2 text-sm font-medium flex"
         style={{ animationDuration: `${speed}s` }}
       >
+        {/* المجموعة الأصلية */}
         {messages.map((msg, i) => (
-          <span key={i} className="mx-4">{msg}</span>
+          <span key={i} className="mx-8 inline-block">{msg}</span>
         ))}
-        {/* نكرر الرسائل لضمان ملء الشاشة أثناء الحركة */}
-         {messages.map((msg, i) => (
-          <span key={`dup-${i}`} className="mx-4">{msg}</span>
+        
+        {/* المجموعة المكررة لضمان استمرارية الحركة بدون انقطاع */}
+        {messages.map((msg, i) => (
+          <span key={`dup-${i}`} className="mx-8 inline-block">{msg}</span>
+        ))}
+        
+        {/* تكرار إضافي للشاشات العريضة جداً لضمان عدم وجود فراغ */}
+        {messages.map((msg, i) => (
+          <span key={`dup2-${i}`} className="mx-8 inline-block">{msg}</span>
         ))}
       </div>
     </div>

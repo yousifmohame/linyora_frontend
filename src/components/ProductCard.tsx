@@ -208,7 +208,7 @@ export default function ProductCard({ product, isInitiallyWishlisted }: ProductC
           <Button
             size="icon"
             className="h-8 w-8 flex items-center justify-center 
-                      rounded-full bg-[#00A500] hover:bg-[#009000] 
+                      rounded-full bg-[#ef02b8] hover:bg-[#810070] 
                       text-white transition-colors duration-200"
             onClick={(e) => {
               e.preventDefault();

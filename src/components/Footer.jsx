@@ -125,7 +125,7 @@ const Footer = () => {
     <>
       {/* Newsletter Section */}
       <section className="bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 py-12 md:py-16 text-center px-4 text-white">
-        <h1 className="text-3xl md:text-4xl font-bold mb-3">LINYORA</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-3">لينيورا</h1>
         <p className="text-sm opacity-90 mb-6">
           {isRTL
             ? 'حيث يلمع الأسلوب... ويتكلم الثقة ✨'
@@ -167,7 +167,7 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <span>LINYORA</span>
-              <span className="text-pink-300">❤️</span>
+              
             </h3>
             <p className="text-sm opacity-90 leading-relaxed mb-4">
               {isRTL ? content.company.desc_ar : content.company.desc_en}
@@ -301,9 +301,9 @@ const Footer = () => {
         </div>
 
         <div className="text-center mt-8 text-sm opacity-80">
-          <p>😎 &quot;{isRTL ? 'لأن البساطة ليست ستايلك' : 'Because basic isn\'t your vibe'}&quot;</p>
+          <p> &quot;{isRTL ? 'لأن البساطة ليست ستايلك' : 'Because basic isn\'t your vibe'}&quot;</p>
           <p>
-            {' '}❤️ {isRTL ? 'صُنع بـ 💖' : 'Made with 💖'}
+            {' '} {isRTL ? 'صُنع بـ ' : 'Made with '}
             {isRTL ? content.legal.copyright_ar : content.legal.copyright_en}
             © {new Date().getFullYear()}{' '}
           </p>

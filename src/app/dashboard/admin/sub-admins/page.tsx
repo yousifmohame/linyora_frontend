@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Plus, Edit, Trash2, Eye, PenTool, Lock } from 'lucide-react';
 import AdminNav from '@/components/dashboards/AdminNav';
 
-// List of resources that matches your AdminNav links
+// List of resources matches AdminNav links
 const RESOURCES = [
   'users',
   'stories',
@@ -86,7 +86,7 @@ export default function SubAdminsPage() {
       setSubAdmins(data);
     } catch (err) {
       console.error(err);
-      toast.error(t('Failed to load sub-admins'));
+      toast.error(t('SubAdmins.toasts.loadError'));
     } finally {
       setIsLoading(false);
     }
@@ -134,21 +134,20 @@ export default function SubAdminsPage() {
       if (isEditing && selectedId) {
         await api.put(`/admin/sub-admins/${selectedId}`, {
           permissions: formData.permissions,
-          // Only send password if changed (handle this in backend logic if needed, or separate endpoint)
         });
-        toast.success(t('Sub-admin updated successfully'));
+        toast.success(t('SubAdmins.toasts.updateSuccess'));
       } else {
         if (!formData.password) {
-          toast.error(t('Password is required'));
+          toast.error(t('SubAdmins.toasts.passwordRequired'));
           return;
         }
         await api.post('/admin/sub-admins', formData);
-        toast.success(t('Sub-admin created successfully'));
+        toast.success(t('SubAdmins.toasts.createSuccess'));
       }
       setIsOpen(false);
       fetchAdmins();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || t('An error occurred'));
+      toast.error(error.response?.data?.message || t('SubAdmins.toasts.genericError'));
     }
   };
 
@@ -159,36 +158,36 @@ export default function SubAdminsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Shield className="w-8 h-8 text-purple-600" />
-            {t('Manage Sub-Admins')}
+            {t('SubAdmins.title')}
           </h1>
-          <p className="text-gray-500 mt-1">{t('Create and manage permissions for support staff')}</p>
+          <p className="text-gray-500 mt-1">{t('SubAdmins.subtitle')}</p>
         </div>
 
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button onClick={handleOpenCreate} className="bg-purple-600 hover:bg-purple-700 text-white">
               <Plus className="w-4 h-4 mr-2" />
-              {t('Add New Sub-Admin')}
+              {t('SubAdmins.addButton')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{isEditing ? t('Edit Sub-Admin') : t('Create New Sub-Admin')}</DialogTitle>
+              <DialogTitle>{isEditing ? t('SubAdmins.dialog.editTitle') : t('SubAdmins.dialog.createTitle')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 py-4">
               {/* User Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl border">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">{t('Name')}</label>
+                  <label className="text-sm font-medium mb-1 block">{t('SubAdmins.form.name')}</label>
                   <Input
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="John Doe"
-                    disabled={isEditing} // Usually name/email are locked or handled differently in edit
+                    disabled={isEditing}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">{t('Email')}</label>
+                  <label className="text-sm font-medium mb-1 block">{t('SubAdmins.form.email')}</label>
                   <Input
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -198,7 +197,7 @@ export default function SubAdminsPage() {
                 </div>
                 {!isEditing && (
                   <div className="md:col-span-2">
-                    <label className="text-sm font-medium mb-1 block">{t('Password')}</label>
+                    <label className="text-sm font-medium mb-1 block">{t('SubAdmins.form.password')}</label>
                     <Input
                       type="password"
                       value={formData.password}
@@ -212,11 +211,11 @@ export default function SubAdminsPage() {
               {/* Permissions Matrix */}
               <div className="border rounded-xl overflow-hidden">
                 <div className="bg-gray-100 p-3 border-b flex justify-between items-center">
-                  <h3 className="font-bold text-gray-700">{t('Page Permissions')}</h3>
+                  <h3 className="font-bold text-gray-700">{t('SubAdmins.form.permissionsTitle')}</h3>
                   <div className="flex gap-4 text-xs text-gray-500">
-                    <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> {t('No Access')}</span>
-                    <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {t('View Only')}</span>
-                    <span className="flex items-center gap-1"><PenTool className="w-3 h-3" /> {t('Full Access')}</span>
+                    <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> {t('SubAdmins.permissions.none')}</span>
+                    <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {t('SubAdmins.permissions.read')}</span>
+                    <span className="flex items-center gap-1"><PenTool className="w-3 h-3" /> {t('SubAdmins.permissions.write')}</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 divide-y">
@@ -234,7 +233,7 @@ export default function SubAdminsPage() {
                               : 'text-gray-500 hover:text-gray-700'
                           }`}
                         >
-                          {t('None')}
+                          {t('SubAdmins.permissions.buttons.none')}
                         </button>
                         <button
                           onClick={() => handlePermissionChange(res, 'read')}
@@ -244,7 +243,7 @@ export default function SubAdminsPage() {
                               : 'text-gray-500 hover:text-gray-700'
                           }`}
                         >
-                          {t('View')}
+                          {t('SubAdmins.permissions.buttons.view')}
                         </button>
                         <button
                           onClick={() => handlePermissionChange(res, 'write')}
@@ -254,7 +253,7 @@ export default function SubAdminsPage() {
                               : 'text-gray-500 hover:text-gray-700'
                           }`}
                         >
-                          {t('Edit')}
+                          {t('SubAdmins.permissions.buttons.edit')}
                         </button>
                       </div>
                     </div>
@@ -263,7 +262,7 @@ export default function SubAdminsPage() {
               </div>
 
               <Button onClick={handleSubmit} className="w-full bg-purple-600 hover:bg-purple-700 text-white h-12 text-lg">
-                {isEditing ? t('Update Permissions') : t('Create Account')}
+                {isEditing ? t('SubAdmins.form.updateButton') : t('SubAdmins.form.createButton')}
               </Button>
             </div>
           </DialogContent>
@@ -272,29 +271,29 @@ export default function SubAdminsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('Active Sub-Admins')}</CardTitle>
+          <CardTitle>{t('SubAdmins.table.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('Name')}</TableHead>
-                <TableHead>{t('Email')}</TableHead>
-                <TableHead>{t('Access Level')}</TableHead>
-                <TableHead className="text-right">{t('Actions')}</TableHead>
+                <TableHead>{t('SubAdmins.table.headers.name')}</TableHead>
+                <TableHead>{t('SubAdmins.table.headers.email')}</TableHead>
+                <TableHead>{t('SubAdmins.table.headers.accessLevel')}</TableHead>
+                <TableHead className="text-right">{t('SubAdmins.table.headers.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                    {t('Loading...')}
+                    {t('SubAdmins.table.loading')}
                   </TableCell>
                 </TableRow>
               ) : subAdmins.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                    {t('No sub-admins found.')}
+                    {t('SubAdmins.table.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -309,10 +308,10 @@ export default function SubAdminsPage() {
                       <TableCell>
                         <div className="flex gap-2">
                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            {writeCount} {t('Edit')}
+                            {writeCount} {t('SubAdmins.table.badges.edit')}
                           </Badge>
                           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                            {readCount} {t('View')}
+                            {readCount} {t('SubAdmins.table.badges.view')}
                           </Badge>
                         </div>
                       </TableCell>
@@ -325,7 +324,6 @@ export default function SubAdminsPage() {
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
-                        {/* Add delete functionality if needed */}
                       </TableCell>
                     </TableRow>
                   );

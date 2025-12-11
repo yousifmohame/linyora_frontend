@@ -3042,6 +3042,55 @@ const resources = {
       "fallbackBadge": "Limited Offer"
     }
   },
+  "SubAdmins": {
+    "title": "Manage Sub-Admins",
+    "subtitle": "Create and manage permissions for support staff",
+    "addButton": "Add New Sub-Admin",
+    "toasts": {
+      "loadError": "Failed to load sub-admins",
+      "updateSuccess": "Sub-admin updated successfully",
+      "createSuccess": "Sub-admin created successfully",
+      "passwordRequired": "Password is required",
+      "genericError": "An error occurred"
+    },
+    "dialog": {
+      "createTitle": "Create New Sub-Admin",
+      "editTitle": "Edit Sub-Admin"
+    },
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "permissionsTitle": "Page Permissions",
+      "updateButton": "Update Permissions",
+      "createButton": "Create Account"
+    },
+    "permissions": {
+      "none": "No Access",
+      "read": "View Only",
+      "write": "Full Access",
+      "buttons": {
+        "none": "None",
+        "view": "View",
+        "edit": "Edit"
+      }
+    },
+    "table": {
+      "title": "Active Sub-Admins",
+      "headers": {
+        "name": "Name",
+        "email": "Email",
+        "accessLevel": "Access Level",
+        "actions": "Actions"
+      },
+      "loading": "Loading...",
+      "empty": "No sub-admins found.",
+      "badges": {
+        "edit": "Edit",
+        "view": "View"
+      }
+    }
+  },
   "productDetail": {
     "breadcrumb": {
       "products": "Products"
@@ -5410,6 +5459,56 @@ const resources = {
           "error": "❌ فشل تحديث الطلب."
         }
       },
+      "SubAdmins": {
+    "title": "إدارة المشرفين",
+    "subtitle": "إنشاء وإدارة الصلاحيات لفريق الدعم",
+    "addButton": "إضافة مشرف جديد",
+    "toasts": {
+      "loadError": "فشل تحميل المشرفين",
+      "updateSuccess": "تم تحديث بيانات المشرف بنجاح",
+      "createSuccess": "تم إنشاء حساب المشرف بنجاح",
+      "passwordRequired": "كلمة المرور مطلوبة",
+      "genericError": "حدث خطأ ما"
+    },
+    "dialog": {
+      "createTitle": "إنشاء مشرف جديد",
+      "editTitle": "تعديل بيانات المشرف"
+    },
+    "form": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "permissionsTitle": "صلاحيات الصفحات",
+      "updateButton": "تحديث الصلاحيات",
+      "createButton": "إنشاء الحساب"
+    },
+    "permissions": {
+      "none": "لا يوجد وصول",
+      "read": "مشاهدة فقط",
+      "write": "تحكم كامل",
+      "buttons": {
+        "none": "منع",
+        "view": "مشاهدة",
+        "edit": "تعديل"
+      }
+    },
+    "table": {
+      "title": "المشرفين النشطين",
+      "headers": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "accessLevel": "مستوى الوصول",
+        "actions": "إجراءات"
+      },
+      "loading": "جاري التحميل...",
+      "empty": "لا يوجد مشرفين حالياً.",
+      "badges": {
+        "edit": "تعديل",
+        "view": "مشاهدة"
+      }
+    }
+  },
+  
       "AgreementRequests": {
         "title": "طلبات التعاون الواردة",
         "subtitle": "قم بمراجعة طلبات التعاون من التجار وقبولها أو رفضها.",

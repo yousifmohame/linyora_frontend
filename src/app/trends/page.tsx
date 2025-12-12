@@ -152,14 +152,7 @@ export default function TrendsPage() {
         )}
       </div>
 
-      {/* Load More */}
-      {!loading && filteredProducts.length > 0 && (
-        <div className="mt-8 text-center">
-          <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            تحميل المزيد من الترندات
-          </Button>
-        </div>
-      )}
+      
     </div>
   );
 }

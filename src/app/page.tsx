@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import SectionDisplay from '@/components/sections/SectionDisplay'; // استيراد مكون الأقسام
 import StoriesFeed from '@/components/stories/StoriesFeed';
 import MainSlider from '@/components/MainSlider';
+import FlashPage from '@/components/FlashSale/flashpage';
 
 
 // مكون Skeleton لتحسين تجربة التحميل
@@ -122,6 +123,7 @@ export default function HomePage() {
         <StoriesFeed />
         <MainSlider />
         <PromotedProductsSection />
+        <FlashPage />
         <CategorySlider />
       </div>
 

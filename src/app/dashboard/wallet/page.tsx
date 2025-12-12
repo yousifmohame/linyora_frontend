@@ -240,7 +240,7 @@ export default function WalletPage() {
                     {/* Overview Tab */}
                     <TabsContent value="overview" className="space-y-6">
                         {/* Wallet Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                             <Card className="bg-white border">
                                 <CardContent className="p-4">
                                     <div className="flex items-center justify-between">
@@ -306,30 +306,7 @@ export default function WalletPage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="bg-white border">
-                                <CardContent className="p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-600">{t('WalletPage.stats.lastPayout')}</p>
-                                            <div className="text-2xl font-bold text-purple-600">
-                                                {isLoading ? (
-                                                    <Skeleton className="h-8 w-24" />
-                                                ) : wallet?.last_payout ? (
-                                                    formatCurrency(wallet.last_payout)
-                                                ) : (
-                                                    '--'
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="p-3 bg-purple-50 rounded-lg">
-                                            <Send className="w-6 h-6 text-purple-600" />
-                                        </div>
-                                    </div>
-                                    <p className="text-xs text-gray-500 mt-2">
-                                        {t('WalletPage.stats.lastPayoutDesc')}
-                                    </p>
-                                </CardContent>
-                            </Card>
+                            
                         </div>
 
                         {/* Payout Request Section */}

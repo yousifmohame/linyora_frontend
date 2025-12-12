@@ -453,58 +453,58 @@ function ProductsPage() {
         </div>
 
         {/* Stats Cards - Horizontal Scroll on Mobile */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex space-x-4 space-x-reverse overflow-x-auto pb-4 -mx-4 px-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:pb-0 sm:mx-0 sm:px-0">
-            {/* Stats cards remain the same */}
-            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200/50 min-w-[280px] sm:min-w-0 flex-shrink-0 sm:flex-shrink">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">{t('ProductsPage.stats.totalProducts')}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-2">{stats.totalProducts}</p>
-                </div>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Package className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200/50 min-w-[280px] sm:min-w-0 flex-shrink-0 sm:flex-shrink">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">{t('ProductsPage.stats.activeProducts')}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-2">{stats.activeProducts}</p>
-                </div>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Eye className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200/50 min-w-[280px] sm:min-w-0 flex-shrink-0 sm:flex-shrink">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">{t('ProductsPage.stats.variants')}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-2">{stats.totalVariants}</p>
-                </div>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Palette className="w-4 h-4 sm:w-6 sm:h-6 text-purple-500" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200/50 min-w-[280px] sm:min-w-0 flex-shrink-0 sm:flex-shrink">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm">{t('ProductsPage.stats.lowStock')}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-2">{stats.lowStock}</p>
-                </div>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-amber-500" />
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Stats Cards — Pure Responsive Grid (NO HORIZONTAL SCROLL) */}
+<div className="mb-6 sm:mb-8">
+  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200/50">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-600 text-sm">{t('ProductsPage.stats.totalProducts')}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-2">{stats.totalProducts}</p>
         </div>
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+          <Package className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500" />
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200/50">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-600 text-sm">{t('ProductsPage.stats.activeProducts')}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-2">{stats.activeProducts}</p>
+        </div>
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-xl flex items-center justify-center">
+          <Eye className="w-4 h-4 sm:w-6 sm:h-6 text-green-500" />
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200/50">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-600 text-sm">{t('ProductsPage.stats.variants')}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-2">{stats.totalVariants}</p>
+        </div>
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+          <Palette className="w-4 h-4 sm:w-6 sm:h-6 text-purple-500" />
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-200/50">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-600 text-sm">{t('ProductsPage.stats.lowStock')}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-800 mt-1 sm:mt-2">{stats.lowStock}</p>
+        </div>
+        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 rounded-xl flex items-center justify-center">
+          <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-amber-500" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* Products List - Scrollable Area */}
         <div className="flex-1 overflow-hidden">

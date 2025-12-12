@@ -1,6 +1,5 @@
 // components/layout/Header.tsx
 'use client';
-
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -31,24 +30,21 @@ import type { i18n as I18nType } from 'i18next';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
 
-// --- Search Component ---
+// --- Search Component (unchanged) ---
 const SearchBar = () => {
   const { i18n } = useTranslation();
   const placeholder = i18n.language === 'ar' ? 'ابحث عن منتجات...' : 'Search for products...';
-
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchRef = useClickOutside<HTMLDivElement>(() => setIsDropdownOpen(false));
-
   useEffect(() => {
     if (searchTerm.trim().length < 2) {
       setResults([]);
       setIsDropdownOpen(false);
       return;
     }
-
     const debounceTimer = setTimeout(async () => {
       setIsSearching(true);
       try {
@@ -61,17 +57,15 @@ const SearchBar = () => {
         setIsSearching(false);
       }
     }, 300);
-
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
-
   return (
     <div className="relative w-full" ref={searchRef}>
       <div className="relative">
         <Input
           type="search"
           placeholder={placeholder}
-          className="h-10 pl-10 w-full rounded-xl bg-gray-100 border-transparent focus:bg-white focus:border-purple-300 text-sm"
+          className="h-10 pl-10 w-full rounded-xl bg-gray-100 border-transparent focus:bg-white focus:border-amber-300 text-sm"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => {
@@ -83,7 +77,6 @@ const SearchBar = () => {
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 animate-spin" />
         )}
       </div>
-
       {isDropdownOpen && (
         <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
           {results.length > 0 ? (
@@ -96,7 +89,7 @@ const SearchBar = () => {
                     setIsDropdownOpen(false);
                     setSearchTerm('');
                   }}
-                  className="flex items-center p-3 space-x-3 space-x-reverse hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                  className="flex items-center p-3 space-x-3 space-x-reverse hover:bg-amber-50 border-b border-gray-100 last:border-b-0"
                 >
                   <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
                     <Image
@@ -109,7 +102,7 @@ const SearchBar = () => {
                   </div>
                   <div className="flex-grow">
                     <p className="text-sm font-semibold text-gray-800 truncate">{product.name}</p>
-                    <p className="text-sm font-bold text-purple-600">
+                    <p className="text-sm font-bold text-amber-600">
                       {Number(product.price).toFixed(2)} {i18n.language === 'ar' ? 'ر.س' : 'SAR'}
                     </p>
                   </div>
@@ -127,7 +120,7 @@ const SearchBar = () => {
   );
 };
 
-// --- Notification Interface ---
+// --- Notification Interface (unchanged interface) ---
 interface Notification {
   id: number;
   link: string | null;
@@ -136,12 +129,11 @@ interface Notification {
   created_at: string;
 }
 
-// --- Desktop Notifications ---
+// --- Desktop Notifications (unchanged) ---
 const DesktopNotifications = ({ i18n }: { i18n: I18nType }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const notificationsRef = useClickOutside<HTMLDivElement>(() => setIsOpen(false));
-
   const isRTL = i18n.language === 'ar';
   const noNotificationsText = i18n.language === 'ar' ? 'لا توجد إشعارات جديدة' : 'No new notifications';
   const markAsReadText = i18n.language === 'ar' ? 'تحديد الكل كمقروء' : 'Mark all as read';
@@ -246,7 +238,7 @@ const DesktopNotifications = ({ i18n }: { i18n: I18nType }) => {
   );
 };
 
-// --- Mobile Notifications ---
+// --- Mobile Notifications (unchanged) ---
 const MobileNotifications = ({ onClose, i18n }: { onClose: () => void; i18n: I18nType }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -270,7 +262,6 @@ const MobileNotifications = ({ onClose, i18n }: { onClose: () => void; i18n: I18
   const noNotificationsText = i18n.language === 'ar' ? 'لا توجد إشعارات' : 'No notifications';
   const loadingText = i18n.language === 'ar' ? 'جاري التحميل...' : 'Loading...';
 
-  // دالة لحساب الوقت النسبي
   const getRelativeTime = (dateString: string) => {
     const now = new Date();
     const notificationDate = new Date(dateString);
@@ -347,6 +338,7 @@ const MobileNotifications = ({ onClose, i18n }: { onClose: () => void; i18n: I18
   );
 };
 
+// --- Mobile Bottom Nav (unchanged) ---
 const MobileBottomNav = ({ 
   user, 
   cartCount,
@@ -358,14 +350,13 @@ const MobileBottomNav = ({
 }) => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
-
   const navItems = [
     { 
       id: 'home', 
       label: t('Header.home', 'Home'), 
       href: '/', 
-      icon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/67/17604134587a78001444325bb9e587b8af5317ba9d.png',
-      activeIcon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/f5/17604134516c546ca43769b1aab98d75262d92b352.png'
+      icon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/67/17604134587a78001444325bb9e587b8af5317ba9d.png ',
+      activeIcon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/f5/17604134516c546ca43769b1aab98d75262d92b352.png '
     },
     { 
       id: 'categories', 
@@ -386,24 +377,23 @@ const MobileBottomNav = ({
       id: 'cart', 
       label: t('Header.cart', 'Cart'), 
       href: '/cart', 
-      icon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/71/17604135237555cc5692d3e767a2e8ceaaad8c2fd9.png',
-      activeIcon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/c8/1760413518ea22439647a2f3df915cd40fd3c364b1.png'
+      icon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/71/17604135237555cc5692d3e767a2e8ceaaad8c2fd9.png ',
+      activeIcon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/c8/1760413518ea22439647a2f3df915cd40fd3c364b1.png '
     },
     { 
       id: 'profile', 
       label: user ? t('Header.profile', 'Me') : t('Header.login', 'Login'), 
       href: user ? '/dashboard/profile' : '/login', 
-      icon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/65/17604135518e6dd712ea0420fe7a7dadd826b3ba07.png',
-      activeIcon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/ce/1760413540e2cf98ef8e7f26720937b8e58304db2e.png'
+      icon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/65/17604135518e6dd712ea0420fe7a7dadd826b3ba07.png ',
+      activeIcon: 'https://img.ltwebstatic.com/v4/p/ccc/2025/10/14/ce/1760413540e2cf98ef8e7f26720937b8e58304db2e.png '
     },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200/50 lg:hidden z-50 backdrop-blur-sm shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200/50 lg:hidden z-40 backdrop-blur-sm shadow-lg">
       <div className="grid grid-cols-5 items-center py-2 px-1 relative h-16">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
-
           if (item.isCenter) {
             return (
               <div key={item.id} className="relative col-span-1 flex justify-center">
@@ -411,7 +401,7 @@ const MobileBottomNav = ({
                   href={item.href}
                   className={`
                     flex items-center justify-center w-14 h-14 rounded-full
-                    bg-purple-600 text-white shadow-lg
+                    bg-amber-600 text-white shadow-lg
                     absolute -bottom-0 z-10
                     ${isActive ? 'scale-105' : 'hover:scale-105'}
                     transition-all duration-200
@@ -426,7 +416,6 @@ const MobileBottomNav = ({
               </div>
             );
           }
-
           return (
             <Link
               key={item.id}
@@ -434,8 +423,8 @@ const MobileBottomNav = ({
               className={`
                 flex flex-col items-center justify-center py-2 px-2 rounded-xl transition-all duration-200 relative
                 ${isActive 
-                  ? 'text-purple-600 scale-105' 
-                  : 'text-gray-500 hover:text-purple-500'
+                  ? 'text-amber-600 scale-105' 
+                  : 'text-gray-500 hover:text-amber-500'
                 }
               `}
             >
@@ -448,8 +437,6 @@ const MobileBottomNav = ({
               <span className={`text-[11px] mt-1 font-medium ${isActive ? 'font-semibold' : ''}`}>
                 {item.label}
               </span>
-
-              {/* Cart badge */}
               {item.id === 'cart' && cartCount > 0 && (
                 <span className="absolute -top-0 -right-0 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center min-w-[20px]">
                   {cartCount > 99 ? '99+' : cartCount}
@@ -469,13 +456,11 @@ export default function Header() {
   const { user, logout } = useAuth();
   const { t, i18n } = useTranslation();
   const { cartCount } = useCart();
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useClickOutside<HTMLDivElement>(() => setIsUserMenuOpen(false));
   const isRTL = i18n.language === 'ar';
 
-  // Sync active tab with pathname
   const getActiveTab = useCallback(() => {
     if (pathname === '/') return 'home';
     if (pathname.startsWith('/categories')) return 'categories';
@@ -487,12 +472,10 @@ export default function Header() {
   }, [pathname]);
 
   const [activeTab, setActiveTab] = useState(getActiveTab());
-
   useEffect(() => {
     setActiveTab(getActiveTab());
   }, [pathname, getActiveTab]);
 
-  // Change language and persist
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
     document.documentElement.setAttribute('dir', lng === 'ar' ? 'rtl' : 'ltr');
@@ -509,7 +492,6 @@ export default function Header() {
   const isCustomer = user?.role_id === 5;
   const shouldShowMobileBottomNav = user === null || user.role_id === 5;
 
-  // Close menus on resize
   useEffect(() => {
     const closeMenus = () => {
       setIsMobileMenuOpen(false);
@@ -519,20 +501,17 @@ export default function Header() {
     return () => window.removeEventListener('resize', closeMenus);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
-    
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [isMobileMenuOpen]);
 
-  // Hydration guard
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -560,7 +539,6 @@ export default function Header() {
       <header dir='ltr' className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200 lg:relative">
         <nav className="container mx-auto px-3 sm:px-4">
           <div className="flex items-center h-20">
-            {/* Logo */}
             <Link
               href="/"
               className="flex items-center"
@@ -575,7 +553,6 @@ export default function Header() {
                   priority
                 />
               </div>
-              
             </Link>
 
             {isCustomer && (
@@ -601,7 +578,7 @@ export default function Header() {
                   className={`
                     px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm
                     ${i18n.language === 'en'
-                      ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }
                   `}
@@ -615,7 +592,7 @@ export default function Header() {
                   className={`
                     px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs sm:text-sm
                     ${i18n.language === 'ar'
-                      ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }
                   `}
@@ -627,7 +604,6 @@ export default function Header() {
               {user ? (
                 <>
                   <DesktopNotifications i18n={i18n} />
-
                   <Link href="/categories" onClick={() => setIsUserMenuOpen(false)}>
                     <Button variant="ghost" className="flex items-center space-x-2 space-x-reverse hover:bg-gray-100 rounded-xl">
                       <Grid3X3 className="w-5 h-5" />
@@ -636,7 +612,6 @@ export default function Header() {
                       </span>
                     </Button>
                   </Link>
-
                   <Link href="/trends" onClick={() => setIsUserMenuOpen(false)}>
                     <Button variant="ghost" className="flex items-center space-x-2 space-x-reverse hover:bg-gray-100 rounded-xl">
                       <TrendingUp className="w-5 h-5" />
@@ -658,7 +633,6 @@ export default function Header() {
                           )}
                         </Button>
                       </Link>
-
                       <Link href="/dashboard/my-orders" onClick={() => setIsUserMenuOpen(false)}>
                         <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-xl">
                           <ShoppingBag className="w-5 h-5 text-gray-600" />
@@ -685,12 +659,11 @@ export default function Header() {
                       className="flex items-center space-x-2 space-x-reverse hover:bg-gray-100 rounded-xl"
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     >
-                      <div className="w-8 h-8 bg-gradient-to-br from-rose-400 to-purple-600 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center">
                         <User className="w-4 h-4 text-white" />
                       </div>
                       <span className="font-medium text-sm hidden md:inline">{user.name}</span>
                     </Button>
-
                     {isUserMenuOpen && (
                       <div
                         className={`absolute top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50 ${
@@ -705,7 +678,7 @@ export default function Header() {
                           <Link
                             href="/dashboard/profile"
                             onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
+                            className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-amber-50"
                           >
                             <User className="w-5 h-5 text-gray-600" />
                             <span>{i18n.language === 'ar' ? 'الملف الشخصي' : 'Profile'}</span>
@@ -732,7 +705,6 @@ export default function Header() {
                       </span>
                     </Button>
                   </Link>
-
                   <Link href="/trends">
                     <Button variant="ghost" className="flex items-center space-x-2 space-x-reverse hover:bg-gray-100 rounded-xl">
                       <TrendingUp className="w-5 h-5" />
@@ -741,7 +713,6 @@ export default function Header() {
                       </span>
                     </Button>
                   </Link>
-
                   <Link href="/login">
                     <Button variant="ghost" className="flex items-center space-x-2 space-x-reverse hover:bg-gray-100 rounded-xl">
                       <User className="w-4 h-4" />
@@ -749,7 +720,7 @@ export default function Header() {
                     </Button>
                   </Link>
                   <Link href="/register">
-                    <Button className="bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white shadow-md rounded-xl text-sm px-3 py-2">
+                    <Button className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md rounded-xl text-sm px-3 py-2">
                       <Sparkles className="w-4 h-4 ml-1" />
                       {registerText}
                     </Button>
@@ -762,7 +733,7 @@ export default function Header() {
             <div className={`absolute ${isRTL ? 'right-0' : 'left-0'} flex items-center lg:hidden z-50`}>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="relative z-50 h-10 w-10 flex items-center justify-center rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5e3482] hover:bg-gray-100 transition-colors"
+                className="relative z-50 h-10 w-10 flex items-center justify-center rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 hover:bg-amber-100 transition-colors"
                 aria-label={isMobileMenuOpen ? "إغلاق القائمة" : "فتح القائمة"}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="mobile-menu"
@@ -776,7 +747,7 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Mobile Menu - Fixed with scrolling */}
+          {/* ✨ NEW: Right-side Mobile Drawer (matches second design) */}
           {isMobileMenuOpen && (
             <div
               className="fixed inset-0 z-50"
@@ -788,6 +759,44 @@ export default function Header() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex flex-col h-full overflow-y-auto">
+                  {/* Header */}
+                  <div className="flex justify-between items-center px-5 py-5 border-b border-amber-100 bg-gradient-to-br from-amber-50/50 via-white to-amber-50/30">
+                    <button
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="inline-flex items-center justify-center h-10 w-10 rounded-full hover:bg-amber-100/70 transition-all duration-300 hover:scale-105"
+                    >
+                      <X className="w-5 h-5 text-gray-700" />
+                    </button>
+
+                    {/* Logo */}
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative">
+                        <div className="absolute -inset-2 bg-gradient-to-br from-amber-400/40 via-amber-500/30 to-amber-600/40 blur-xl rounded-full animate-pulse"></div>
+                        <div className="absolute -inset-0.5 bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 rounded-full opacity-25"></div>
+                        <div className="relative z-10 h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
+                          <span className="font-bold text-amber-800">L</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-start gap-0.5">
+                        <h2 className="text-[22px] font-black bg-gradient-to-r from-amber-700 via-amber-500 to-amber-700 bg-clip-text text-transparent tracking-wide">
+                          LINYORA
+                        </h2>
+                        <div className="flex items-center gap-1 -mt-0.5">
+                          <div className="h-px w-4 bg-gradient-to-r from-transparent via-amber-500/60 to-transparent"></div>
+                          <p className="text-[8px] font-bold text-amber-700/70 tracking-[0.15em]">
+                            LUXURY
+                          </p>
+                          <div className="h-px w-4 bg-gradient-to-r from-transparent via-amber-500/60 to-transparent"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button className="inline-flex items-center justify-center h-10 w-10 rounded-full hover:bg-amber-100/70 transition-all duration-300 hover:scale-105">
+                      <Search className="w-5 h-5 text-gray-700" />
+                    </button>
+                  </div>
+
+                  {/* Language Toggle */}
                   <div className="px-5 pt-5 pb-4">
                     <div className="flex gap-2 bg-gray-100 rounded-full p-1">
                       <button
@@ -813,29 +822,33 @@ export default function Header() {
                     </div>
                   </div>
 
-                  <div className="mb-5 px-2">
+                  {/* Search Bar */}
+                  <div className="px-5 pb-5">
                     <SearchBar />
                   </div>
 
-                  <div className="space-y-1 pb-8">
-                    {user ? (
-                      <>
-                        <div className="px-5 pb-6 text-center">
-                          <div className="relative inline-block">
-                            <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full h-24 w-24 mx-auto mb-3 border-4 border-pink-100 shadow-lg ring-4 ring-pink-50">
-                              <img
-                                className="aspect-square size-full"
-                                src={user.profile_picture_url}
-                                alt={user.name}
-                              />
-                            </span>
-                            <div className="absolute bottom-3 right-1/2 translate-x-1/2 translate-y-2 h-4 w-4 rounded-full bg-green-500 border-2 border-white shadow-md"></div>
-                          </div>
-                          <h3 className="text-gray-900 text-lg mb-1">{user.name}</h3>
-                          <p className="text-gray-500 text-sm">{user.email}</p>
-                        </div>
+                  {/* User Info */}
+                  {user && (
+                    <div className="px-5 pb-6 text-center">
+                      <div className="relative inline-block">
+                        <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full h-24 w-24 mx-auto mb-3 border-4 border-pink-100 shadow-lg ring-4 ring-pink-50">
+                          <img
+                            className="aspect-square size-full"
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name || 'user'}&backgroundColor=ffdfbf`}
+                            alt={user.name}
+                          />
+                        </span>
+                        <div className="absolute bottom-3 right-1/2 translate-x-1/2 translate-y-2 h-4 w-4 rounded-full bg-green-500 border-2 border-white shadow-md"></div>
+                      </div>
+                      <h3 className="text-gray-900 text-lg mb-1">{user.name}</h3>
+                      <p className="text-gray-500 text-sm">{user.email}</p>
+                    </div>
+                  )}
 
-                        <Link
+                  {/* Navigation */}
+                  <nav className="flex-1 px-5 pb-4">
+                    <div className="space-y-1">
+                      <Link
                         href="/categories"
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
@@ -851,7 +864,7 @@ export default function Header() {
                         </svg>
                       </Link>
 
-                        <Link
+                      <Link
                         href="/trends"
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
@@ -866,7 +879,8 @@ export default function Header() {
                           <path d="m15 18-6-6 6-6"></path>
                         </svg>
                       </Link>
-                        {user && isCustomer && (
+
+                      {user && isCustomer && (
                         <>
                           <Link
                             href="/dashboard/my-orders"
@@ -896,82 +910,49 @@ export default function Header() {
                         </>
                       )}
 
-                        {!isCustomer && (
+                      {!user && (
+                        <>
                           <Link
-                            href="/dashboard"
+                            href="/login"
                             onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
+                            className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
                           >
                             <div className="flex items-center gap-3">
-                              <LayoutDashboard className="h-5 w-5 text-gray-400 group-hover:text-amber-500 transition-colors" />
+                              <User className="h-5 w-5 text-gray-400 group-hover:text-amber-500 transition-colors" />
                               <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                                {dashboardText}
+                                {loginText}
                               </span>
                             </div>
                           </Link>
-                        )}
 
-                        
-                        {shouldShowMobileBottomNav && (
                           <Link
-                            href="/dashboard/profile"
+                            href="/register"
                             onClick={() => setIsMobileMenuOpen(false)}
-                            className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
+                            className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 group"
                           >
-                            <User className="w-5 h-5 text-gray-600" />
-                            <span>{i18n.language === 'ar' ? 'الملف الشخصي' : 'Profile'}</span>
+                            <div className="flex items-center gap-3">
+                              <Sparkles className="h-5 w-5 text-amber-600" />
+                              <span className="font-medium">{registerText}</span>
+                            </div>
                           </Link>
-                        )}
+                        </>
+                      )}
 
-                        <MobileNotifications onClose={() => setIsMobileMenuOpen(false)} i18n={i18n} />
-
+                      {user && (
                         <button
                           onClick={handleLogout}
-                          className="flex items-center space-x-3 space-x-reverse w-full p-3 rounded-xl hover:bg-red-50 text-red-600 mt-2 border-t border-gray-200 pt-3"
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-red-50 to-rose-50 text-red-600 hover:from-red-100 hover:to-rose-100 transition-all duration-200 shadow-sm hover:shadow-md group"
                         >
                           <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
                           <span className="font-medium">{logoutText}</span>
                         </button>
-                      </>
-                    ) : (
-                      <>
-                        <Link
-                          href="/categories"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
-                        >
-                          <Grid3X3 className="w-5 h-5 text-gray-600" />
-                          <span>{i18n.language === 'ar' ? 'التصنيفات' : 'Categories'}</span>
-                        </Link>
+                      )}
+                    </div>
+                  </nav>
 
-                        <Link
-                          href="/trends"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
-                        >
-                          <TrendingUp className="w-5 h-5 text-gray-600" />
-                          <span>{i18n.language === 'ar' ? 'الترندات' : 'Trends'}</span>
-                        </Link>
-
-                        <Link
-                          href="/login"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl hover:bg-gray-50"
-                        >
-                          <User className="w-5 h-5 text-gray-600" />
-                          <span>{loginText}</span>
-                        </Link>
-
-                        <Link
-                          href="/register"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-3 space-x-reverse p-3 rounded-xl bg-gradient-to-r from-rose-500 to-purple-600 text-white"
-                        >
-                          <Sparkles className="w-5 h-5" />
-                          <span>{registerText}</span>
-                        </Link>
-                      </>
-                    )}
+                  {/* Footer */}
+                  <div className="px-5 pb-4 text-center">
+                    <p className="text-gray-400 text-xs">LINYORA v1.0.0</p>
                   </div>
                 </div>
               </aside>

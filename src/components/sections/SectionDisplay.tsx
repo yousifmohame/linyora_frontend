@@ -109,7 +109,7 @@ function adjustHexColor(
 
 
   return (
-    <div className="container mx-auto px-4 py-6 mb-0">
+    <div className="container mx-auto px-1 py-6 mb-0">
 
       {/* === Banner with Circles and Content === */}
       <div className="relative overflow-hidden rounded-3xl mb-2">
@@ -143,9 +143,9 @@ function adjustHexColor(
         </div>
 
         {/* Banner content */}
-        <div className="relative z-20 flex flex-col p-8 lg:flex-row justify-between items-start lg:items-center text-white">
+        <div className="relative z-20 flex items-center p-8 lg:flex-row justify-between  lg:items-center text-white">
           
-          <div className="flex-1 mb-6 lg:mb-0">
+          <div className="flex-1 mb-0 lg:mb-0">
             <div className="flex items-center gap-3 mb-3">
               {section.icon && (
                 <img 
@@ -168,8 +168,14 @@ function adjustHexColor(
           <div className="flex items-center gap-4">
             {/* Explore Button */}
             <Link href={`/sections/${section.id}`}>
-              <Button 
-                className="bg-white hover:bg-gray-100 rounded-2xl px-8 py-6 text-lg font-medium shadow-lg hover:shadow-xl transition-all"
+              <Button
+                className="
+                  bg-white hover:bg-gray-100 rounded-2xl shadow-lg hover:shadow-xl transition-all
+                  flex items-center justify-center
+                  px-8 py-6 text-lg font-medium
+                  md:flex         /* يظهر زر كامل على الشاشات المتوسطة فما فوق */
+                  hidden          /* مخفي على الهاتف */
+                "
                 style={{ color: themeColor }}
               >
                 {t('ExploreSection', 'تصفح القسم')}
@@ -179,7 +185,24 @@ function adjustHexColor(
                   <ArrowRight className="w-5 h-5 ml-2" />
                 )}
               </Button>
+
+              {/* زر الهاتف: أيقونة فقط */}
+              <Button
+                className="
+                  bg-white hover:bg-gray-100 rounded-full shadow-lg hover:shadow-xl transition-all
+                  w-12 h-12 flex items-center justify-center
+                  md:hidden       /* يظهر فقط على الهاتف */
+                "
+                style={{ color: themeColor }}
+              >
+                {isRTL ? (
+                  <ArrowLeft className="w-6 h-6" />
+                ) : (
+                  <ArrowRight className="w-6 h-6" />
+                )}
+              </Button>
             </Link>
+
           </div>
         </div>
       </div>
@@ -188,44 +211,6 @@ function adjustHexColor(
       <Card className="overflow-hidden p-0 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 hover:shadow-2xl transition-all duration-500 rounded-3xl">
         <CardContent className="p-0">
           <div className="flex flex-col lg:flex-row">
-
-            {/* Left: Categories */}
-            <div className="flex-1 p-8 lg:p-12 flex flex-col justify-between">
-              <div className="mb-8">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {section.categories && section.categories.length > 0 ? (
-                    section.categories.map((cat: any) => (
-                      <Link key={cat.id} href={`/categories/${cat.name}`} className="group">
-                        <div style={{ color: themeColor, backgroundColor : themeColor+'10', border:themeColor }} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-orange-200 transition-all duration-300 group-hover:scale-105">
-                          <div  className="flex flex-col items-center text-center">
-                            <div className="w-16 h-16 mb-3 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                              <img
-                                src={cat.image_url || '/placeholder-category.svg'}
-                                alt={cat.name}
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              />
-                            </div>
-                            <Badge 
-                              variant="secondary" 
-                              className="px-3 py-1 hover:bg-orange-100 font-medium"
-                              style={{ color: themeColor, backgroundColor : themeColor+'10', border:themeColor }}
-                            >
-                              {cat.name}
-                            </Badge>
-                          </div>
-                        </div>
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="col-span-full text-center py-8 text-gray-400">
-                      <ShoppingBag className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>{t('NoCategories', 'لا توجد تصنيفات')}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-            </div>
 
             {/* Right: Featured Product / Slides */}
             <div className="lg:w-2/5 xl:w-1/3 relative min-h-[400px]">
@@ -343,6 +328,46 @@ function adjustHexColor(
                 </div>
               )}
             </div>
+
+            {/* Left: Categories */}
+            <div className="flex-1 p-8 lg:p-12 flex flex-col justify-between">
+              <div className="mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {section.categories && section.categories.length > 0 ? (
+                    section.categories.map((cat: any) => (
+                      <Link key={cat.id} href={`/categories/${cat.name}`} className="group">
+                        <div style={{ color: themeColor, backgroundColor : themeColor+'10', border:themeColor }} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-orange-200 transition-all duration-300 group-hover:scale-105">
+                          <div  className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 mb-3 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                              <img
+                                src={cat.image_url || '/placeholder-category.svg'}
+                                alt={cat.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              />
+                            </div>
+                            <Badge 
+                              variant="secondary" 
+                              className="px-3 py-1 hover:bg-orange-100 font-medium"
+                              style={{ color: themeColor, backgroundColor : themeColor+'10', border:themeColor }}
+                            >
+                              {cat.name}
+                            </Badge>
+                          </div>
+                        </div>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-8 text-gray-400">
+                      <ShoppingBag className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>{t('NoCategories', 'لا توجد تصنيفات')}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+            </div>
+
+            
           </div>
         </CardContent>
       </Card>

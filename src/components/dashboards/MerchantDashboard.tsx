@@ -79,18 +79,18 @@ const RecentOrders = ({ orders, currency, t }: { orders: RecentOrder[], currency
   return (
     <div className="space-y-3">
       {orders.map(order => (
-        <div key={order.id} className="flex items-center justify-between p-3 sm:p-4 bg-white rounded-xl sm:rounded-2xl border border-gray-200/60 hover:border-purple-300 hover:shadow-md transition-all duration-300 group">
-          <div className="flex items-center space-x-2 sm:space-x-3 space-x-reverse min-w-0 flex-1">
-            <div className="p-1.5 sm:p-2 bg-gradient-to-br from-purple-500 to-rose-500 rounded-lg sm:rounded-xl shadow-sm group-hover:scale-110 transition-transform duration-300">
-              <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+        <div key={order.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200/60 hover:border-purple-300 hover:shadow transition-all duration-200 group">
+          <div className="flex items-center space-x-2 min-w-0 flex-1">
+            <div className="p-1.5 bg-gradient-to-br from-purple-500 to-rose-500 rounded-lg shadow-sm">
+              <ShoppingCart className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-gray-900 truncate text-xs sm:text-sm">{order.customerName}</p>
+              <p className="font-medium text-gray-900 truncate text-xs">{order.customerName}</p>
             </div>
           </div>
-          <div className="text-left ml-2 sm:ml-4 min-w-[80px] sm:min-w-[100px]">
-            <p className="font-bold text-gray-900 text-sm sm:text-lg">{currency} {order.total.toFixed(2)}</p>
-            <Badge className={`mt-1 sm:mt-2 text-xs px-2 py-1 rounded-lg ${getStatusVariant(order.status)}`}>
+          <div className="text-left ml-2 min-w-[80px]">
+            <p className="font-bold text-gray-900 text-sm">{currency} {order.total.toFixed(2)}</p>
+            <Badge className={`mt-1 text-[10px] px-2 py-0.5 rounded-md ${getStatusVariant(order.status)}`}>
               {getStatusLabel(order.status)}
             </Badge>
           </div>
@@ -103,8 +103,8 @@ const RecentOrders = ({ orders, currency, t }: { orders: RecentOrder[], currency
 // ================== SalesChart Component ==================
 const SalesChart = ({ data, currency, t }: { data: { name: string; sales: number }[], currency: string, t: (key: string) => string }) => {
   return (
-    <ResponsiveContainer width="100%" height={250} className="text-xs">
-      <BarChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
         <XAxis 
           dataKey="name" 
@@ -129,20 +129,20 @@ const SalesChart = ({ data, currency, t }: { data: { name: string; sales: number
           contentStyle={{ 
             background: 'white', 
             border: '1px solid #e5e7eb', 
-            borderRadius: '10px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            fontSize: '11px',
-            padding: '8px 12px'
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            fontSize: '10px',
+            padding: '6px 10px'
           }}
           formatter={(value: number) => [`${currency} ${value.toFixed(2)}`, t('merchantDashboard.chart.sales')]}
-          labelFormatter={(label) => t('merchantDashboard.chart.date')}
+          labelFormatter={(label) => label}
         />
         <Bar 
           dataKey="sales" 
           name={t('merchantDashboard.chart.sales')} 
           fill="url(#salesGradient)" 
-          radius={[6, 6, 0, 0]}
-          barSize={20}
+          radius={[4, 4, 0, 0]}
+          barSize={16}
         />
         <defs>
           <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
@@ -163,17 +163,17 @@ const StatCard = ({ title, value, description, icon: Icon }: {
   icon: React.ElementType;
 }) => {
   return (
-    <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105 group p-4 sm:p-6">
+    <Card className="shadow-sm border border-gray-200/60 bg-white hover:shadow transition-all duration-200 p-4">
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-xs sm:text-sm font-semibold text-gray-600 truncate">{title}</p>
-          <p className="text-lg sm:text-2xl font-bold text-gray-900 mt-1 sm:mt-2 truncate">{value}</p>
+          <p className="text-[10px] font-medium text-gray-600 truncate">{title}</p>
+          <p className="text-base font-bold text-gray-900 mt-0.5 truncate">{value}</p>
           {description && (
-            <p className="text-xs text-gray-500 mt-1 truncate">{description}</p>
+            <p className="text-[9px] text-gray-500 mt-0.5 truncate">{description}</p>
           )}
         </div>
-        <div className="p-2 sm:p-3 bg-gradient-to-br from-rose-500 to-purple-600 rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-300 flex-shrink-0 ml-2 sm:ml-3">
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+        <div className="p-2 bg-gradient-to-br from-rose-500 to-purple-600 rounded-lg flex-shrink-0 ml-2">
+          <Icon className="h-3.5 w-3.5 text-white" />
         </div>
       </div>
     </Card>
@@ -290,11 +290,11 @@ export default function MerchantDashboard() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 sm:p-4 lg:p-6 xl:p-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 ${isRTL ? 'rtl' : 'ltr'}`}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
-            <p className="text-gray-600 text-sm sm:text-base">{t('merchantDashboard.loading')}</p>
+            <div className="w-10 h-10 border-3 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-2"></div>
+            <p className="text-gray-600 text-sm">{t('merchantDashboard.loading')}</p>
           </div>
         </div>
       </div>
@@ -303,13 +303,13 @@ export default function MerchantDashboard() {
 
   if (error) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 sm:p-4 lg:p-6 xl:p-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+      <div className={`min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 ${isRTL ? 'rtl' : 'ltr'}`}>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center text-red-500 bg-white/80 p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-lg max-w-md w-full mx-4">
-            <p className="text-sm sm:text-base">{error}</p>
+          <div className="text-center text-red-500 bg-white/90 p-5 rounded-xl shadow max-w-md w-full mx-2">
+            <p className="text-sm">{error}</p>
             <Button 
               onClick={() => window.location.reload()} 
-              className="mt-4 bg-red-500 hover:bg-red-600 text-white"
+              className="mt-3 bg-red-500 hover:bg-red-600 text-white text-xs h-8 px-3"
               size="sm"
             >
               {t('merchantDashboard.retry')}
@@ -323,25 +323,25 @@ export default function MerchantDashboard() {
   if (!data) return null;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 sm:p-4 lg:p-6 xl:p-8 ${isRTL ? 'rtl' : 'ltr'}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 ${isRTL ? 'rtl' : 'ltr'}`}>
       <Navigation />
       
-      <main className="space-y-4 sm:space-y-6 lg:space-y-8">
+      <main className="space-y-4">
         {!isVerified && user && (
-          <Alert variant="default" className="border-yellow-400 bg-yellow-50">
-            <Terminal className="h-4 w-4" />
-            <AlertTitle className="font-bold text-yellow-800">
+          <Alert variant="default" className="border-yellow-400 bg-yellow-50 text-xs">
+            <Terminal className="h-3.5 w-3.5" />
+            <AlertTitle className="font-bold text-yellow-800 text-xs">
               {user.verification_status === 'pending' && t('merchantDashboard.verification.pending.title')}
               {user.verification_status === 'rejected' && t('merchantDashboard.verification.rejected.title')}
               {user.verification_status === 'not_submitted' && t('merchantDashboard.verification.notSubmitted.title')}
             </AlertTitle>
-            <AlertDescription className="text-yellow-700">
+            <AlertDescription className="text-yellow-700 text-xs">
               {user.verification_status === 'pending' ? (
                 t('merchantDashboard.verification.pending.description')
               ) : (
                 <>
                   {t('merchantDashboard.verification.actionRequired')}
-                  <Link href="/dashboard/verification" className="font-bold hover:underline mx-1">
+                  <Link href="/dashboard/verification" className="font-bold hover:underline mx-0.5">
                     {t('merchantDashboard.verification.goToVerification')}
                   </Link>
                 </>
@@ -353,22 +353,22 @@ export default function MerchantDashboard() {
         {isVerified && data ? (
           <>
             {/* Welcome Header */}
-            <div className="bg-gradient-to-r from-rose-500 to-purple-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 text-white shadow-xl">
+            <div className="bg-gradient-to-r from-rose-500 to-purple-600 rounded-2xl p-4 text-white shadow">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex-1">
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
+                  <h1 className="text-lg font-bold mb-1">
                     {t('merchantDashboard.welcome', { name: user?.name })}
                   </h1>
-                  <p className="text-rose-100 text-sm sm:text-base opacity-90">
+                  <p className="text-rose-100 text-xs opacity-90">
                     {t('merchantDashboard.welcomeSubtitle')}
                   </p>
                 </div>
-                <div className="mt-4 sm:mt-0 flex items-center space-x-3 space-x-reverse">
-                  <Badge className="bg-white/20 text-white border-0 px-3 py-1.5 text-xs sm:text-sm">
+                <div className="mt-2 sm:mt-0">
+                  <Badge className="bg-white/20 text-white border-0 px-2.5 py-1 text-[10px]">
                     {new Date().toLocaleDateString(i18n.language, { 
-                      weekday: 'long', 
+                      weekday: 'short', 
                       year: 'numeric', 
-                      month: 'long', 
+                      month: 'short', 
                       day: 'numeric' 
                     })}
                   </Badge>
@@ -376,55 +376,39 @@ export default function MerchantDashboard() {
               </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
-              <StatCard 
-                title={t('merchantDashboard.stats.totalSales')} 
-                value={`${currency} ${data.totalSales.toFixed(2)}`} 
-                icon={DollarSign} 
-              />
+            {/* Stats Grid — Pure Responsive Grid (NO HORIZONTAL SCROLL) */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              <StatCard title={t('merchantDashboard.stats.totalSales')} value={`${currency} ${data.totalSales.toFixed(2)}`} icon={DollarSign} />
               <StatCard 
                 title={t('merchantDashboard.stats.averageRating')} 
                 value={`${data.averageRating.toFixed(1)} / 5.0`} 
                 description={t('merchantDashboard.stats.fromReviews', { count: data.totalReviews })} 
                 icon={Star} 
               />
-              <StatCard 
-                title={t('merchantDashboard.stats.monthlyViews')} 
-                value={data.monthlyViews.toLocaleString(i18n.language)} 
-                icon={Eye} 
-              />
-              <StatCard 
-                title={t('merchantDashboard.stats.activeProducts')} 
-                value={`${data.activeProducts} / ${data.totalProducts}`} 
-                icon={Package} 
-              />
-              <StatCard 
-                title={t('merchantDashboard.stats.newOrders')} 
-                value={`+${data.recentOrders.length}`} 
-                icon={ShoppingCart} 
-              />
+              <StatCard title={t('merchantDashboard.stats.monthlyViews')} value={data.monthlyViews.toLocaleString(i18n.language)} icon={Eye} />
+              <StatCard title={t('merchantDashboard.stats.activeProducts')} value={`${data.activeProducts} / ${data.totalProducts}`} icon={Package} />
+              <StatCard title={t('merchantDashboard.stats.newOrders')} value={`+${data.recentOrders.length}`} icon={ShoppingCart} />
             </div>
 
-            {/* Charts and Orders Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+            {/* Charts and Orders — Full width on mobile, side-by-side on xl */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
               {/* Sales Chart */}
-              <Card className="xl:col-span-2 shadow-xl border-0 bg-white/90 backdrop-blur-sm">
-                <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
+              <Card className="xl:col-span-2 shadow-sm border border-gray-200/60 bg-white/90">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0">
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base sm:text-lg lg:text-xl text-gray-900 truncate">
+                    <CardTitle className="text-sm text-gray-900 truncate">
                       {t('merchantDashboard.chart.title')}
                     </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm truncate">
+                    <CardDescription className="text-[10px] truncate">
                       {t('merchantDashboard.chart.description')}
                     </CardDescription>
                   </div>
-                  <div className="flex items-center bg-gray-100 p-1 rounded-xl flex-shrink-0 mr-2 sm:mr-0">
+                  <div className="flex bg-gray-100 p-0.5 rounded-lg flex-shrink-0">
                     <Button 
                       size="sm" 
                       variant={salesPeriod === 'week' ? 'default' : 'ghost'} 
                       onClick={() => setSalesPeriod('week')}
-                      className="rounded-lg text-xs h-8 px-3"
+                      className="rounded text-[10px] h-6 px-2"
                     >
                       {t('merchantDashboard.chart.thisWeek')}
                     </Button>
@@ -432,24 +416,24 @@ export default function MerchantDashboard() {
                       size="sm" 
                       variant={salesPeriod === 'month' ? 'default' : 'ghost'} 
                       onClick={() => setSalesPeriod('month')}
-                      className="rounded-lg text-xs h-8 px-3"
+                      className="rounded text-[10px] h-6 px-2"
                     >
                       {t('merchantDashboard.chart.thisMonth')}
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-2 sm:pt-4">
+                <CardContent className="pt-2">
                   {chartData && <SalesChart data={chartData} currency={currency} t={t} />}
                 </CardContent>
               </Card>
 
               {/* Recent Orders */}
-              <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm h-fit">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base sm:text-lg lg:text-xl text-gray-900">
+              <Card className="shadow-sm border border-gray-200/60 bg-white/90">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm text-gray-900">
                     {t('merchantDashboard.orders.title')}
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">
+                  <CardDescription className="text-[10px]">
                     {t('merchantDashboard.orders.recent', { count: Math.min(4, data.recentOrders.length) })}
                   </CardDescription>
                 </CardHeader>
@@ -457,20 +441,20 @@ export default function MerchantDashboard() {
                   {data.recentOrders.length > 0 ? (
                     <RecentOrders orders={data.recentOrders.slice(0, 4)} currency={currency} t={t} />
                   ) : (
-                    <div className="text-center py-6 sm:py-8">
-                      <ShoppingCart className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-3 sm:mb-4" />
-                      <p className="text-gray-500 text-sm">{t('merchantDashboard.orders.noRecent')}</p>
+                    <div className="text-center py-6">
+                      <ShoppingCart className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-500 text-xs">{t('merchantDashboard.orders.noRecent')}</p>
                     </div>
                   )}
                 </CardContent>
-                <div className="p-3 sm:p-4 border-t border-gray-200/60 mt-4">
+                <div className="p-3 border-t border-gray-200/60 mt-2">
                   <Link href="/dashboard/orders">
                     <Button 
                       variant="ghost" 
-                      className="w-full text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-xl transition-all duration-300 group text-sm h-10 sm:h-11"
+                      className="w-full text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors text-xs h-9"
                     >
-                      {t('merchantDashboard.orders.viewAll')}
-                      <ArrowRight className="mr-2 h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      <span>{t('merchantDashboard.orders.viewAll')}</span>
+                      <ArrowRight className="mr-1.5 h-3 w-3" />
                     </Button>
                   </Link>
                 </div>
@@ -480,9 +464,9 @@ export default function MerchantDashboard() {
         ) : (
           !loading && (
             <Card>
-              <CardContent className="p-8 text-center">
-                <h2 className="text-xl font-bold">{t('merchantDashboard.onboarding.title')}</h2>
-                <p className="text-muted-foreground mt-2">
+              <CardContent className="p-6 text-center">
+                <h2 className="text-base font-bold">{t('merchantDashboard.onboarding.title')}</h2>
+                <p className="text-muted-foreground mt-1 text-sm">
                   {t('merchantDashboard.onboarding.description')}
                 </p>
               </CardContent>

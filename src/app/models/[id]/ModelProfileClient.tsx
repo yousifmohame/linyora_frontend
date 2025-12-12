@@ -258,8 +258,8 @@ const ModelProfileClient: React.FC<ModelProfileClientProps> = ({ profileData }) 
     <div className="bg-white min-h-screen">
       {/* Cover & Header */}
       <div className="relative h-48 bg-gradient-to-br from-purple-100 to-pink-100 overflow-hidden">
-        {profile.cover_url ? (
-          <Image src={profile.cover_url} alt="Cover" fill className="object-cover" />
+        {profile.store_banner_url ? (
+          <Image src={profile.store_banner_url} alt="Cover" fill className="object-cover" />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-purple-200 via-pink-100 to-white opacity-80" />
         )}

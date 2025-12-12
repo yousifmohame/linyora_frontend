@@ -44,6 +44,7 @@ interface ProfileData {
   email: string;
   bio: string;
   profile_picture_url: string | null;
+  store_banner_url: string | null; // ✅ إضافة حقل صورة الغلاف
   portfolio: string[];
   social_links: SocialLinks;
   stats: {
@@ -139,7 +140,7 @@ export default function ProfileSettingsPage() {
     }));
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'portfolio') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'portfolio' | 'cover') => {
     if (!e.target.files || e.target.files.length === 0) return;
 
     setIsUploading(type);
@@ -148,12 +149,16 @@ export default function ProfileSettingsPage() {
     formData.append('image', file);
 
     try {
+      // نفترض أن نفس الراوت يستخدم للرفع، يمكنك تغييره إذا كان هناك راوت مخصص
       const response = await api.post('/upload', formData);
       const imageUrl = response.data.imageUrl;
 
       if (type === 'profile') {
         setProfile((prev) => ({ ...prev, profile_picture_url: imageUrl }));
         toast.success(t('modelprofile.toasts.profilePicSuccess'));
+      } else if (type === 'cover') { // ✅ معالجة صورة الغلاف
+        setProfile((prev) => ({ ...prev, store_banner_url: imageUrl }));
+        toast.success(t('modelprofile.toasts.coverPicSuccess', {defaultValue: 'Cover photo updated!'}));
       } else {
         setProfile((prev) => ({
           ...prev,
@@ -310,7 +315,38 @@ export default function ProfileSettingsPage() {
                 />
               </div>
             </div>
+            
             <div className="flex flex-col items-center space-y-4">
+                {/* ✅ قسم صورة الغلاف الجديد */}
+                <div className="w-full relative h-32 rounded-xl overflow-hidden bg-gray-100 group border border-dashed border-rose-200 hover:border-rose-400 transition-colors">
+                    {profile.store_banner_url ? (
+                        <Image src={profile.store_banner_url} alt="Cover" fill className="object-cover" />
+                    ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs">
+                            {t('modelprofile.basicInfo.coverPhoto', {defaultValue: 'اضف صورة غلاف'})}
+                        </div>
+                    )}
+                    <label 
+                        htmlFor="cover-upload" 
+                        className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    >
+                        <Camera className="text-white w-6 h-6" />
+                        <input
+                            id="cover-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleImageUpload(e, 'cover')}
+                            disabled={isUploading === 'cover'}
+                        />
+                    </label>
+                    {isUploading === 'cover' && (
+                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                            <div className="w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    )}
+                </div>
+
               <Label className="text-rose-800 font-medium text-lg">
                 {t('modelprofile.basicInfo.profilePicture')}
               </Label>

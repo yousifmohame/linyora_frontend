@@ -173,7 +173,7 @@ const AddressForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="w-5 h-5" />
@@ -182,18 +182,18 @@ const AddressForm = ({
               : t('ProfilePage.addressForm.addTitle')}
           </DialogTitle>
         </DialogHeader>
-
         <div className="mb-4">
-           <p className="text-sm text-gray-500 mb-2">{t('Select location on map to auto-fill')}</p>
-           <MapPicker onLocationSelect={handleLocationSelect} />
-           {isLoadingLocation && (
-             <div className="text-xs text-purple-600 flex items-center gap-1 mt-1">
-               <Loader2 className="w-3 h-3 animate-spin" />
-               {t('Fetching address details...')}
-             </div>
-           )}
+          <p className="text-sm text-gray-500 mb-2">
+            {t('Select location on map to auto-fill')}
+          </p>
+          <MapPicker onLocationSelect={handleLocationSelect} />
+          {isLoadingLocation && (
+            <div className="text-xs text-purple-600 flex items-center gap-1 mt-1">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              {t('Fetching address details...')}
+            </div>
+          )}
         </div>
-        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField

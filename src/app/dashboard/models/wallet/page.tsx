@@ -77,7 +77,7 @@ const ModelWalletPage = () => {
           axios.get('/wallet/model/transactions'),
         ]);
 
-        const normalizedTransactions = transactionsRes.data.map((t: Transaction) => ({
+        const normalizedTransactions = transactionsRes.data.map((t: any) => ({
           ...t,
           amount: typeof t.amount === 'string' ? parseFloat(t.amount) : t.amount,
         }));
@@ -186,132 +186,92 @@ const ModelWalletPage = () => {
 
   if (loading || !isMounted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 flex items-center justify-center p-4 overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+        <ModelNav />
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-rose-500 mx-auto mb-4"></div>
-          {isMounted ? (
-            <p className="text-rose-700 text-lg font-medium">{t('modelwallet.loading')}</p>
-          ) : (
-            <p className="text-rose-700 text-lg font-medium">Loading...</p>
-          )}
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+          <p className="text-gray-600 text-sm">{t('modelwallet.loading')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-6 sm:p-8">
-      <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+    // ✅ Unified gradient + overflow-hidden
+    <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 sm:p-4 overflow-hidden">
+      {/* ✅ Smaller, safe blobs */}
+      <div className="absolute top-0 right-0 w-48 h-48 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
 
       <ModelNav />
 
-      <header className="mb-8 text-center relative">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="p-3 bg-white rounded-2xl shadow-lg">
-            <Wallet className="h-8 w-8 text-rose-500" />
+      <header className="mb-6 text-center px-2">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="p-2 bg-white rounded-xl shadow-sm border border-rose-100">
+            <Wallet className="h-6 w-6 text-rose-600" />
           </div>
-          <Sparkles className="h-6 w-6 text-rose-300" />
-          <Crown className="h-6 w-6 text-rose-300" />
+          <Sparkles className="h-4 w-4 text-rose-300" />
+          <Crown className="h-4 w-4 text-rose-300" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-3">
+        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent mb-1.5">
           {t('modelwallet.pageTitle')}
         </h1>
-        <p className="text-rose-700 text-lg max-w-2xl mx-auto">{t('modelwallet.pageSubtitle')}</p>
-        <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
+        <p className="text-gray-600 text-sm max-w-md mx-auto">
+          {t('modelwallet.pageSubtitle')}
+        </p>
       </header>
 
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Wallet className="w-5 h-5" />
-                {t('modelwallet.overview.availableBalance')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 text-center">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="p-1 h-auto text-green-600 hover:text-green-700"
-                >
-                  {showBalance ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </Button>
-                <div className="text-3xl lg:text-4xl font-bold text-green-600">
-                  {showBalance
-                    ? `${Number(wallet?.balance ?? 0).toFixed(2)}`
-                    : '••••'}
-                </div>
-              </div>
-              <p className="text-green-700 text-sm">{t('modelwallet.availableNow')}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Hourglass className="w-5 h-5" />
-                {t('modelwallet.overview.pendingEarnings')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-amber-600 mb-3">
-                {Number(wallet?.pending_clearance ?? 0).toFixed(2)}
-              </div>
-              <p className="text-amber-700 text-sm">{t('modelwallet.underReview')}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <TrendingUp className="w-5 h-5" />
-                {t('modelwallet.overview.totalEarnings')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-blue-600 mb-3">
-                {(Number(wallet?.balance ?? 0) + Number(wallet?.pending_clearance ?? 0)).toFixed(2)}
-              </div>
-              <p className="text-blue-700 text-sm">{t('modelwallet.allTimeEarnings')}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <BarChart3 className="w-5 h-5" />
-                {t('modelwallet.overview.thisMonth')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl lg:text-4xl font-bold text-purple-600 mb-3">
-                {Number(totalEarnings).toFixed(2)} {/* ✅ FIXED */}
-              </div>
-              <p className="text-purple-700 text-sm">{t('modelwallet.currentMonthEarnings')}</p>
-            </CardContent>
-          </Card>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* ✅ Stats Grid */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <StatCard 
+            title={t('modelwallet.overview.availableBalance')}
+            value={showBalance ? `${Number(wallet?.balance ?? 0).toFixed(2)}` : '••••'}
+            icon={Wallet}
+            color="green"
+            showToggle
+            onToggle={() => setShowBalance(!showBalance)}
+            isHidden={!showBalance}
+          />
+          <StatCard 
+            title={t('modelwallet.overview.pendingEarnings')}
+            value={Number(wallet?.pending_clearance ?? 0).toFixed(2)}
+            icon={Hourglass}
+            color="amber"
+          />
+          <StatCard 
+            title={t('modelwallet.overview.totalEarnings')}
+            value={(Number(wallet?.balance ?? 0) + Number(wallet?.pending_clearance ?? 0)).toFixed(2)}
+            icon={TrendingUp}
+            color="blue"
+          />
+          <StatCard 
+            title={t('modelwallet.overview.thisMonth')}
+            value={Number(totalEarnings).toFixed(2)}
+            icon={BarChart3}
+            color="purple"
+          />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Payout Form */}
           <div className="lg:col-span-2">
-            <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-                <CardTitle className="flex items-center gap-3 text-2xl">
-                  <Send className="h-6 w-6" />
+            <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-2xl">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Send className="h-4 w-4" />
                   {t('modelwallet.payout.title')}
                 </CardTitle>
-                <CardDescription className="text-pink-100">
+                <CardDescription className="text-purple-100 text-xs mt-0.5">
                   {t('modelwallet.payout.description')}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="p-6">
-                <form onSubmit={handlePayoutRequest} className="space-y-6">
-                  <div className="space-y-3">
-                    <Label htmlFor="amount" className="text-rose-800 font-medium text-lg">
+              <CardContent className="p-4 sm:p-6">
+                <form onSubmit={handlePayoutRequest} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="amount" className="text-gray-800 font-medium text-sm">
                       {t('modelwallet.payout.amountLabel')}
                     </Label>
                     <Input
@@ -323,9 +283,9 @@ const ModelWalletPage = () => {
                       min="50"
                       max={wallet?.balance}
                       disabled={isSubmitting}
-                      className="bg-white border-rose-200 focus:border-rose-400 rounded-2xl px-4 py-3 text-lg"
+                      className="h-10 border border-gray-200 focus:border-purple-500 rounded-lg text-sm"
                     />
-                    <div className="flex justify-between text-sm text-rose-600">
+                    <div className="flex justify-between text-[10px] text-gray-600">
                       <span>{t('modelwallet.payout.minAmount', { min: 50 })}</span>
                       <span>
                         {t('modelwallet.payout.available', {
@@ -335,18 +295,18 @@ const ModelWalletPage = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label className="text-rose-800 font-medium text-sm">
+                  <div className="space-y-2">
+                    <Label className="text-gray-800 font-medium text-[10px]">
                       {t('modelwallet.payout.quickAmounts')}
                     </Label>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {[100, 250, 500, 1000].map((quickAmount) => (
                         <Button
                           key={quickAmount}
                           type="button"
                           variant="outline"
                           onClick={() => setAmount(quickAmount.toString())}
-                          className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                          className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded text-[10px] h-7 px-2"
                         >
                           {quickAmount} ر.س
                         </Button>
@@ -354,9 +314,9 @@ const ModelWalletPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-4 bg-rose-50 rounded-2xl border border-rose-200">
-                    <Shield className="w-5 h-5 text-rose-500 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-rose-700">
+                  <div className="flex items-start gap-2 p-2.5 bg-rose-50 rounded-lg border border-rose-200/50">
+                    <Shield className="w-3 h-3 text-rose-500 mt-0.5 flex-shrink-0" />
+                    <div className="text-[10px] text-rose-600">
                       <p className="font-medium">{t('modelwallet.payout.securityNotice.title')}</p>
                       <p>{t('modelwallet.payout.securityNotice.description')}</p>
                     </div>
@@ -369,16 +329,16 @@ const ModelWalletPage = () => {
                       !amount ||
                       parseFloat(amount) < 50
                     }
-                    className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white py-3 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
+                    className="w-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white h-10 rounded-lg text-sm"
                   >
                     {isSubmitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></div>
                         {t('modelwallet.payout.submitting')}
                       </>
                     ) : (
                       <>
-                        <Send className="mr-2 h-5 w-5" />
+                        <Send className="mr-1.5 h-3 w-3" />
                         {t('modelwallet.payout.submit')}
                       </>
                     )}
@@ -388,47 +348,38 @@ const ModelWalletPage = () => {
             </Card>
           </div>
 
+          {/* Transactions */}
           <div className="lg:col-span-1">
-            <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden h-full">
-              <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-                <CardTitle className="flex items-center gap-3 text-xl">
-                  <History className="h-5 w-5" />
+            <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm h-full">
+              <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-2xl">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <History className="h-4 w-4" />
                   {t('modelwallet.transactions.title')}
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={timeRange}
-                    onValueChange={(value: 'week' | 'month' | 'year') =>
-                      setTimeRange(value)
-                    }
-                  >
-                    <SelectTrigger className="w-32 bg-white/20 border-white text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="week">
-                        {t('modelwallet.transactions.timeRange.week')}
-                      </SelectItem>
-                      <SelectItem value="month">
-                        {t('modelwallet.transactions.timeRange.month')}
-                      </SelectItem>
-                      <SelectItem value="year">
-                        {t('modelwallet.transactions.timeRange.year')}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select
+                  value={timeRange}
+                  onValueChange={(value: 'week' | 'month' | 'year') => setTimeRange(value)}
+                >
+                  <SelectTrigger className="w-28 bg-white/20 border-white text-white h-7 text-xs mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="week">{t('modelwallet.transactions.timeRange.week')}</SelectItem>
+                    <SelectItem value="month">{t('modelwallet.transactions.timeRange.month')}</SelectItem>
+                    <SelectItem value="year">{t('modelwallet.transactions.timeRange.year')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
+              <CardContent className="p-4">
+                <div className="space-y-3">
                   {filteredTransactions.slice(0, 5).map((transaction) => (
                     <div
                       key={transaction.id}
-                      className="flex items-center justify-between p-3 bg-white rounded-2xl border border-rose-200 shadow-sm hover:shadow-md"
+                      className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200/50"
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5">
                         <div
-                          className={`p-2 rounded-xl ${
+                          className={`p-1.5 rounded-lg ${
                             transaction.type === 'earning'
                               ? 'bg-green-100 text-green-600'
                               : transaction.type === 'payout'
@@ -437,36 +388,36 @@ const ModelWalletPage = () => {
                           }`}
                         >
                           {transaction.type === 'earning' ? (
-                            <TrendingUp className="w-4 h-4" />
+                            <TrendingUp className="w-3 h-3" />
                           ) : transaction.type === 'payout' ? (
-                            <Send className="w-4 h-4" />
+                            <Send className="w-3 h-3" />
                           ) : (
-                            <AlertCircle className="w-4 h-4" />
+                            <AlertCircle className="w-3 h-3" />
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-rose-900 text-sm">
+                          <p className="font-medium text-gray-900 text-[10px]">
                             {transaction.description}
                           </p>
-                          <p className="text-rose-600 text-xs">
+                          <p className="text-gray-600 text-[9px] mt-0.5">
                             {new Date(transaction.date).toLocaleDateString('ar-EG')}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p
-                          className={`font-bold text-lg ${
+                          className={`font-bold text-xs ${
                             transaction.type === 'earning'
                               ? 'text-green-600'
                               : 'text-blue-600'
                           }`}
                         >
                           {transaction.type === 'earning' ? '+' : '-'}
-                          {Number(transaction.amount).toFixed(2)} ر.س {/* ✅ Also safe */}
+                          {Number(transaction.amount).toFixed(2)} ر.س
                         </p>
                         <Badge
                           variant="secondary"
-                          className={`text-xs ${
+                          className={`text-[9px] px-1.5 py-0.5 ${
                             transaction.status === 'approved'
                               ? 'bg-green-100 text-green-800'
                               : (transaction.status === 'pending' || transaction.status === 'pending_clearance') 
@@ -485,18 +436,18 @@ const ModelWalletPage = () => {
                   ))}
 
                   {filteredTransactions.length === 0 && (
-                    <div className="text-center py-8">
-                      <History className="h-12 w-12 text-rose-300 mx-auto mb-3" />
-                      <p className="text-rose-600">{t('modelwallet.transactions.noTransactions')}</p>
+                    <div className="text-center py-6">
+                      <History className="h-6 w-6 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-500 text-xs">{t('modelwallet.transactions.noTransactions')}</p>
                     </div>
                   )}
 
                   {filteredTransactions.length > 5 && (
                     <Button
                       variant="outline"
-                      className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
+                      className="w-full border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-xs h-8"
                     >
-                      <Download className="w-4 h-4 mr-2" />
+                      <Download className="w-3 h-3 mr-1.5" />
                       {t('modelwallet.transactions.viewAll')}
                     </Button>
                   )}
@@ -506,81 +457,72 @@ const ModelWalletPage = () => {
           </div>
         </div>
 
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-            <CardTitle className="flex items-center gap-3 text-xl">
-              <Zap className="h-5 w-5" />
+        {/* Summary */}
+        <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-2xl">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Zap className="h-4 w-4" />
               {t('modelwallet.summary.title')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-green-50 rounded-2xl border border-green-200">
-                <div className="text-2xl font-bold text-green-600 mb-1">
-                  +{Number(totalEarnings).toFixed(2)} {/* ✅ FIXED */}
-                </div>
-                <div className="text-green-700 text-sm">
-                  {t('modelwallet.summary.totalRevenue')}
-                </div>
-              </div>
-              <div className="text-center p-4 bg-blue-50 rounded-2xl border border-blue-200">
-                <div className="text-2xl font-bold text-blue-600 mb-1">
-                  -{Number(totalPayouts).toFixed(2)} {/* ✅ Also fixed */}
-                </div>
-                <div className="text-blue-700 text-sm">
-                  {t('modelwallet.summary.totalPayouts')}
-                </div>
-              </div>
-              <div className="text-center p-4 bg-rose-50 rounded-2xl border border-rose-200">
-                <div className="text-2xl font-bold text-rose-600 mb-1">
-                  {Number(wallet?.balance ?? 0).toFixed(2)}
-                </div>
-                <div className="text-rose-700 text-sm">
-                  {t('modelwallet.summary.netBalance')}
-                </div>
-              </div>
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <SummaryItem 
+                label={t('modelwallet.summary.totalRevenue')}
+                value={`+${Number(totalEarnings).toFixed(2)}`}
+                color="green"
+              />
+              <SummaryItem 
+                label={t('modelwallet.summary.totalPayouts')}
+                value={`-${Number(totalPayouts).toFixed(2)}`}
+                color="blue"
+              />
+              <SummaryItem 
+                label={t('modelwallet.summary.netBalance')}
+                value={Number(wallet?.balance ?? 0).toFixed(2)}
+                color="rose"
+              />
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Confirm Dialog */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-        <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-2xl">
+        <DialogContent className="bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-xl max-w-[320px] mx-2">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-rose-800">
-              <AlertCircle className="w-5 h-5 text-amber-500" />
+            <DialogTitle className="flex items-center gap-2 text-gray-900 text-base">
+              <AlertCircle className="w-4 h-4 text-amber-500" />
               {t('modelwallet.payout.confirmDialog.title')}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-600 text-sm">
               {t('modelwallet.payout.confirmDialog.description', { amount })}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="p-4 bg-rose-50 rounded-2xl border border-rose-200">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-rose-700">
-                  {t('modelwallet.payout.confirmDialog.amount')}
-                </span>
-                <span className="font-bold text-rose-800">{amount} ر.س</span>
-              </div>
+          <div className="space-y-3 p-3 bg-rose-50 rounded-lg border border-rose-200/50">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-700 text-sm">
+                {t('modelwallet.payout.confirmDialog.amount')}
+              </span>
+              <span className="font-bold text-gray-900 text-sm">{amount} ر.س</span>
             </div>
           </div>
-          <DialogFooter className="flex gap-3">
+          <DialogFooter className="flex gap-2 pt-2">
             <Button
               variant="outline"
               onClick={() => setConfirmDialogOpen(false)}
-              className="border-rose-200 text-rose-700 hover:bg-rose-50"
+              className="flex-1 border-gray-200 text-gray-700 hover:bg-gray-50 rounded text-sm h-8"
             >
               {t('modelwallet.payout.confirmDialog.cancel')}
             </Button>
             <Button
               onClick={confirmPayoutRequest}
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+              className="flex-1 bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white rounded text-sm h-8"
             >
               {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   {t('modelwallet.payout.confirmDialog.processing')}
                 </div>
               ) : (
@@ -590,6 +532,65 @@ const ModelWalletPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+};
+
+// ✅ Reusable Stat Card
+const StatCard = ({ title, value, icon: Icon, color, showToggle, onToggle, isHidden }: { 
+  title: string; 
+  value: string; 
+  icon: any; 
+  color: 'green' | 'amber' | 'blue' | 'purple' | 'rose';
+  showToggle?: boolean;
+  onToggle?: () => void;
+  isHidden?: boolean;
+}) => {
+  const colorMap = {
+    green: 'bg-green-50 text-green-600 border-green-200',
+    amber: 'bg-amber-50 text-amber-600 border-amber-200',
+    blue: 'bg-blue-50 text-blue-600 border-blue-200',
+    purple: 'bg-purple-50 text-purple-600 border-purple-200',
+    rose: 'bg-rose-50 text-rose-600 border-rose-200',
+  };
+
+  return (
+    <Card className={`bg-white/90 backdrop-blur-sm border ${colorMap[color]} shadow-sm rounded-lg`}>
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-1.5">
+            <Icon className="w-4 h-4" />
+            <span className="text-[10px] font-medium text-gray-600">{title}</span>
+          </div>
+          {showToggle && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggle}
+              className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700"
+            >
+              {isHidden ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+            </Button>
+          )}
+        </div>
+        <div className="text-lg font-bold text-gray-900">{value}</div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// ✅ Summary Item
+const SummaryItem = ({ label, value, color }: { label: string; value: string; color: 'green' | 'blue' | 'rose' }) => {
+  const colorMap = {
+    green: 'text-green-600 bg-green-50 border-green-200',
+    blue: 'text-blue-600 bg-blue-50 border-blue-200',
+    rose: 'text-rose-600 bg-rose-50 border-rose-200',
+  };
+
+  return (
+    <div className={`text-center p-2.5 rounded-lg border ${colorMap[color]}`}>
+      <div className="text-sm font-bold">{value}</div>
+      <div className="text-[10px] text-gray-700 mt-1">{label}</div>
     </div>
   );
 };

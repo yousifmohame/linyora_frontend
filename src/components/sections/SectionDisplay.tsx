@@ -364,10 +364,7 @@ function adjustHexColor(
                   )}
                 </div>
               </div>
-              
-            </div>
-
-            
+            </div>  
           </div>
         </CardContent>
       </Card>

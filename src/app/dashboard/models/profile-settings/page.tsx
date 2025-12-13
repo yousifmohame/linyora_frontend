@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   User,
-  Image as ImageIcon,
+  ImageIcon,
   Link2,
   BarChart,
   UploadCloud,
@@ -44,7 +44,7 @@ interface ProfileData {
   email: string;
   bio: string;
   profile_picture_url: string | null;
-  store_banner_url: string | null; // ✅ إضافة حقل صورة الغلاف
+  store_banner_url: string | null;
   portfolio: string[];
   social_links: SocialLinks;
   stats: {
@@ -56,8 +56,8 @@ interface ProfileData {
 const TikTokIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -74,8 +74,8 @@ const TikTokIcon = () => (
 const SnapchatIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -91,8 +91,8 @@ const SnapchatIcon = () => (
 const WhatsAppIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -142,21 +142,17 @@ export default function ProfileSettingsPage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'portfolio' | 'cover') => {
     if (!e.target.files || e.target.files.length === 0) return;
-
     setIsUploading(type);
     const file = e.target.files[0];
     const formData = new FormData();
     formData.append('image', file);
-
     try {
-      // نفترض أن نفس الراوت يستخدم للرفع، يمكنك تغييره إذا كان هناك راوت مخصص
       const response = await api.post('/upload', formData);
       const imageUrl = response.data.imageUrl;
-
       if (type === 'profile') {
         setProfile((prev) => ({ ...prev, profile_picture_url: imageUrl }));
         toast.success(t('modelprofile.toasts.profilePicSuccess'));
-      } else if (type === 'cover') { // ✅ معالجة صورة الغلاف
+      } else if (type === 'cover') {
         setProfile((prev) => ({ ...prev, store_banner_url: imageUrl }));
         toast.success(t('modelprofile.toasts.coverPicSuccess', {defaultValue: 'Cover photo updated!'}));
       } else {
@@ -186,13 +182,11 @@ export default function ProfileSettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     const promise = api.put('/model/profile', profile);
-
     toast.promise(promise, {
       loading: t('modelprofile.toasts.saving'),
       success: t('modelprofile.toasts.saveSuccess'),
       error: t('modelprofile.toasts.saveError'),
     });
-
     try {
       await promise;
     } catch (error) {
@@ -207,7 +201,7 @@ export default function ProfileSettingsPage() {
       id: 'instagram',
       label: t('modelprofile.social.instagram'),
       placeholder: t('modelprofile.social.instagramPlaceholder'),
-      icon: <Instagram className="w-5 h-5 text-pink-500" />,
+      icon: <Instagram className="w-4 h-4 text-pink-500" />,
     },
     {
       id: 'tiktok',
@@ -219,7 +213,7 @@ export default function ProfileSettingsPage() {
       id: 'twitter',
       label: t('modelprofile.social.twitter'),
       placeholder: t('modelprofile.social.twitterPlaceholder'),
-      icon: <Twitter className="w-5 h-5 text-blue-400" />,
+      icon: <Twitter className="w-4 h-4 text-blue-400" />,
     },
     {
       id: 'snapchat',
@@ -231,7 +225,7 @@ export default function ProfileSettingsPage() {
       id: 'facebook',
       label: t('modelprofile.social.facebook'),
       placeholder: t('modelprofile.social.facebookPlaceholder'),
-      icon: <Facebook className="w-5 h-5 text-blue-600" />,
+      icon: <Facebook className="w-4 h-4 text-blue-600" />,
     },
     {
       id: 'whatsapp',
@@ -243,192 +237,202 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 flex items-center justify-center p-4 overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+        <ModelNav />
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-rose-500 mx-auto mb-4"></div>
-          <p className="text-rose-700 text-lg font-medium">{t('modelprofile.toasts.loading')}</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+          <p className="text-gray-600 text-sm">{t('modelprofile.toasts.loading')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-6 sm:p-8">
-      <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 sm:p-4 overflow-hidden">
+      <div className="absolute top-0 right-0 w-48 h-48 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
 
       <ModelNav />
 
-      <header className="mb-8 text-center relative">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="p-3 bg-white rounded-2xl shadow-lg">
-            <Crown className="h-8 w-8 text-rose-500" />
+      <header className="mb-6 text-center px-2">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="p-2 bg-white rounded-xl shadow-sm border border-rose-100">
+            <Crown className="h-6 w-6 text-rose-600" />
           </div>
-          <Sparkles className="h-6 w-6 text-rose-300" />
-          <Heart className="h-6 w-6 text-rose-300" />
+          <Sparkles className="h-4 w-4 text-rose-300" />
+          <Heart className="h-4 w-4 text-rose-300" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-3">
+        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent mb-1.5">
           {t('modelprofile.pageTitle')}
         </h1>
-        <p className="text-rose-700 text-lg max-w-2xl mx-auto">{t('modelprofile.pageSubtitle')}</p>
-        <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
+        <p className="text-gray-600 text-sm max-w-md mx-auto">
+          {t('modelprofile.pageSubtitle')}
+        </p>
       </header>
 
-      <form onSubmit={handleSubmit} className="space-y-8 max-w-6xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-6xl mx-auto">
         {/* Basic Info */}
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <div className="p-2 bg-white/20 rounded-xl">
-                <User className="h-6 w-6" />
-              </div>
+        <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <User className="h-4 w-4" />
               {t('modelprofile.basicInfo.title')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8 grid md:grid-cols-3 gap-8 items-start">
-            <div className="md:col-span-2 space-y-6">
-              <div className="space-y-3">
-                <Label htmlFor="name" className="text-rose-800 font-medium text-lg">
-                  {t('modelprofile.basicInfo.fullName')}
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={profile.name || ''}
-                  onChange={handleChange}
-                  className="bg-white border-rose-200 focus:border-rose-400 rounded-2xl px-4 py-3 transition-all duration-300"
-                  placeholder={t('modelprofile.basicInfo.fullNamePlaceholder')}
-                />
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-gray-800 font-medium text-sm">
+                    {t('modelprofile.basicInfo.fullName')}
+                  </Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={profile.name || ''}
+                    onChange={handleChange}
+                    className="h-10 border border-gray-200 focus:border-purple-500 rounded-lg"
+                    placeholder={t('modelprofile.basicInfo.fullNamePlaceholder')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bio" className="text-gray-800 font-medium text-sm">
+                    {t('modelprofile.basicInfo.bio')}
+                  </Label>
+                  <Textarea
+                    id="bio"
+                    name="bio"
+                    value={profile.bio || ''}
+                    onChange={handleChange}
+                    placeholder={t('modelprofile.basicInfo.bioPlaceholder')}
+                    rows={4}
+                    className="min-h-[100px] border border-gray-200 focus:border-purple-500 rounded-lg"
+                  />
+                </div>
               </div>
-              <div className="space-y-3">
-                <Label htmlFor="bio" className="text-rose-800 font-medium text-lg">
-                  {t('modelprofile.basicInfo.bio')}
-                </Label>
-                <Textarea
-                  id="bio"
-                  name="bio"
-                  value={profile.bio || ''}
-                  onChange={handleChange}
-                  placeholder={t('modelprofile.basicInfo.bioPlaceholder')}
-                  rows={5}
-                  className="bg-white border-rose-200 focus:border-rose-400 rounded-2xl px-4 py-3 resize-none transition-all duration-300 min-h-[120px]"
-                />
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center space-y-4">
-                {/* ✅ قسم صورة الغلاف الجديد */}
-                <div className="w-full relative h-32 rounded-xl overflow-hidden bg-gray-100 group border border-dashed border-rose-200 hover:border-rose-400 transition-colors">
+              
+              <div className="space-y-4">
+                {/* Cover Photo */}
+                <div className="space-y-2">
+                  <Label className="text-gray-800 font-medium text-sm">
+                    {t('modelprofile.basicInfo.coverPhoto', {defaultValue: 'صورة الغلاف'})}
+                  </Label>
+                  <div className="w-full relative h-24 rounded-lg overflow-hidden bg-gray-100 group border border-gray-200/50">
                     {profile.store_banner_url ? (
-                        <Image src={profile.store_banner_url} alt="Cover" fill className="object-cover" />
+                      <Image src={profile.store_banner_url} alt="Cover" fill className="object-cover" unoptimized />
                     ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs">
-                            {t('modelprofile.basicInfo.coverPhoto', {defaultValue: 'اضف صورة غلاف'})}
-                        </div>
+                      <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-[10px]">
+                        {t('modelprofile.basicInfo.coverPhoto', {defaultValue: 'أضف صورة غلاف'})}
+                      </div>
                     )}
                     <label 
-                        htmlFor="cover-upload" 
-                        className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      htmlFor="cover-upload" 
+                      className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     >
-                        <Camera className="text-white w-6 h-6" />
-                        <input
-                            id="cover-upload"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handleImageUpload(e, 'cover')}
-                            disabled={isUploading === 'cover'}
-                        />
+                      <Camera className="text-white w-4 h-4" />
+                      <input
+                        id="cover-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, 'cover')}
+                        disabled={isUploading === 'cover'}
+                      />
                     </label>
                     {isUploading === 'cover' && (
-                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                            <div className="w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
-                        </div>
+                      <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
                     )}
+                  </div>
                 </div>
 
-              <Label className="text-rose-800 font-medium text-lg">
-                {t('modelprofile.basicInfo.profilePicture')}
-              </Label>
-              <div className="relative group">
-                <Avatar className="w-32 h-32 border-4 border-white shadow-2xl transition-all duration-300 group-hover:scale-105">
-                  <AvatarImage src={profile.profile_picture_url || ''} />
-                  <AvatarFallback className="text-4xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold">
-                    {profile.name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <label
-                  htmlFor="profile-pic-upload"
-                  className="absolute -bottom-2 -right-2 bg-white p-3 rounded-full shadow-lg cursor-pointer hover:bg-rose-50 transition-all duration-300 hover:scale-110 border border-rose-200"
-                >
-                  <Camera className="w-5 h-5 text-rose-600" />
-                  <input
-                    id="profile-pic-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageUpload(e, 'profile')}
-                    disabled={isUploading === 'profile'}
-                  />
-                </label>
+                <div className="space-y-2">
+                  <Label className="text-gray-800 font-medium text-sm">
+                    {t('modelprofile.basicInfo.profilePicture')}
+                  </Label>
+                  <div className="relative group w-24 h-24 mx-auto">
+                    <Avatar className="w-full h-full border-2 border-white shadow-sm">
+                      <AvatarImage src={profile.profile_picture_url || ''} />
+                      <AvatarFallback className="text-lg bg-gradient-to-r from-rose-500 to-purple-600 text-white font-bold">
+                        {profile.name?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <label
+                      htmlFor="profile-pic-upload"
+                      className="absolute -bottom-1 -right-1 bg-white p-1.5 rounded-full shadow cursor-pointer hover:bg-rose-50 transition-colors border border-gray-200"
+                    >
+                      <Camera className="w-3 h-3 text-rose-600" />
+                      <input
+                        id="profile-pic-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageUpload(e, 'profile')}
+                        disabled={isUploading === 'profile'}
+                      />
+                    </label>
+                  </div>
+                  <p className="text-[10px] text-gray-600 text-center mt-1">
+                    {t('modelprofile.basicInfo.profilePictureTip')}
+                  </p>
+                </div>
               </div>
-              <p className="text-rose-600 text-sm text-center">{t('modelprofile.basicInfo.profilePictureTip')}</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Portfolio */}
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <div className="p-2 bg-white/20 rounded-xl">
-                <ImageIcon className="h-6 w-6" />
-              </div>
+        <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ImageIcon className="h-4 w-4" />
               {t('modelprofile.portfolio.title')}
             </CardTitle>
-            <CardDescription className="text-pink-100">
+            <CardDescription className="text-purple-100 text-xs mt-0.5">
               {t('modelprofile.portfolio.description')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-8">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <CardContent className="p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {(profile.portfolio || []).map((url, index) => (
                 <div key={url} className="relative group aspect-square">
                   <Image
                     src={url}
                     alt={`Portfolio item ${index + 1}`}
                     fill
-                    className="object-cover rounded-2xl border-2 border-white shadow-lg transition-all duration-300 group-hover:scale-105"
+                    className="object-cover rounded-lg border border-white shadow"
                     unoptimized
                   />
                   <button
                     type="button"
                     onClick={() => removePortfolioImage(url)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-600 shadow-lg transform hover:scale-110"
+                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow"
                     aria-label={t('modelprofile.portfolio.removeImage')}
                   >
-                    <X size={14} />
+                    <X size={12} />
                   </button>
                 </div>
               ))}
               {(profile.portfolio?.length || 0) < 10 && (
                 <label
-                  className={`flex flex-col items-center justify-center aspect-square rounded-2xl cursor-pointer transition-all duration-300 border-2 border-dashed ${
+                  className={`flex flex-col items-center justify-center aspect-square rounded-lg cursor-pointer transition-colors border-2 border-dashed ${
                     isUploading === 'portfolio'
-                      ? 'bg-blue-50 border-blue-300 shadow-inner'
-                      : 'bg-rose-50 border-rose-300 hover:bg-rose-100 hover:border-rose-400 hover:shadow-lg'
+                      ? 'bg-blue-50 border-blue-300'
+                      : 'bg-rose-50 border-rose-200 hover:bg-rose-100 hover:border-rose-300'
                   }`}
                 >
                   {isUploading === 'portfolio' ? (
                     <div className="text-center">
-                      <div className="w-8 h-8 border-2 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                      <span className="text-sm text-rose-600 font-medium">{t('modelprofile.portfolio.uploading')}</span>
+                      <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin mx-auto mb-1.5"></div>
+                      <span className="text-[10px] text-rose-600">{t('modelprofile.portfolio.uploading')}</span>
                     </div>
                   ) : (
-                    <div className="text-center text-rose-400">
-                      <UploadCloud className="mx-auto h-10 w-10 mb-3" />
-                      <p className="font-medium text-rose-500">{t('modelprofile.portfolio.addImage')}</p>
-                      <p className="text-xs mt-1 text-rose-400">{t('modelprofile.portfolio.uploadPrompt')}</p>
+                    <div className="text-center text-gray-400">
+                      <UploadCloud className="mx-auto h-5 w-5 mb-1" />
+                      <p className="text-[10px] font-medium text-gray-600">{t('modelprofile.portfolio.addImage')}</p>
                     </div>
                   )}
                   <input
@@ -444,63 +448,59 @@ export default function ProfileSettingsPage() {
           </CardContent>
         </Card>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Stats */}
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <BarChart className="h-6 w-6" />
-                </div>
+          <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <BarChart className="h-4 w-4" />
                 {t('modelprofile.stats.title')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              <div className="space-y-3">
-                <Label className="text-rose-800 font-medium flex items-center gap-2">
-                  <Users className="w-4 h-4" />
+            <CardContent className="p-4 space-y-3">
+              <div className="space-y-2">
+                <Label className="text-gray-800 font-medium flex items-center gap-1.5 text-[10px]">
+                  <Users className="w-3 h-3" />
                   {t('modelprofile.stats.followers')}
                 </Label>
                 <Input
                   value={profile.stats?.followers || ''}
                   onChange={(e) => handleJsonChange('stats', 'followers', e.target.value)}
                   placeholder={t('modelprofile.stats.followersPlaceholder')}
-                  className="bg-white border-rose-200 focus:border-rose-400 rounded-2xl px-4 py-3 transition-all duration-300"
+                  className="h-9 text-sm border border-gray-200 focus:border-purple-500 rounded-lg"
                 />
               </div>
-              <div className="space-y-3">
-                <Label className="text-rose-800 font-medium flex items-center gap-2">
-                  <Zap className="w-4 h-4" />
+              <div className="space-y-2">
+                <Label className="text-gray-800 font-medium flex items-center gap-1.5 text-[10px]">
+                  <Zap className="w-3 h-3" />
                   {t('modelprofile.stats.engagement')}
                 </Label>
                 <Input
                   value={profile.stats?.engagement || ''}
                   onChange={(e) => handleJsonChange('stats', 'engagement', e.target.value)}
                   placeholder={t('modelprofile.stats.engagementPlaceholder')}
-                  className="bg-white border-rose-200 focus:border-rose-400 rounded-2xl px-4 py-3 transition-all duration-300"
+                  className="h-9 text-sm border border-gray-200 focus:border-purple-500 rounded-lg"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Social Links */}
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <Link2 className="h-6 w-6" />
-                </div>
+          <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Link2 className="h-4 w-4" />
                 {t('modelprofile.social.title')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-4 space-y-3">
               {socialPlatforms.map((platform) => (
-                <div key={platform.id} className="space-y-3">
-                  <Label htmlFor={platform.id} className="text-rose-800 font-medium">
+                <div key={platform.id} className="space-y-2">
+                  <Label htmlFor={platform.id} className="text-gray-800 font-medium text-[10px]">
                     {platform.label}
                   </Label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-3 top-0 bottom-0 flex items-center pointer-events-none">
                       {platform.icon}
                     </div>
                     <Input
@@ -508,7 +508,7 @@ export default function ProfileSettingsPage() {
                       value={profile.social_links?.[platform.id] || ''}
                       onChange={(e) => handleJsonChange('social_links', platform.id, e.target.value)}
                       placeholder={platform.placeholder}
-                      className="pl-12 bg-white border-rose-200 focus:border-rose-400 rounded-2xl transition-all duration-300"
+                      className="pl-10 h-9 text-sm border border-gray-200 focus:border-purple-500 rounded-lg"
                     />
                   </div>
                 </div>
@@ -518,21 +518,20 @@ export default function ProfileSettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center pt-4">
           <Button
             type="submit"
-            size="lg"
             disabled={isSaving || !!isUploading}
-            className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-12 py-6 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none min-w-[200px]"
+            className="bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white h-10 px-6 rounded-lg text-sm font-medium"
           >
             {isSaving ? (
               <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></div>
                 {t('modelprofile.actions.saving')}
               </>
             ) : (
               <>
-                <Sparkles className="w-5 h-5 mr-2" />
+                <Sparkles className="w-3 h-3 mr-1.5" />
                 {t('modelprofile.actions.saveChanges')}
               </>
             )}

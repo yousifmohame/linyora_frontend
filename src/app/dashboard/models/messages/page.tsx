@@ -55,24 +55,21 @@ function MessagesPage() {
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [showConversations, setShowConversations] = useState(false); // Start hidden on mobile
+  const [showConversations, setShowConversations] = useState(false);
 
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // ✅ NEW: Ref for the scrollable messages container
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ✅ FIXED: Scroll only the messages container
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   };
 
-  // Trigger scroll when messages change
   useEffect(scrollToBottom, [messages]);
 
   const selectConversation = useCallback((convo: Conversation) => {
@@ -203,16 +200,24 @@ function MessagesPage() {
   const isRTL = i18n.language === 'ar';
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    // ✅ Unified background
+    <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 flex flex-col p-3 sm:p-4 overflow-hidden">
       <ModelNav />
 
-      <div className="flex-shrink-0 px-4 py-3 sm:p-4 md:p-6">
-        <h1 className="text-2xl sm:text-3xl font-bold">{t('MessagesPage.title')}</h1>
+      <div className="flex-shrink-0 mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent">
+          {t('MessagesPage.title')}
+        </h1>
 
         {activeConversation && (
           <div className="lg:hidden mt-3">
-            <Button variant="outline" size="sm" onClick={toggleConversations}>
-              <Menu className="w-4 h-4 mr-2" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleConversations}
+              className="border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg text-xs h-8"
+            >
+              <Menu className="w-3.5 h-3.5 mr-1.5" />
               {t('MessagesPage.conversations')}
             </Button>
           </div>
@@ -226,27 +231,32 @@ function MessagesPage() {
         />
       </Suspense>
 
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-3 sm:gap-4 p-4">
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-3">
         {/* Conversations Sidebar */}
         <Card
           className={`lg:w-1/3 xl:w-1/4 transition-transform duration-300 transform ${
-            showConversations ? 'absolute z-10 inset-0 lg:static lg:translate-x-0' : 'hidden lg:block'
-          } flex flex-col`}
+            showConversations ? 'absolute z-20 inset-0 bg-white/90 backdrop-blur-sm' : 'hidden lg:block'
+          } bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm flex flex-col`}
         >
-          <div className="p-4 border-b font-semibold flex justify-between items-center">
-            <span>{t('MessagesPage.conversations')}</span>
+          <div className="p-3 border-b border-gray-200/50 font-semibold flex justify-between items-center">
+            <span className="text-sm text-gray-800">{t('MessagesPage.conversations')}</span>
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
-              onClick={() => setShowConversations(false)}
+              className="lg:hidden h-7 w-7 text-gray-600 hover:bg-gray-100"
+              onClick={(e) => {
+                e.stopPropagation(); // 👈 منع انتشار الحدث
+                setShowConversations(false);
+                // للتصحيح فقط — احذفه لاحقًا
+            console.log('showConversations:', showConversations);
+              }}
             >
-              <X className="w-5 h-5" />
+              <X className="w-3.5 h-3.5" />
             </Button>
           </div>
           <div className="flex-1 overflow-y-auto min-h-0 p-2">
             {loadingConversations ? (
-              <p className="p-4 text-sm text-muted-foreground text-center">
+              <p className="p-4 text-xs text-gray-600 text-center">
                 {t('MessagesPage.loadingConversations')}
               </p>
             ) : conversations.length > 0 ? (
@@ -254,29 +264,29 @@ function MessagesPage() {
                 <div
                   key={convo.id}
                   onClick={() => selectConversation(convo)}
-                  className={`flex items-center p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
+                  className={`flex items-center p-2.5 rounded-xl cursor-pointer transition-colors mb-2 ${
                     activeConversation?.id === convo.id
-                      ? 'bg-primary/10'
-                      : 'hover:bg-muted'
+                      ? 'bg-gradient-to-r from-rose-500/10 to-purple-500/10 border border-rose-200'
+                      : 'hover:bg-gray-100'
                   }`}
                 >
-                  <Avatar className="w-10 h-10 relative flex-shrink-0">
+                  <Avatar className="w-8 h-8 relative flex-shrink-0">
                     <AvatarImage src={convo.participantAvatar || undefined} />
-                    <AvatarFallback>{convo.participantName.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="text-xs">{convo.participantName.charAt(0)}</AvatarFallback>
                     {convo.is_online && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                      <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border-2 border-white" />
                     )}
                   </Avatar>
-                  <div className="mr-3 ml-3 overflow-hidden flex-1">
-                    <p className="font-medium text-sm truncate">{convo.participantName}</p>
+                  <div className="mx-2.5 overflow-hidden flex-1">
+                    <p className="font-medium text-gray-900 text-sm truncate">{convo.participantName}</p>
                     {convo.lastMessage && (
-                      <p className="text-xs text-muted-foreground truncate">{convo.lastMessage}</p>
+                      <p className="text-xs text-gray-600 truncate">{convo.lastMessage}</p>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <p className="p-4 text-center text-sm text-muted-foreground">
+              <p className="p-4 text-center text-xs text-gray-600">
                 {t('MessagesPage.noConversations')}
               </p>
             )}
@@ -284,58 +294,52 @@ function MessagesPage() {
         </Card>
 
         {/* Chat Area */}
-        <Card className="flex-1 flex flex-col min-h-0">
+        <Card className="flex-1 flex flex-col min-h-0 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
           {activeConversation ? (
             <>
-              {/* Chat Header */}
-              <div className="p-4 border-b flex items-center justify-between">
-                <div className="flex items-center">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={activeConversation.participantAvatar || undefined} />
-                    <AvatarFallback>{activeConversation.participantName.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="mr-3 ml-3">
-                    <p className="font-semibold">{activeConversation.participantName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {activeConversation.is_online
-                        ? t('MessagesPage.online')
-                        : `${t('MessagesPage.lastSeen.label')}: ${formatLastSeen(
-                            activeConversation.last_seen
-                          )}`}
-                    </p>
-                  </div>
+              <div className="p-3 border-b border-gray-200/50 flex items-center">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={activeConversation.participantAvatar || undefined} />
+                  <AvatarFallback className="text-xs">{activeConversation.participantName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="mx-2.5">
+                  <p className="font-bold text-gray-900 text-sm">{activeConversation.participantName}</p>
+                  <p className="text-[10px] text-gray-600">
+                    {activeConversation.is_online
+                      ? t('MessagesPage.online')
+                      : `${t('MessagesPage.lastSeen.label')}: ${formatLastSeen(activeConversation.last_seen)}`}
+                  </p>
                 </div>
               </div>
 
-              {/* ✅ Messages Area with ref */}
               <div
-                ref={messagesContainerRef} // ←←← THIS IS THE KEY CHANGE
-                className="flex-1 p-4 overflow-y-auto bg-muted/30"
+                ref={messagesContainerRef}
+                className="flex-1 p-3 overflow-y-auto bg-gray-50/30 rounded-b-2xl"
               >
                 {loadingMessages ? (
                   <div className="flex justify-center items-center h-full">
-                    <p className="text-muted-foreground">{t('MessagesPage.loadingMessages')}</p>
+                    <p className="text-gray-600 text-sm">{t('MessagesPage.loadingMessages')}</p>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                    <MessageSquare className="w-12 h-12 mb-2 opacity-50" />
-                    <p className="text-sm">{t('MessagesPage.noMessages')}</p>
+                  <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                    <MessageSquare className="w-8 h-8 mb-2 opacity-50" />
+                    <p className="text-xs">{t('MessagesPage.noMessages')}</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
                         className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-[80%] px-4 py-2 rounded-2xl ${
+                          className={`max-w-[80%] px-3 py-1.5 rounded-xl ${
                             msg.sender_id === user?.id
-                              ? 'bg-primary text-primary-foreground rounded-br-none'
-                              : 'bg-background border rounded-bl-none'
+                              ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-br-md'
+                              : 'bg-white border border-gray-200 rounded-bl-md'
                           }`}
                         >
-                          {msg.body && <p className="text-sm break-words">{msg.body}</p>}
+                          {msg.body && <p className="text-xs break-words">{msg.body}</p>}
                           {msg.attachment_url &&
                             (msg.attachment_type === 'image' ? (
                               <Link
@@ -346,7 +350,7 @@ function MessagesPage() {
                                 <img
                                   src={msg.attachment_url}
                                   alt={t('MessagesPage.attachmentImageAlt')}
-                                  className="rounded mt-2 max-w-[250px] max-h-48 object-contain"
+                                  className="rounded mt-1.5 max-w-[200px] max-h-40 object-contain"
                                 />
                               </Link>
                             ) : (
@@ -354,38 +358,36 @@ function MessagesPage() {
                                 href={msg.attachment_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 mt-2 underline"
+                                className="flex items-center gap-1.5 mt-1.5 underline"
                               >
-                                <FileText className="w-4 h-4" />
-                                <span className="text-sm">
+                                <FileText className="w-3 h-3" />
+                                <span className="text-xs">
                                   {t('MessagesPage.attachmentFile')}
                                 </span>
                               </Link>
                             ))}
                         </div>
                         {msg.sender_id === user?.id && (
-                          <div className="ml-2 flex items-end">
+                          <div className="ml-2 flex items-end mt-1">
                             {msg.is_read ? (
-                              <CheckCheck className="w-4 h-4 text-blue-500" />
+                              <CheckCheck className="w-3 h-3 text-blue-500" />
                             ) : (
-                              <Check className="w-4 h-4 text-muted-foreground" />
+                              <Check className="w-3 h-3 text-gray-400" />
                             )}
                           </div>
                         )}
                       </div>
                     ))}
-                    {/* 🗑 Removed: <div ref={messagesEndRef} /> — no longer needed */}
                   </div>
                 )}
               </div>
 
-              {/* Message Input */}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSendMessage(newMessage);
                 }}
-                className="p-3 border-t bg-background"
+                className="p-3 border-t border-gray-200/50 bg-white rounded-b-2xl"
               >
                 <div className="flex items-center gap-2">
                   <Button
@@ -394,8 +396,9 @@ function MessagesPage() {
                     size="icon"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
+                    className="h-8 w-8 text-gray-600 hover:bg-gray-100 rounded"
                   >
-                    <Paperclip className="w-5 h-5" />
+                    <Paperclip className="w-3.5 h-3.5" />
                   </Button>
                   <input
                     ref={fileInputRef}
@@ -408,24 +411,24 @@ function MessagesPage() {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder={t('MessagesPage.messagePlaceholder')}
-                    className="flex-1 rounded-full"
+                    className="flex-1 h-8 text-xs rounded-full border border-gray-200 focus:border-purple-500"
                   />
                   <Button
                     type="submit"
                     size="icon"
-                    className="h-10 w-10 rounded-full bg-primary"
+                    className="h-8 w-8 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 flex-shrink-0"
                     disabled={!newMessage.trim() && !isUploading}
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
-              <MessageSquare className="w-16 h-16 opacity-40 mb-4" />
-              <p className="font-medium mb-1">{t('MessagesPage.selectConversation')}</p>
-              <p className="text-sm">{t('MessagesPage.selectConversationHint')}</p>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-gray-500">
+              <MessageSquare className="w-10 h-10 opacity-40 mb-2" />
+              <p className="font-medium text-sm mb-1">{t('MessagesPage.selectConversation')}</p>
+              <p className="text-xs">{t('MessagesPage.selectConversationHint')}</p>
             </div>
           )}
         </Card>

@@ -8,7 +8,6 @@ import {
   Calendar, 
   Plus, 
   Trash2, 
-  Save, 
   Clock, 
   CheckCircle2,
   X,
@@ -37,13 +36,15 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
+import AdminNav from '@/components/dashboards/AdminNav';
+import { useTranslation } from 'react-i18next';
 
 // --- Types ---
 interface Variant {
   id: number;
   color: string;
   price: number;
-  stock_quantity: number; // المخزون المتوفر
+  stock_quantity: number;
   images: string[];
 }
 
@@ -66,8 +67,8 @@ interface SelectedItem {
   image: string;
   originalPrice: number;
   discount: number;
-  totalQty: number; // الكمية التي يحددها الأدمن للعرض
-  maxStock: number; // المخزون الأصلي للمرجع
+  totalQty: number;
+  maxStock: number;
 }
 
 interface FlashSale {
@@ -80,6 +81,8 @@ interface FlashSale {
 }
 
 export default function AdminFlashSalesPage() {
+  const { t, i18n } = useTranslation();
+
   // --- State ---
   const [sales, setSales] = useState<FlashSale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,36 +115,42 @@ export default function AdminFlashSalesPage() {
 
   useEffect(() => {
     fetchSales();
-  }, []);
+  }, [i18n.language]);
 
-  // --- Fetch All Products ---
+  // --- Fetch Available Products (Updated) ---
+  // --- Fetch Available Products ---
   useEffect(() => {
+    // الجلب يتم فقط عند فتح نافذة "إنشاء حملة جديدة"
     if (isCreateOpen) {
-        const fetchProducts = async () => {
-            setLoadingProducts(true);
-            try {
-                const res = await api.get('/products?limit=100&include_variants=true'); 
-                const productsData = Array.isArray(res.data) ? res.data : (res.data.products || []);
-                setAllProducts(productsData);
-            } catch (error) {
-                console.error("Failed to load products", error);
-                toast.error("Could not load products list");
-            } finally {
-                setLoadingProducts(false);
-            }
-        };
-        fetchProducts();
-    }
-  }, [isCreateOpen]);
+      
+      const fetchAvailableProducts = async () => {
+        setLoadingProducts(true);
+        try {
+          // ✅ طلب مباشر بدون بارامترات
+          const res = await api.get('/admin/flash-sale/products-available');
+          
+          const productsData = Array.isArray(res.data) ? res.data : [];
+          setAllProducts(productsData);
+          
+        } catch (error) {
+          console.error("Failed to load products", error);
+          toast.error(t('AdminFlashSales.messages.load_products_error'));
+        } finally {
+          setLoadingProducts(false);
+        }
+      };
 
+      fetchAvailableProducts();
+    }
+  }, [isCreateOpen, t]); // تمت إزالة الاعتماد على التواريخ
   // --- Handlers ---
 
   const handleAddVariant = (product: Product, variant: Variant) => {
     const uid = `${product.id}-${variant.id}`;
     
     if (selectedItems.find(i => i.uid === uid)) {
-        toast.info("This item is already selected.");
-        return;
+      toast.info(t('AdminFlashSales.messages.item_already_selected'));
+      return;
     }
 
     setSelectedItems(prev => [
@@ -155,9 +164,9 @@ export default function AdminFlashSalesPage() {
         variantColor: variant.color || 'Default',
         image: variant.images?.[0] || product.image_url || '/placeholder.png',
         originalPrice: Number(variant.price),
-        discount: 20, // Default discount %
-        totalQty: 5,  // Default quantity for flash sale
-        maxStock: variant.stock_quantity // Store max stock for validation
+        discount: 20, 
+        totalQty: 5,  
+        maxStock: variant.stock_quantity 
       }
     ]);
   };
@@ -169,13 +178,12 @@ export default function AdminFlashSalesPage() {
   const updateItemSetting = (uid: string, field: 'discount' | 'totalQty', value: string) => {
     const numValue = parseFloat(value);
     
-    // Check stock limit if updating quantity
     if (field === 'totalQty') {
-       const item = selectedItems.find(i => i.uid === uid);
-       if (item && numValue > item.maxStock) {
-           toast.warning(`Cannot exceed available stock (${item.maxStock})`);
-           return;
-       }
+      const item = selectedItems.find(i => i.uid === uid);
+      if (item && numValue > item.maxStock) {
+        toast.warning(t('AdminFlashSales.messages.stock_limit_warning', { stock: item.maxStock }));
+        return;
+      }
     }
 
     setSelectedItems(prev => prev.map(item => 
@@ -189,15 +197,15 @@ export default function AdminFlashSalesPage() {
 
   const handleSubmit = async () => {
     if (!title || !startTime || !endTime) {
-      toast.error("Please fill in the Campaign Title and Dates.");
+      toast.error(t('AdminFlashSales.messages.fill_fields_error'));
       return;
     }
     if (selectedItems.length === 0) {
-      toast.error("Please select at least one product.");
+      toast.error(t('AdminFlashSales.messages.select_product_error'));
       return;
     }
     if (new Date(startTime) >= new Date(endTime)) {
-      toast.error("End time must be after start time.");
+      toast.error(t('AdminFlashSales.messages.date_error'));
       return;
     }
 
@@ -212,28 +220,28 @@ export default function AdminFlashSalesPage() {
 
       await api.post('/admin/flash-sale', payload);
       
-      toast.success("Flash Sale Created & Merchants Invited!");
+      toast.success(t('AdminFlashSales.messages.success_create'));
       setIsCreateOpen(false);
       resetForm();
       fetchSales();
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create flash sale.");
+      toast.error(t('AdminFlashSales.messages.error_create'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteSale = async (id: number) => {
-    if(!confirm("Are you sure?")) return;
+    if(!confirm(t('AdminFlashSales.messages.confirm_delete'))) return;
     try {
-        await api.delete(`/admin/flash-sale/${id}`);
-        setSales(prev => prev.filter(s => s.id !== id));
-        toast.success("Campaign deleted");
+      await api.delete(`/admin/flash-sale/${id}`);
+      setSales(prev => prev.filter(s => s.id !== id));
+      toast.success(t('AdminFlashSales.messages.success_delete'));
     } catch(err) {
-        toast.error("Failed to delete campaign");
+      toast.error(t('AdminFlashSales.messages.error_delete'));
     }
-  }
+  };
 
   const resetForm = () => {
     setTitle('');
@@ -248,269 +256,279 @@ export default function AdminFlashSalesPage() {
     const startDate = new Date(start);
     const endDate = new Date(end);
 
-    if (now > endDate) return <Badge variant="secondary" className="bg-gray-200 text-gray-600">Expired</Badge>;
-    if (now >= startDate && now <= endDate) return <Badge className="bg-rose-500 animate-pulse">Active</Badge>;
-    return <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">Scheduled</Badge>;
+    if (now > endDate) return <Badge variant="secondary" className="bg-gray-100 text-gray-600">{t('AdminFlashSales.status_expired')}</Badge>;
+    if (now >= startDate && now <= endDate) return <Badge className="bg-amber-100 text-amber-800 border border-amber-200">{t('AdminFlashSales.status_active')}</Badge>;
+    return <Badge variant="outline" className="text-blue-700 border-blue-300">{t('AdminFlashSales.status_scheduled')}</Badge>;
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 space-y-8">
+      <AdminNav />
+      
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Zap className="w-8 h-8 text-amber-500 fill-amber-500" />
-            Flash Campaigns
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Zap className="w-7 h-7 text-amber-600" />
+            {t('AdminFlashSales.title')}
           </h1>
-          <p className="text-gray-500 mt-1">Create campaigns, select products, and invite merchants.</p>
+          <p className="text-gray-600 mt-1 text-sm md:text-base">{t('AdminFlashSales.subtitle')}</p>
         </div>
         
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gray-900 text-white hover:bg-gray-800 shadow-lg">
-              <Plus className="w-4 h-4 mr-2" /> New Campaign
+            <Button variant="default" className="bg-amber-600 hover:bg-amber-700 text-white shadow-md">
+              <Plus className="w-4 h-4 mr-2" /> {t('AdminFlashSales.new_campaign')}
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-7xl lg:max-w-7xl max-h-[90vh] overflow-y-auto flex flex-col">
+          <DialogContent className="max-w-6xl lg:max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
             <DialogHeader>
-              <DialogTitle>Create New Campaign</DialogTitle>
+              <DialogTitle className="text-xl font-semibold text-gray-900">{t('AdminFlashSales.create_new_campaign')}</DialogTitle>
             </DialogHeader>
             
-            <div className="flex-1 space-y-6 py-4">
-              {/* 1. Basic Details */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-xl border">
+            <div className="flex-1 overflow-y-auto px-1 py-4 space-y-6">
+              {/* Basic Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-white rounded-lg border border-gray-200">
                 <div className="space-y-2">
-                  <Label>Campaign Title</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t('AdminFlashSales.campaign_title')}</Label>
                   <Input 
-                    placeholder="e.g. Super Friday Sale" 
+                    placeholder={t('AdminFlashSales.placeholder_title')}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    className="h-10"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Start Date</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t('AdminFlashSales.start_date')}</Label>
                   <Input 
                     type="datetime-local" 
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
+                    className="h-10"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>End Date</Label>
+                  <Label className="text-sm font-medium text-gray-700">{t('AdminFlashSales.end_date')}</Label>
                   <Input 
                     type="datetime-local" 
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
+                    className="h-10"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
-                {/* 2. Available Products List (Left) */}
-                <div className="border rounded-xl flex flex-col overflow-hidden">
-                    <div className="bg-gray-100 p-3 font-semibold text-sm border-b">
-                        Available Products ({allProducts.length})
-                    </div>
-                    <ScrollArea className="flex-1 p-0">
-                        {loadingProducts ? (
-                            <div className="p-8 text-center text-gray-500">Loading products...</div>
-                        ) : allProducts.length === 0 ? (
-                            <div className="p-8 text-center text-gray-500">No products found.</div>
-                        ) : (
-                            <div className="divide-y">
-                                {allProducts.map(product => (
-                                    <div key={product.id} className="p-3 hover:bg-gray-50">
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div>
-                                                <p className="font-medium text-sm text-gray-900">{product.name}</p>
-                                                <p className="text-xs text-gray-500 flex items-center gap-1">
-                                                    <Store className="w-3 h-3" /> {product.merchantName}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {/* Variants Grid */}
-                                        <div className="flex flex-wrap gap-2">
-                                            {product.variants?.map(variant => {
-                                                const isAdded = selectedItems.some(i => i.uid === `${product.id}-${variant.id}`);
-                                                return (
-                                                    <button
-                                                        key={variant.id}
-                                                        onClick={() => handleAddVariant(product, variant)}
-                                                        disabled={isAdded}
-                                                        className={`flex items-center gap-2 text-xs border rounded-lg px-2 py-1.5 transition-all ${
-                                                            isAdded 
-                                                            ? 'bg-green-50 border-green-200 text-green-700 opacity-70 cursor-not-allowed' 
-                                                            : 'bg-white hover:bg-rose-50 hover:border-rose-200'
-                                                        }`}
-                                                    >
-                                                        {isAdded ? <CheckCircle2 className="w-3 h-3"/> : <Plus className="w-3 h-3"/>}
-                                                        <span className="font-medium">{variant.color || 'Std'}</span>
-                                                        <span className="text-gray-500 border-l pl-2 ml-1">
-                                                            {variant.price} SAR | <span className="text-blue-600 font-bold">{variant.stock_quantity} in stock</span>
-                                                        </span>
-                                                    </button>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
+                {/* Available Products */}
+                <div className="border rounded-lg overflow-hidden flex flex-col">
+                  <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200">
+                    <h3 className="text-sm font-semibold text-gray-800">
+                      {t('AdminFlashSales.available_products')} <span className="text-gray-500">({allProducts.length})</span>
+                    </h3>
+                  </div>
+                  <ScrollArea className="flex-1 p-0">
+                    {loadingProducts ? (
+                      <div className="p-6 text-center text-gray-500">{t('AdminFlashSales.loading_products')}</div>
+                    ) : allProducts.length === 0 ? (
+                      <div className="p-6 text-center text-gray-500">{t('AdminFlashSales.no_products')}</div>
+                    ) : (
+                      <div className="divide-y divide-gray-100">
+                        {allProducts.map(product => (
+                          <div key={product.id} className="p-3 hover:bg-gray-50 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                              <p className="font-medium text-sm text-gray-900">{product.name}</p>
+                              <span className="text-xs text-gray-500 flex items-center gap-1">
+                                <Store className="w-3 h-3" /> {product.merchantName}
+                              </span>
                             </div>
-                        )}
-                    </ScrollArea>
+                            <div className="flex flex-wrap gap-2">
+                              {product.variants?.map(variant => {
+                                const isAdded = selectedItems.some(i => i.uid === `${product.id}-${variant.id}`);
+                                return (
+                                  <button
+                                    key={variant.id}
+                                    onClick={() => handleAddVariant(product, variant)}
+                                    disabled={isAdded}
+                                    className={`text-xs px-2 py-1 rounded-md border font-medium transition-colors flex items-center gap-1 ${
+                                      isAdded 
+                                        ? 'bg-green-100 text-green-800 border-green-300 cursor-not-allowed' 
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-amber-50 hover:border-amber-300'
+                                    }`}
+                                  >
+                                    {isAdded ? <CheckCircle2 className="w-3 h-3 text-green-600" /> : <Plus className="w-3 h-3" />}
+                                    <span>{variant.color || 'Std'}</span>
+                                    <span className="text-gray-500 ml-2">({variant.price} SAR | {variant.stock_quantity} {t('AdminFlashSales.in_stock')})</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
                 </div>
 
-                {/* 3. Selected Items Configuration (Right) - ✅ الجزء المعدل للكميات */}
-                <div className="border rounded-xl flex flex-col overflow-hidden">
-                    <div className="bg-gray-100 p-3 font-semibold text-sm border-b flex justify-between items-center">
-                        <span>Selected Items ({selectedItems.length})</span>
-                        <span className="text-xs text-rose-600">Configure Discounts & Quantities</span>
-                    </div>
-                    <ScrollArea className="flex-1">
-                        {selectedItems.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-gray-400 p-4 text-center">
-                                <Plus className="w-8 h-8 mb-2 opacity-50" />
-                                <p>Select variants from the left list.</p>
-                            </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-white sticky top-0 z-10 shadow-sm">
-                                        <TableHead className="w-[150px]">Item</TableHead>
-                                        <TableHead>Price</TableHead>
-                                        <TableHead>Discount %</TableHead>
-                                        <TableHead>Flash $</TableHead>
-                                        <TableHead>Sale Qty</TableHead>
-                                        <TableHead></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {selectedItems.map((item) => (
-                                        <TableRow key={item.uid}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 relative rounded bg-gray-100 flex-shrink-0">
-                                                        <Image src={item.image} alt="" fill className="object-cover rounded"/>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-medium truncate w-[80px]">{item.name}</span>
-                                                        <span className="text-[10px] text-gray-500">{item.variantColor}</span>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-xs">{item.originalPrice}</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center">
-                                                    <Input 
-                                                        type="number" 
-                                                        className="h-7 w-12 px-1 text-center text-xs" 
-                                                        value={item.discount}
-                                                        onChange={e => updateItemSetting(item.uid, 'discount', e.target.value)}
-                                                    />
-                                                    <span className="text-xs ml-1">%</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-xs font-bold text-rose-600">
-                                                {calculateFlashPrice(item.originalPrice, item.discount)}
-                                            </TableCell>
-                                            {/* ✅ هنا خانة الكمية أصبحت أوضح */}
-                                            <TableCell>
-                                                <div className="flex flex-col gap-1">
-                                                    <Input 
-                                                        type="number" 
-                                                        className="h-7 w-16 px-1 text-center text-xs border-blue-200 focus:border-blue-500" 
-                                                        value={item.totalQty}
-                                                        onChange={e => updateItemSetting(item.uid, 'totalQty', e.target.value)}
-                                                    />
-                                                    <span className="text-[10px] text-gray-400">Max: {item.maxStock}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button size="icon" variant="ghost" className="h-6 w-6 text-red-500" onClick={() => handleRemoveItem(item.uid)}>
-                                                    <X className="w-3 h-3" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        )}
-                    </ScrollArea>
+                {/* Selected Items */}
+                <div className="border rounded-lg overflow-hidden flex flex-col">
+                  <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200 flex justify-between items-center">
+                    <h3 className="text-sm font-semibold text-gray-800">
+                      {t('AdminFlashSales.selected_items')} <span className="text-gray-500">({selectedItems.length})</span>
+                    </h3>
+                    <span className="text-xs text-amber-600 font-medium">{t('AdminFlashSales.configure_discounts')}</span>
+                  </div>
+                  <ScrollArea className="flex-1">
+                    {selectedItems.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-gray-400 p-6 text-center">
+                        <Plus className="w-8 h-8 mb-2 opacity-50" />
+                        <p className="text-sm">{t('AdminFlashSales.select_variants_instruction')}</p>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gray-50 sticky top-0 z-10">
+                            <TableHead className="w-[120px] text-xs font-semibold text-gray-700">{t('AdminFlashSales.item')}</TableHead>
+                            <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.price')}</TableHead>
+                            <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.discount_percent')}</TableHead>
+                            <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.flash_price')}</TableHead>
+                            <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.sale_qty')}</TableHead>
+                            <TableHead className="w-8"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedItems.map((item) => (
+                            <TableRow key={item.uid} className="hover:bg-gray-50">
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 relative rounded bg-gray-200 flex-shrink-0 overflow-hidden">
+                                    <Image src={item.image} alt="" fill className="object-cover" />
+                                  </div>
+                                  <div className="flex flex-col w-[90px]">
+                                    <span className="text-xs font-medium text-gray-900 truncate">{item.name}</span>
+                                    <span className="text-[10px] text-gray-500">{item.variantColor}</span>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-xs text-gray-700">{item.originalPrice.toFixed(2)}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  <Input 
+                                    type="number" 
+                                    min="0"
+                                    max="100"
+                                    className="h-7 w-14 px-1 text-center text-xs border-gray-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-200" 
+                                    value={item.discount}
+                                    onChange={e => updateItemSetting(item.uid, 'discount', e.target.value)}
+                                  />
+                                  <span className="text-xs ml-1 text-gray-600">%</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-xs font-bold text-amber-700">
+                                {calculateFlashPrice(item.originalPrice, item.discount)}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col gap-1">
+                                  <Input 
+                                    type="number" 
+                                    min="1"
+                                    max={item.maxStock}
+                                    className="h-7 w-16 px-1 text-center text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-200" 
+                                    value={item.totalQty}
+                                    onChange={e => updateItemSetting(item.uid, 'totalQty', e.target.value)}
+                                  />
+                                  <span className="text-[10px] text-gray-500">{t('AdminFlashSales.max')}: {item.maxStock}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:bg-red-50" onClick={() => handleRemoveItem(item.uid)}>
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </ScrollArea>
                 </div>
               </div>
             </div>
 
-            <DialogFooter className="gap-2 border-t pt-4">
-                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                <Button 
-                    onClick={handleSubmit} 
-                    disabled={isSubmitting || selectedItems.length === 0}
-                    className="bg-rose-600 hover:bg-rose-700 text-white min-w-[150px]"
-                >
-                    {isSubmitting ? 'Processing...' : 'Create Campaign'}
-                </Button>
+            <DialogFooter className="gap-3 pt-4 border-t border-gray-200">
+              <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="h-10">
+                {t('AdminFlashSales.cancel')}
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                disabled={isSubmitting || selectedItems.length === 0}
+                className="h-10 bg-amber-600 hover:bg-amber-700 text-white min-w-[120px]"
+              >
+                {isSubmitting ? t('AdminFlashSales.processing') : t('AdminFlashSales.create_action')}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Sales History List */}
-      <Card>
+      {/* Sales History */}
+      <Card className="border-none shadow-sm">
         <CardHeader>
-            <CardTitle>Campaign History</CardTitle>
-            <CardDescription>View status of active and past flash sales.</CardDescription>
+          <CardTitle className="text-xl text-gray-900">{t('AdminFlashSales.campaign_history')}</CardTitle>
+          <CardDescription className="text-gray-600">{t('AdminFlashSales.history_description')}</CardDescription>
         </CardHeader>
         <CardContent>
-            {loading ? (
-                <div className="space-y-4">
-                    {[1,2,3].map(i => <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-xl" />)}
-                </div>
-            ) : (!sales || sales.length === 0) ? (
-                <div className="text-center py-10 text-gray-500">No campaigns created yet.</div>
-            ) : (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Campaign</TableHead>
-                            <TableHead>Timeframe</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Products</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sales.map((sale) => (
-                            <TableRow key={sale.id}>
-                                <TableCell className="font-medium">{sale.title}</TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col text-sm text-gray-600">
-                                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> {new Date(sale.start_time).toLocaleDateString()}</span>
-                                        <span className="flex items-center gap-1 text-xs text-gray-400"><Clock className="w-3 h-3"/> {new Date(sale.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(sale.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    {getStatusBadge(sale.start_time, sale.end_time)}
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-1">
-                                        <span className="font-bold">{sale.product_count || 0}</span>
-                                        <span className="text-xs text-gray-500">variants</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="text-red-500 hover:bg-red-50"
-                                        onClick={() => handleDeleteSale(sale.id)}
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            )}
+          {loading ? (
+            <div className="space-y-4">
+              {[1,2,3].map(i => <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-lg" />)}
+            </div>
+          ) : (!sales || sales.length === 0) ? (
+            <div className="text-center py-10 text-gray-500">{t('AdminFlashSales.no_campaigns')}</div>
+          ) : (
+            <div className="rounded-lg border border-gray-200 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="text-gray-700 font-medium">{t('AdminFlashSales.table_campaign')}</TableHead>
+                    <TableHead className="text-gray-700 font-medium">{t('AdminFlashSales.table_timeframe')}</TableHead>
+                    <TableHead className="text-gray-700 font-medium">{t('AdminFlashSales.table_status')}</TableHead>
+                    <TableHead className="text-gray-700 font-medium">{t('AdminFlashSales.table_products')}</TableHead>
+                    <TableHead className="text-right text-gray-700 font-medium">{t('AdminFlashSales.table_actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sales.map((sale) => (
+                    <TableRow key={sale.id} className="hover:bg-gray-50 transition-colors">
+                      <TableCell className="font-medium text-gray-900">{sale.title}</TableCell>
+                      <TableCell>
+                        <div className="text-sm text-gray-600">
+                          <div className="flex items-center gap-1 text-xs">
+                            <Calendar className="w-3 h-3" /> {new Date(sale.start_time).toLocaleDateString()}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <Clock className="w-3 h-3" /> {new Date(sale.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(sale.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(sale.start_time, sale.end_time)}</TableCell>
+                      <TableCell>
+                        <span className="font-medium text-gray-900">{sale.product_count || 0}</span>
+                        <span className="text-xs text-gray-500 ml-1">{t('AdminFlashSales.variants')}</span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-red-500 hover:bg-red-50 h-8 w-8"
+                          onClick={() => handleDeleteSale(sale.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

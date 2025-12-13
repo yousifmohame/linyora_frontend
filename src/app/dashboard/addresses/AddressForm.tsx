@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,72 +15,49 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
-import { Loader2, MapPin, User, Home, Navigation, Phone, Building, Mailbox, Globe } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Loader2, MapPin, User, Building, Phone, CheckCircle2 } from 'lucide-react';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 
-// Define the shape of an address object
-interface Address {
-  id?: number;
-  full_name: string;
-  address_line_1: string;
-  address_line_2?: string | null;
-  city: string;
-  state_province_region: string;
-  postal_code: string;
-  country: string;
-  phone_number: string;
-}
+// Dynamically import MapPicker (SSR disabled)
+const MapPicker = dynamic(
+  () => import('@/components/ui/MapPicker'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full bg-gray-100 animate-pulse rounded-xl flex items-center justify-center text-gray-400 text-sm">
+        جاري تحميل الخريطة...
+      </div>
+    ),
+  }
+);
 
-// Enhanced validation schema with Arabic messages
 const addressSchema = z.object({
-  full_name: z.string()
-    .min(3, { message: 'الاسم الكامل يجب أن يكون 3 أحرف على الأقل' })
-    .max(100, { message: 'الاسم الكامل يجب أن لا يتجاوز 100 حرف' }),
-  address_line_1: z.string()
-    .min(5, { message: 'عنوان الشارع مطلوب (5 أحرف على الأقل)' })
-    .max(200, { message: 'عنوان الشارع يجب أن لا يتجاوز 200 حرف' }),
+  full_name: z.string().min(3, 'الاسم قصير جداً'),
+  address_line_1: z.string().min(5, 'العنوان مطلوب'),
   address_line_2: z.string().optional().nullable(),
-  city: z.string()
-    .min(2, { message: 'اسم المدينة مطلوب' })
-    .max(50, { message: 'اسم المدينة يجب أن لا يتجاوز 50 حرف' }),
-  state_province_region: z.string()
-    .min(2, { message: 'اسم المنطقة أو المحافظة مطلوب' })
-    .max(50, { message: 'اسم المنطقة يجب أن لا يتجاوز 50 حرف' }),
-  postal_code: z.string()
-    .min(4, { message: 'الرمز البريدي مطلوب (4 أرقام على الأقل)' })
-    .max(10, { message: 'الرمز البريدي يجب أن لا يتجاوز 10 أرقام' })
-    .regex(/^\d+$/, { message: 'الرمز البريدي يجب أن يحتوي على أرقام فقط' }),
-  country: z.string()
-    .min(2, { message: 'اسم الدولة مطلوب' })
-    .max(50, { message: 'اسم الدولة يجب أن لا يتجاوز 50 حرف' }),
-  phone_number: z.string()
-    .min(9, { message: 'رقم الهاتف مطلوب (9 أرقام على الأقل)' })
-    .max(15, { message: 'رقم الهاتف يجب أن لا يتجاوز 15 رقماً' })
-    .regex(/^[\d\s\-\+\(\)]+$/, { message: 'رقم هاتف صحيح مطلوب' }),
+  city: z.string().min(2, 'المدينة مطلوبة'),
+  state_province_region: z.string().min(2, 'المنطقة مطلوبة'),
+  postal_code: z.string().min(4, 'الرمز البريدي غير صحيح'),
+  country: z.string().min(2, 'الدولة مطلوبة'),
+  phone_number: z.string().min(9, 'رقم الهاتف مطلوب'),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 type AddressFormData = z.infer<typeof addressSchema>;
 
-// Define the component's props
 interface AddressFormProps {
-  address?: Address | null;
+  address?: any;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-// Common Saudi cities and regions for better UX
-const saudiCities = ['الرياض', 'جدة', 'مكة', 'المدينة', 'الدمام', 'الخبر', 'الطائف', 'تبوك', 'بريدة', 'حائل'];
-const saudiRegions = ['منطقة الرياض', 'منطقة مكة', 'منطقة المدينة', 'المنطقة الشرقية', 'منطقة عسير', 'منطقة تبوك', 'منطقة الجوف'];
-
 export default function AddressForm({ address, onSuccess, onCancel }: AddressFormProps) {
   const isEditing = !!address;
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
-  // Initialize the form
   const form = useForm<AddressFormData>({
     resolver: zodResolver(addressSchema),
     defaultValues: {
@@ -90,310 +69,251 @@ export default function AddressForm({ address, onSuccess, onCancel }: AddressFor
       postal_code: address?.postal_code || '',
       country: address?.country || 'المملكة العربية السعودية',
       phone_number: address?.phone_number || '',
+      latitude: address?.latitude ?? 24.7136,
+      longitude: address?.longitude ?? 46.6753,
     },
-    mode: 'onChange',
   });
 
-  // Handle form submission
-  const onSubmit = async (data: AddressFormData) => {
+  const handleLocationSelect = async (lat: number, lng: number) => {
+    form.setValue('latitude', lat);
+    form.setValue('longitude', lng);
+    setIsGeocoding(true);
     try {
-      if (isEditing) {
-        await api.put(`/users/addresses/${address.id}`, {
-          ...data,
-          state: data.state_province_region,
-        });
-        toast.success('تم تحديث العنوان بنجاح', {
-          description: 'تم تحديث معلومات العنوان الخاص بك'
-        });
-      } else {
-        await api.post('/users/addresses', {
-          ...data,
-          fullName: data.full_name,
-          addressLine1: data.address_line_1,
-          addressLine2: data.address_line_2,
-          state: data.state_province_region,
-          postalCode: data.postal_code,
-          phoneNumber: data.phone_number,
-        });
-        toast.success('تم إضافة العنوان بنجاح', {
-          description: 'يمكنك الآن استخدام هذا العنوان للشحن'
-        });
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ar`
+      );
+      const data = await response.json();
+      if (data?.address) {
+        const addr = data.address;
+        form.setValue('country', addr.country || 'المملكة العربية السعودية');
+        form.setValue('city', addr.city || addr.town || addr.village || addr.county || '');
+        form.setValue('state_province_region', addr.state || addr.region || '');
+        form.setValue('postal_code', addr.postcode || '');
+        const street = addr.road || addr.pedestrian || addr.street || '';
+        const house = addr.house_number ? `مبنى ${addr.house_number}` : '';
+        const district = addr.suburb || addr.neighbourhood || '';
+        const fullAddress = [street, house, district].filter(Boolean).join('، ');
+        form.setValue('address_line_1', fullAddress || 'تم تحديد الموقع على الخريطة');
+        toast.success('تم ملء العنوان تلقائياً من الخريطة');
       }
-      onSuccess();
     } catch (error) {
-        console.error('Failed to save address:', error);
-        let errorMessage = 'فشل في حفظ العنوان. الرجاء المحاولة مرة أخرى.';
-
-        // Type guard for Axios error
-        if (error && typeof error === 'object' && 'response' in error) {
-            const err = error as { response?: { data?: { message?: string } } };
-            errorMessage = err.response?.data?.message || errorMessage;
-        }
-
-        toast.error('خطأ في الحفظ', {
-            description: errorMessage
-        });
+      console.error('Reverse geocoding error:', error);
+      toast.error('فشل في جلب تفاصيل العنوان من الخريطة');
+    } finally {
+      setIsGeocoding(false);
     }
   };
 
-  const isSubmitting = form.formState.isSubmitting;
+  const onSubmit = async (data: AddressFormData) => {
+    try {
+      if (isEditing && address?.id) {
+        await api.put(`/users/addresses/${address.id}`, data);
+      } else {
+        await api.post('/users/addresses', data);
+      }
+      toast.success(isEditing ? 'تم تحديث العنوان' : 'تم إضافة العنوان بنجاح');
+      onSuccess();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'حدث خطأ أثناء الحفظ');
+    }
+  };
+
+  const mapCoords = useMemo(() => ({
+    lat: form.watch('latitude') || 24.7136,
+    lng: form.watch('longitude') || 46.6753,
+  }), [form.watch('latitude'), form.watch('longitude')]);
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6"
-            >
-              {/* Personal Information Section */}
+    <Card className="w-full max-w-5xl mx-auto border-none shadow-xl bg-white/95 backdrop-blur overflow-hidden">
+      <CardHeader className="bg-slate-50 border-b border-gray-100 pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl text-slate-800 flex items-center gap-2">
+              <MapPin className="text-blue-600 h-5 w-5" />
+              {isEditing ? 'تعديل العنوان' : 'إضافة عنوان جديد'}
+            </CardTitle>
+            <CardDescription className="mt-1">
+              حدد موقعك على الخريطة أو أدخل البيانات يدوياً
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col lg:flex-row min-h-[60vh]">
+            {/* Form Inputs */}
+            <div className="w-full lg:w-7/12 p-6 space-y-6 overflow-y-auto max-h-[70vh] lg:max-h-[calc(100vh-200px)]">
+              {/* Personal Info */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <User className="w-4 h-4 text-blue-600" />
-                  المعلومات الشخصية
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-gray-200">
+                  <User className="w-4 h-4 text-slate-500" />
+                  بيانات المستلم
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="full_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-500" />
-                          الاسم الكامل
-                        </FormLabel>
+                        <FormLabel>الاسم الكامل</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="ادخل اسمك الكامل كما في الهوية" 
-                            {...field}
-                            className="h-11 transition-colors focus:border-blue-500"
-                          />
+                          <Input placeholder="الاسم كما في الهوية" {...field} className="bg-slate-50" />
                         </FormControl>
-                        <FormMessage className="text-xs" />
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
-
                   <FormField
                     control={form.control}
                     name="phone_number"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-gray-500" />
-                          رقم الهاتف
-                        </FormLabel>
+                        <FormLabel>رقم الهاتف</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="مثال: 0551234567" 
-                            {...field}
-                            className="h-11 transition-colors focus:border-blue-500"
-                          />
+                          <Input placeholder="05xxxxxxxx" {...field} className="bg-slate-50" />
                         </FormControl>
-                        <FormMessage className="text-xs" />
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
               </div>
 
-              {/* Address Details Section */}
+              {/* Address Details */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Home className="w-4 h-4 text-green-600" />
-                  تفاصيل العنوان
-                </div>
-
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 pb-2 border-b border-gray-200">
+                  <Building className="w-4 h-4 text-slate-500" />
+                  تفاصيل الموقع
+                </h3>
+                {isGeocoding && (
+                  <div className="text-xs text-blue-600 flex items-center gap-2 animate-pulse mb-2">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    جاري ملء البيانات من الخريطة...
+                  </div>
+                )}
                 <FormField
                   control={form.control}
                   name="address_line_1"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Navigation className="w-4 h-4 text-gray-500" />
-                        العنوان الرئيسي
-                      </FormLabel>
+                      <FormLabel>اسم الشارع / الحي</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="اسم الشارع، رقم المبنى، الحي" 
-                          {...field}
-                          className="h-11 transition-colors focus:border-blue-500"
-                        />
+                        <Input placeholder="سيتم تعبئته تلقائياً من الخريطة" {...field} className="bg-slate-50" />
                       </FormControl>
-                      <FormMessage className="text-xs" />
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="address_line_2"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-gray-600">
-                        <Home className="w-4 h-4 text-gray-400" />
-                        العنوان الإضافي (اختياري)
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="رقم الشقة، الطابق، رقم الوحدة" 
-                          {...field}
-                          value={field.value ?? ''}
-                          className="h-11 transition-colors focus:border-blue-500"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="city"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Building className="w-4 h-4 text-gray-500" />
-                          المدينة
-                        </FormLabel>
+                        <FormLabel>المدينة</FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <Input 
-                              placeholder="اختر المدينة" 
-                              {...field}
-                              className="h-11 transition-colors focus:border-blue-500"
-                              list="cities"
-                            />
-                            <datalist id="cities">
-                              {saudiCities.map(city => (
-                                <option key={city} value={city} />
-                              ))}
-                            </datalist>
-                          </div>
+                          <Input placeholder="الرياض" {...field} />
                         </FormControl>
-                        <FormMessage className="text-xs" />
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="state_province_region"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Navigation className="w-4 h-4 text-gray-500" />
-                          المنطقة
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input 
-                              placeholder="اختر المنطقة" 
-                              {...field}
-                              className="h-11 transition-colors focus:border-blue-500"
-                              list="regions"
-                            />
-                            <datalist id="regions">
-                              {saudiRegions.map(region => (
-                                <option key={region} value={region} />
-                              ))}
-                            </datalist>
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-
                   <FormField
                     control={form.control}
                     name="postal_code"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center gap-2">
-                          <Mailbox className="w-4 h-4 text-gray-500" />
-                          الرمز البريدي
-                        </FormLabel>
+                        <FormLabel>الرمز البريدي</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="مثال: 11564" 
-                            {...field}
-                            className="h-11 transition-colors focus:border-blue-500"
-                          />
+                          <Input placeholder="11543" {...field} />
                         </FormControl>
-                        <FormMessage className="text-xs" />
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
+                <FormField
+                  control={form.control}
+                  name="address_line_2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>تفاصيل إضافية (اختياري)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="رقم الشقة، الدور، علامة مميزة..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="state_province_region"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>المنطقة / المحافظة</FormLabel>
+                      <FormControl>
+                        <Input placeholder="الرياض" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-gray-500" />
-                        الدولة
-                      </FormLabel>
+                      <FormLabel>الدولة</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="مثال: المملكة العربية السعودية" 
-                          {...field}
-                          className="h-11 transition-colors focus:border-blue-500 bg-gray-50"
-                        />
+                        <Input placeholder="المملكة العربية السعودية" {...field} />
                       </FormControl>
-                      <FormMessage className="text-xs" />
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+            
 
-              {/* Form Actions */}
-              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onCancel}
-                  disabled={isSubmitting}
-                  className="h-11 px-6 flex-1 sm:flex-none"
-                >
-                  إلغاء
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting || !form.formState.isValid}
-                  className="h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white flex-1 sm:flex-none transition-all duration-200"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                      جاري الحفظ...
-                    </>
-                  ) : (
-                    <>
-                      <MapPin className="ml-2 h-4 w-4" />
-                      {isEditing ? 'تحديث العنوان' : 'إضافة العنوان'}
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {/* Form Status */}
-              {form.formState.isValid && !form.formState.errors.root && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm text-green-700 text-center">
-                    ✓ جميع الحقول صحيحة وجاهزة للحفظ
-                  </p>
+            {/* Map Section */}
+            <div className="w-full lg:w-5/12 bg-slate-100 min-h-[300px] lg:h-auto border-t lg:border-t-0 lg:border-l border-gray-200">
+              <div className="h-full w-full p-4 flex flex-col">
+                <div className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" />
+                  حدد موقعك على الخريطة
                 </div>
-              )}
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </div>
+                <div className="flex-1 rounded-xl overflow-hidden shadow-sm border border-white/50">
+                  <MapPicker onLocationSelect={handleLocationSelect} />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 bg-slate-50 border-t flex flex-col sm:flex-row justify-between items-center gap-3">
+              <Button type="button" variant="outline" onClick={onCancel} className="w-full sm:w-auto">
+                إلغاء
+              </Button>
+              <Button
+                type="submit"
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white min-w-[150px]"
+                disabled={form.formState.isSubmitting || isGeocoding}
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 ml-2" />
+                    {isEditing ? 'تحديث العنوان' : 'حفظ العنوان'}
+                  </>
+                )}
+              </Button>
+            </div>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

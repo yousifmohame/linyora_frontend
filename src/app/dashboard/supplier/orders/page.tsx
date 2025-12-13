@@ -298,10 +298,7 @@ export default function SupplierOrdersPage() {
                       <User className="inline-block ml-1 h-4 w-4" />
                       {t('supplierorders.table.headers.customer')}
                     </TableHead>
-                    <TableHead className="text-blue-800 font-bold text-right">
-                      <Store className="inline-block ml-1 h-4 w-4" />
-                      {t('supplierorders.table.headers.store')}
-                    </TableHead>
+                    
                     <TableHead className="text-blue-800 font-bold text-right">
                       <Tag className="inline-block ml-1 h-4 w-4" />
                       {t('supplierorders.table.headers.product')}
@@ -332,9 +329,7 @@ export default function SupplierOrdersPage() {
                       <TableCell className="text-right font-medium text-blue-800">
                         {order.customer_name}
                       </TableCell>
-                      <TableCell className="text-right text-blue-700">
-                        {order.merchant_store_name}
-                      </TableCell>
+                     
                       <TableCell className="text-right">
                         <div className="font-semibold text-blue-900">{order.product_name}</div>
                         <div className="text-xs text-blue-600">

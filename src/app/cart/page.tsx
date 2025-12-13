@@ -54,7 +54,7 @@ export default function CartPage() {
 
   // After hydration, render actual cart state
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-rose-50 min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <header className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800">{t('CartPage.title')}</h1>

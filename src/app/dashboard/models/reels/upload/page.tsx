@@ -79,12 +79,10 @@ export default function UploadReelPage() {
           api.get('/browse/all-products'),
           api.get('/agreements/active-for-user')
         ]);
-        
         setAllProducts(productsResponse.data || []);
         setActiveAgreements(agreementsResponse.data || []);
-
       } catch (error) {
-        console.error('Failed to fetch initial data for upload page:', error);
+        console.error('Failed to fetch data:', error);
         toast.error(t('UploadReelPage.toast.fetchError'));
       }
     };
@@ -136,47 +134,32 @@ export default function UploadReelPage() {
   const onSubmit = async (values: z.infer<ReturnType<typeof reelFormSchema>>) => {
     setIsUploading(true);
     const formData = new FormData();
-
     formData.append('video', values.video[0]);
     formData.append('caption', values.caption || '');
-
     const productIds = taggedProducts.map(p => p.id);
     formData.append('tagged_products', JSON.stringify(productIds));
-
     if (selectedAgreementId) {
         formData.append('agreement_id', selectedAgreementId.toString());
     }
 
     try {
       await api.post('/reels', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-
       toast.success(t('UploadReelPage.toast.uploadSuccess'));
       form.reset();
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
       setTaggedProducts([]);
       setSelectedAgreementId(null);
       setPreviewUrl(null);
       setIsModalOpen(false);
-      
-      setTimeout(() => {
-        router.push('/dashboard/models/reels');
-      }, 1500);
-
+      setTimeout(() => router.push('/dashboard/models/reels'), 1500);
     } catch (error: any) {
       console.error("Upload failed:", error);
-      const errorMessage = error.response?.data?.message || 'فشل الرفع. حاول مجدداً.';
-    
-    // إذا كان الخطأ بسبب الحجم (من Multer أو Express)
       if (error.response?.status === 413) {
         toast.error('فشل الرفع: الفيديو كبير جداً!');
       } else {
-        toast.error(errorMessage);
+        toast.error(error.response?.data?.message || 'فشل الرفع. حاول مجدداً.');
       }
     } finally {
       setIsUploading(false);
@@ -187,57 +170,55 @@ export default function UploadReelPage() {
   const otherProducts = allProducts.filter(p => !agreementProductIds.has(p.id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-6 sm:p-8">
-      {/* Background decorations */}
-      <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+    // ✅ Unified gradient + overflow-hidden
+    <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 sm:p-4 overflow-hidden">
+      {/* ✅ Smaller, safe blobs */}
+      <div className="absolute top-0 right-0 w-48 h-48 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
 
       <ModelNav />
 
-      {/* Header Section */}
-      <header className="mb-8 text-center relative">
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-3">
+      <header className="mb-6 text-center px-2">
+        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent mb-2">
           {t('UploadReelPage.title')}
         </h1>
-        <p className="text-rose-700 text-lg max-w-2xl mx-auto">
+        <p className="text-gray-600 text-sm max-w-md mx-auto">
           {t('UploadReelPage.subtitle')}
         </p>
       </header>
 
       <div className="max-w-4xl mx-auto">
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white pb-4">
-            <div className="flex items-center gap-3">
-              <Video className="h-6 w-6 text-pink-200" />
-              <div className="flex-1">
-                <CardTitle className="text-2xl font-bold">{t('UploadReelPage.form.title')}</CardTitle>
-                <CardDescription className="text-pink-100 mt-1">
+        <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4">
+            <div className="flex items-center gap-2.5">
+              <Video className="h-4 w-4 text-pink-200" />
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-lg font-bold truncate">{t('UploadReelPage.form.title')}</CardTitle>
+                <CardDescription className="text-purple-100 text-xs mt-0.5">
                   {t('UploadReelPage.form.subtitle')}
                 </CardDescription>
               </div>
-              <Badge variant="secondary" className="bg-white/20 text-white border-0">
+              <Badge variant="secondary" className="bg-white/20 text-white border-0 text-[10px] px-2 py-0.5">
                 {t('UploadReelPage.taggedProducts.count', { count: taggedProducts.length })}
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                
-                {/* Video Upload Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Upload Area */}
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                {/* Video Upload & Preview */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="video"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-rose-900 font-semibold flex items-center gap-2">
-                          <UploadCloud className="h-4 w-4 text-rose-600" />
+                        <FormLabel className="text-gray-800 font-medium flex items-center gap-1.5 text-sm">
+                          <UploadCloud className="h-3.5 w-3.5 text-rose-500" />
                           {t('UploadReelPage.video.label')}
                         </FormLabel>
                         <FormControl>
-                          <div className="space-y-4">
+                          <div className="space-y-3">
                             <Input
                               type="file"
                               accept="video/mp4,video/quicktime,video/x-matroska,video/avi"
@@ -246,101 +227,96 @@ export default function UploadReelPage() {
                                 field.onChange(files);
                               }}
                               ref={fileInputRef}
-                              className="border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-2xl"
+                              className="h-10 border border-gray-200 focus:border-purple-500 rounded-lg text-sm"
                             />
                             {!previewUrl && (
-                              <div className="border-2 border-dashed border-rose-200 rounded-2xl p-8 text-center bg-rose-50/50">
-                                <Video className="h-12 w-12 text-rose-300 mx-auto mb-3" />
-                                <p className="text-rose-700 font-medium">{t('UploadReelPage.video.selectPrompt')}</p>
-                                <p className="text-rose-600 text-sm mt-1">{t('UploadReelPage.video.supportedFormats')}</p>
+                              <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center bg-gray-50/30">
+                                <Video className="h-6 w-6 text-gray-300 mx-auto mb-2" />
+                                <p className="text-gray-600 text-xs">{t('UploadReelPage.video.selectPrompt')}</p>
+                                <p className="text-gray-500 text-[10px] mt-1">{t('UploadReelPage.video.supportedFormats')}</p>
                               </div>
                             )}
                           </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-[10px]" />
                       </FormItem>
                     )}
                   />
 
-                  {/* Preview Area */}
                   <div>
-                    <FormLabel className="text-rose-900 font-semibold flex items-center gap-2 mb-4">
-                      <Sparkles className="h-4 w-4 text-rose-600" />
+                    <FormLabel className="text-gray-800 font-medium flex items-center gap-1.5 text-sm mb-3">
+                      <Sparkles className="h-3.5 w-3.5 text-rose-500" />
                       {t('UploadReelPage.preview.title')}
                     </FormLabel>
                     {previewUrl ? (
-                    <div className="border-2 border-rose-200 rounded-2xl overflow-hidden bg-black aspect-[9/16]">
-                        <video 
-                        src={previewUrl} 
-                        controls 
-                        className="w-full h-full object-cover"
-                        />
-                    </div>
+                      <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-black aspect-[9/16]">
+                        <video src={previewUrl} controls className="w-full h-full object-cover" />
+                      </div>
                     ) : (
-                    <div className="border-2 border-dashed border-rose-200 rounded-2xl p-8 text-center bg-rose-50/50 aspect-[9/16] flex flex-col items-center justify-center">
-                        <div className="text-rose-400">
-                        <Video className="h-12 w-12 mx-auto mb-2" />
-                        <p className="text-rose-600 text-sm">{t('UploadReelPage.preview.placeholder')}</p>
+                      <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center bg-gray-50/30 aspect-[9/16] flex items-center justify-center">
+                        <div className="text-gray-400">
+                          <Video className="h-6 w-6 mx-auto mb-1" />
+                          <p className="text-gray-500 text-[10px]">{t('UploadReelPage.preview.placeholder')}</p>
                         </div>
-                    </div>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Caption Section */}
+                {/* Caption */}
                 <FormField
                   control={form.control}
                   name="caption"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-rose-900 font-semibold flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-rose-600" />
+                      <FormLabel className="text-gray-800 font-medium flex items-center gap-1.5 text-sm">
+                        <Sparkles className="h-3.5 w-3.5 text-rose-500" />
                         {t('UploadReelPage.caption.label')}
                       </FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder={t('UploadReelPage.caption.placeholder')} 
                           {...field} 
-                          className="min-h-[100px] resize-none border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-2xl"
+                          className="min-h-[80px] text-sm border border-gray-200 focus:border-purple-500 rounded-lg"
                         />
                       </FormControl>
-                      <FormDescription className="text-rose-600">
+                      <FormDescription className="text-gray-600 text-[10px]">
                         {t('UploadReelPage.caption.chars', { current: field.value?.length || 0, max: 1000 })}
                       </FormDescription>
-                      <FormMessage />
+                      <FormMessage className="text-[10px]" />
                     </FormItem>
                   )}
                 />
 
-                {/* Tagged Products Section */}
+                {/* Tagged Products */}
                 <div>
-                  <FormLabel className="text-rose-900 font-semibold flex items-center gap-2 mb-4">
-                    <Tag className="h-4 w-4 text-rose-600" />
+                  <FormLabel className="text-gray-800 font-medium flex items-center gap-1.5 text-sm mb-3">
+                    <Tag className="h-3.5 w-3.5 text-rose-500" />
                     {t('UploadReelPage.taggedProducts.title')}
-                    <Badge variant="secondary" className="bg-rose-100 text-rose-700 ml-2">
+                    <Badge variant="secondary" className="bg-rose-100 text-rose-700 text-[10px] px-1.5 py-0.5 ml-1.5">
                       {t('UploadReelPage.taggedProducts.count', { count: taggedProducts.length })}
                     </Badge>
                   </FormLabel>
                   
                   {taggedProducts.length > 0 && (
-                    <div className="mb-4">
-                      <div className="flex flex-wrap gap-2">
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1.5">
                         {taggedProducts.map(p => (
                           <Badge 
                             key={p.id} 
                             variant="secondary" 
-                            className="bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0 pl-2 pr-1 py-1 rounded-full flex items-center gap-1"
+                            className="bg-gradient-to-r from-rose-500 to-purple-500 text-white border-0 pl-2 pr-1 py-0.5 rounded-full flex items-center gap-1 text-[10px]"
                           >
-                            <span className="max-w-[120px] truncate text-xs">{p.name}</span>
+                            <span className="max-w-[100px] truncate">{p.name}</span>
                             <button
                               type="button"
                               onClick={() => {
                                 const originalItem = activeAgreements.find(a => a.product_id === p.id) || allProducts.find(prod => prod.id === p.id);
                                 if (originalItem) handleTagProduct(originalItem, false);
                               }}
-                              className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                              className="hover:bg-white/20 rounded-full p-0.5"
                             >
-                              <span className="text-xs">×</span>
+                              <span className="text-[10px]">×</span>
                             </button>
                           </Badge>
                         ))}
@@ -353,28 +329,28 @@ export default function UploadReelPage() {
                       <Button 
                         type="button" 
                         variant="outline" 
-                        className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-12"
+                        className="w-full border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg h-9 text-sm"
                       >
-                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <PlusCircle className="mr-1.5 w-3.5 h-3.5" />
                         {taggedProducts.length === 0 
                           ? t('UploadReelPage.taggedProducts.tagProducts') 
                           : t('UploadReelPage.taggedProducts.manageProducts')}
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-lg max-w-md max-h-[80vh] flex flex-col">
-                      <DialogHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-t-2xl p-6 shrink-0">
-                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                          <Tag className="h-5 w-5" />
+                    <DialogContent className="bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-xl max-w-md max-h-[80vh] flex flex-col mx-2">
+                      <DialogHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-xl">
+                        <DialogTitle className="text-base font-bold flex items-center gap-2">
+                          <Tag className="h-4 w-4" />
                           {t('UploadReelPage.taggedProducts.tagProducts')}
                         </DialogTitle>
                       </DialogHeader>
                       
-                      <ScrollArea className="flex-1 px-6">
-                        <div className="space-y-4 py-4">
+                      <ScrollArea className="flex-1 px-4 py-2">
+                        <div className="space-y-3 py-2">
                           {activeAgreements.length > 0 && (
-                            <div className="mb-6 pb-4 border-b border-rose-100">
-                              <h3 className="text-sm font-semibold mb-3 text-rose-800 flex items-center gap-2">
-                                <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> 
+                            <div className="pb-3 border-b border-gray-200/50">
+                              <h3 className="text-[10px] font-bold mb-2 text-gray-800 flex items-center gap-1.5">
+                                <Star className="w-3 h-3 text-amber-500 fill-amber-500" /> 
                                 {t('UploadReelPage.taggedProducts.activeAgreements')}
                               </h3>
                               <div className="space-y-2">
@@ -384,10 +360,10 @@ export default function UploadReelPage() {
                                   return (
                                     <div 
                                       key={agreement.agreement_id} 
-                                      className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${
+                                      className={`flex items-start gap-2.5 p-2.5 rounded-lg border ${
                                         isDisabled 
-                                          ? 'bg-rose-50 border-rose-100 opacity-60' 
-                                          : 'bg-white border-rose-100 hover:border-rose-200 hover:shadow-sm'
+                                          ? 'bg-rose-50 border-rose-200/50 opacity-60' 
+                                          : 'bg-white border-gray-200/50 hover:border-gray-300'
                                       }`}
                                     >
                                       <Checkbox
@@ -395,24 +371,23 @@ export default function UploadReelPage() {
                                         checked={isChecked}
                                         onCheckedChange={(checked) => handleTagProduct(agreement, !!checked)}
                                         disabled={isDisabled}
-                                        className="data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 mt-0.5"
+                                        className="data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 mt-0.5 h-4 w-4"
                                       />
                                       <label 
                                         htmlFor={`agreement-${agreement.agreement_id}`} 
-                                        className={`flex-1 text-sm leading-tight ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                        className={`flex-1 text-[10px] leading-tight ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                       >
-                                        <div className="font-medium text-rose-900">{agreement.product_name}</div>
-                                        <div className="text-xs text-rose-600 mt-1">
+                                        <div className="font-medium text-gray-900">{agreement.product_name}</div>
+                                        <div className="text-gray-600 mt-0.5">
                                           {t('UploadReelPage.taggedProducts.fromMerchant', { store: agreement.merchant_store_name })}
                                         </div>
                                       </label>
                                       {agreement.product_image_url && (
-                                        <div className="relative w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden border border-rose-200">
+                                        <div className="relative w-10 h-10 flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
                                           <Image 
                                             src={agreement.product_image_url} 
                                             alt={agreement.product_name} 
                                             fill 
-                                            sizes="48px" 
                                             className="object-cover"
                                           />
                                         </div>
@@ -423,16 +398,14 @@ export default function UploadReelPage() {
                               </div>
                             </div>
                           )}
-
-                          
                         </div>
                       </ScrollArea>
 
-                      <div className="p-6 border-t border-rose-100 shrink-0">
+                      <div className="p-4 border-t border-gray-200/50">
                         <Button 
                           type="button" 
                           onClick={() => setIsModalOpen(false)}
-                          className="w-full bg-rose-100 text-rose-700 hover:bg-rose-200 border-rose-200 rounded-2xl"
+                          className="w-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 rounded-lg text-sm h-9"
                         >
                           {t('common.done')}
                         </Button>
@@ -442,12 +415,12 @@ export default function UploadReelPage() {
                 </div>
 
                 {selectedAgreementId && (
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4">
-                    <div className="flex items-center gap-2 text-green-800">
-                      <Star className="h-4 w-4 text-green-600" />
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3">
+                    <div className="flex items-center gap-1.5 text-green-800 text-sm">
+                      <Star className="h-3.5 w-3.5 text-green-600" />
                       <span className="font-medium">{t('UploadReelPage.agreement.linked')}</span>
                     </div>
-                    <p className="text-green-700 text-sm mt-1">
+                    <p className="text-green-700 text-[10px] mt-0.5">
                       {t('UploadReelPage.agreement.id', { id: selectedAgreementId })}
                     </p>
                   </div>
@@ -456,11 +429,11 @@ export default function UploadReelPage() {
                 <Button 
                   type="submit" 
                   disabled={isUploading} 
-                  className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg rounded-2xl h-12 font-bold text-base"
+                  className="w-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white h-10 rounded-lg text-sm font-medium"
                 >
                   {isUploading ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-1.5"></div>
                       {t('UploadReelPage.actions.uploading')}
                     </>
                   ) : (

@@ -897,6 +897,7 @@ const resources = {
         "viewAllOrders": "View all orders",
         "orderNumber": "Order #{{id}}"
       },
+
       "modelrequests": {
         "pageTitle": "Collaboration Requests",
         "pageSubtitle": "Review incoming collaboration requests from merchants and manage them easily",
@@ -1231,6 +1232,8 @@ const resources = {
           "overview": "Overview",
           "users": "Users",
           "messages":"Messages",
+          "flash-sales":"flash Sales",
+          "sub-admins":"Manage Parteners",
           "stories":"Stories",
           "sections": "Sections",
           "Footer":"Footer-setting",
@@ -1253,6 +1256,8 @@ const resources = {
       },
       "common": {
       "currency": "SAR",
+      "items":"Items",
+      "save":"Save",
       "retry": "Retry",
       "verified_account":"Verified Account",
       "add":"Add",
@@ -2285,6 +2290,9 @@ const resources = {
   },
   "checkout": {
     "title": "Checkout",
+    "generalStore":"General Store",
+    "payNow":"Pay Now",
+    "payOnDeliveryDesc":"pay On Delivery",
     "subtitle": "Review your order and complete your purchase",
     "orderSummary": "Order Summary",
     "paymentMethod": "Payment Method",
@@ -3434,6 +3442,7 @@ const resources = {
   },
   "supplierdashboard": {
     "loading": "Loading data...",
+    "currency":"SAR",
     "verification": {
       "title": "Account Verification",
       "pending": {
@@ -3464,8 +3473,6 @@ const resources = {
       "manageInventory": "Manage Inventory",
       "reports": "Reports"
     },
-
-    "currency": "SAR"
   },
   "suppliernav": {
     "nav": {
@@ -3581,6 +3588,57 @@ const resources = {
       "profileViews": "Profile Views",
       "rating": "Customer Rating",
       "completionRate": "Completion Rate"
+    }
+  },
+  "AdminFlashSales": {
+    "title": "Flash Campaigns",
+    "subtitle": "Create campaigns, select products, and invite merchants.",
+    "new_campaign": "New Campaign",
+    "create_new_campaign": "Create New Campaign",
+    "campaign_title": "Campaign Title",
+    "placeholder_title": "e.g. Super Friday Sale",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "available_products": "Available Products",
+    "loading_products": "Loading products...",
+    "no_products": "No products found.",
+    "in_stock": "in stock",
+    "selected_items": "Selected Items",
+    "configure_discounts": "Configure Discounts & Quantities",
+    "select_variants_instruction": "Select variants from the left list.",
+    "item": "Item",
+    "price": "Price",
+    "discount_percent": "Discount %",
+    "flash_price": "Flash $",
+    "sale_qty": "Sale Qty",
+    "max": "Max",
+    "cancel": "Cancel",
+    "processing": "Processing...",
+    "create_action": "Create Campaign",
+    "campaign_history": "Campaign History",
+    "history_description": "View status of active and past flash sales.",
+    "no_campaigns": "No campaigns created yet.",
+    "table_campaign": "Campaign",
+    "table_timeframe": "Timeframe",
+    "table_status": "Status",
+    "table_products": "Products",
+    "table_actions": "Actions",
+    "variants": "variants",
+    "status_expired": "Expired",
+    "status_active": "Active",
+    "status_scheduled": "Scheduled",
+    "messages": {
+      "item_already_selected": "This item is already selected.",
+      "stock_limit_warning": "Cannot exceed available stock ({stock})",
+      "fill_fields_error": "Please fill in the Campaign Title and Dates.",
+      "select_product_error": "Please select at least one product.",
+      "date_error": "End time must be after start time.",
+      "success_create": "Flash Sale Created & Merchants Invited!",
+      "error_create": "Failed to create flash sale.",
+      "confirm_delete": "Are you sure?",
+      "success_delete": "Campaign deleted",
+      "error_delete": "Failed to delete campaign",
+      "load_products_error": "Could not load products list"
     }
   },
   "modelprofile": {
@@ -3973,7 +4031,45 @@ const resources = {
       "submitError": "Failed to save section"
     }
   },
-  
+  "MerchantCampaigns": {
+    "title": "Campaign Invitations",
+    "subtitle": "Review and manage your participation in flash sale campaigns.",
+    "action_required": "Action Required",
+    "original_price": "Original Price",
+    "your_discount": "Your Discount",
+    "flash_price": "Flash Price",
+    "quantity_commit": "Quantity Commit",
+    "sold": "Sold",
+    "units": "units",
+    "reject": "Reject",
+    "accept_join": "Accept & Join",
+    "joined": "Joined",
+    "rejected_status": "Rejected",
+    "processing": "Processing...",
+    "status": {
+      "expired": "Expired",
+      "live_now": "Live Now",
+      "upcoming": "Upcoming"
+    },
+    "tabs": {
+      "pending": "Invites",
+      "accepted": "Active",
+      "rejected": "Rejected"
+    },
+    "empty": {
+      "pending": "No pending invitations.",
+      "accepted": "You haven't joined any campaigns yet.",
+      "rejected": "No rejected campaigns."
+    },
+    "toasts": {
+      "joined_success": "Campaign joined successfully!",
+      "rejected": "Campaign invitation rejected.",
+      "update_failed": "Failed to update status."
+    },
+    "errors": {
+      "load_failed": "Failed to load campaign invitations."
+    }
+  },
   "CategoriesPage": {
     "search": {
       "placeholder": "Search categories...",
@@ -5829,6 +5925,8 @@ const resources = {
           "overview": "نظرة عامة",
           "users": "المستخدمون",
           "messages":"المحادثات",
+          "flash-sales":"عروض الفلاش",
+          "sub-admins":"إداره الشركاء",
           "stories": "القصص",
           "sections": "الأقسام", 
           "main-banners": "البنرات الرئيسية",
@@ -5852,6 +5950,8 @@ const resources = {
       "common": {
         "currency": "ريال",
         "locale": "ar-SA",
+        "items":"العناصر",
+        "save":"حفظ",
         "verified_account":"حساب معتمد",
         "active":"نشط",
         "add":"اضافه",
@@ -7581,8 +7681,101 @@ const resources = {
       "cancelled": "ملغي"
     }
   },
+  "AdminFlashSales": {
+    "title": "حملات العروض الخاطفة",
+    "subtitle": "قم بإنشاء الحملات، تحديد المنتجات، ودعوة التجار.",
+    "new_campaign": "حملة جديدة",
+    "create_new_campaign": "إنشاء حملة جديدة",
+    "campaign_title": "عنوان الحملة",
+    "placeholder_title": "مثال: عروض الجمعة البيضاء",
+    "start_date": "تاريخ البدء",
+    "end_date": "تاريخ الانتهاء",
+    "available_products": "المنتجات المتاحة",
+    "loading_products": "جاري تحميل المنتجات...",
+    "no_products": "لا توجد منتجات.",
+    "in_stock": "متوفر",
+    "selected_items": "العناصر المختارة",
+    "configure_discounts": "ضبط الخصومات والكميات",
+    "select_variants_instruction": "اختر الخيارات (Variants) من القائمة اليسرى.",
+    "item": "المنتج",
+    "price": "السعر",
+    "discount_percent": "نسبة الخصم",
+    "flash_price": "سعر العرض",
+    "sale_qty": "كمية العرض",
+    "max": "الحد الأقصى",
+    "cancel": "إلغاء",
+    "processing": "جاري المعالجة...",
+    "create_action": "إنشاء الحملة",
+    "campaign_history": "سجل الحملات",
+    "history_description": "عرض حالة العروض الخاطفة الحالية والسابقة.",
+    "no_campaigns": "لم يتم إنشاء أي حملات بعد.",
+    "table_campaign": "الحملة",
+    "table_timeframe": "الإطار الزمني",
+    "table_status": "الحالة",
+    "table_products": "المنتجات",
+    "table_actions": "إجراءات",
+    "variants": "خيارات",
+    "status_expired": "منتهية",
+    "status_active": "نشطة",
+    "status_scheduled": "مجدولة",
+    "messages": {
+      "item_already_selected": "تم اختيار هذا العنصر بالفعل.",
+      "stock_limit_warning": "لا يمكن تجاوز المخزون المتاح ({stock})",
+      "fill_fields_error": "يرجى ملء عنوان الحملة والتواريخ.",
+      "select_product_error": "يرجى اختيار منتج واحد على الأقل.",
+      "date_error": "يجب أن يكون وقت الانتهاء بعد وقت البدء.",
+      "success_create": "تم إنشاء العرض ودعوة التجار بنجاح!",
+      "error_create": "فشل إنشاء العرض الخاطف.",
+      "confirm_delete": "هل أنت متأكد؟",
+      "success_delete": "تم حذف الحملة",
+      "error_delete": "فشل حذف الحملة",
+      "load_products_error": "تعذر تحميل قائمة المنتجات"
+    }
+  },
+  "MerchantCampaigns": {
+    "title": "دعوات الحملات",
+    "subtitle": "راجع وادِر مشاركتك في حملات التخفيضات الفورية.",
+    "action_required": "يتطلب إجراء",
+    "original_price": "السعر الأصلي",
+    "your_discount": "خصمك",
+    "flash_price": "سعر التخفيض",
+    "quantity_commit": "الكمية المطلوبة",
+    "sold": "مباعة",
+    "units": "وحدة",
+    "reject": "رفض",
+    "accept_join": "قبول والانضمام",
+    "joined": "منضم",
+    "rejected_status": "مرفوض",
+    "processing": "قيد المعالجة...",
+    "status": {
+      "expired": "منتهية",
+      "live_now": "جارية الآن",
+      "upcoming": "قادمة"
+    },
+    "tabs": {
+      "pending": "الدعوات",
+      "accepted": "النشطة",
+      "rejected": "المرفوضة"
+    },
+    "empty": {
+      "pending": "لا توجد دعوات معلقة.",
+      "accepted": "لم تنضم لأي حملة بعد.",
+      "rejected": "لا توجد حملات مرفوضة."
+    },
+    "toasts": {
+      "joined_success": "تم الانضمام للحملة بنجاح!",
+      "rejected": "تم رفض دعوة الحملة.",
+      "update_failed": "فشل تحديث الحالة."
+    },
+    "errors": {
+      "load_failed": "فشل تحميل دعوات الحملات."
+    }
+  },
   "checkout": {
     "title": "إتمام الطلب",
+    "payNow":"الدفع الأن",
+    "generalStore":"المتجر العام",
+    "payOnDeliveryDesc":"الدفع عند الاستلام",
     "subtitle": "راجع طلبك وأكمل عملية الشراء",
     "orderSummary": "ملخص الطلب",
     "paymentMethod": "طريقة الدفع",

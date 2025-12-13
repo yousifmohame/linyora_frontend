@@ -24,7 +24,8 @@ import {
   MessageCircle,
   Layout,
   CircleDashed,
-  Shield // Imported Shield for Sub-Admin icon
+  Shield, // Imported Shield for Sub-Admin icon
+  FlashlightIcon
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -62,6 +63,7 @@ export default function AdminNav() {
     { key: 'users', href: '/dashboard/admin/users', icon: Users },
     { key: 'stories', href: '/dashboard/admin/stories', icon: CircleDashed },
     { key: 'main-banners', href: '/dashboard/admin/main-banners', icon: PickaxeIcon },
+    { key: 'flash-sales', href: '/dashboard/admin/flash-sales', icon: FlashlightIcon },
     { key: 'marquee-bar', href: '/dashboard/admin/marquee-bar', icon: PickaxeIcon },
     { key: 'verification', href: '/dashboard/admin/verifications', icon: Users },
     { key: 'messages', href: '/dashboard/admin/messages', icon: MessageCircle },

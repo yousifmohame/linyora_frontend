@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import Link from 'next/link'; // 1. استيراد Link
+import { usePathname } from 'next/navigation'; // 2. استيراد usePathname
 import { 
   Zap, 
   Sparkles, 
@@ -12,35 +14,32 @@ import {
   Diamond 
 } from 'lucide-react';
 
-// تعريف البيانات بشكل منفصل لسهولة التعديل
+// 3. تحديث البيانات لإضافة مسار الرابط (href)
 const categories = [
-  { id: 'new', label: 'الجديد', icon: Zap },
-  { id: 'trending', label: 'الرائج', icon: Flame },
-  { id: 'influencers', label: 'المؤثرات', icon: Sparkles },
-  { id: 'latest', label: 'الأخيرة', icon: Clock },
-  { id: 'fashion', label: 'الأزياء', icon: Shirt },
-  { id: 'premium', label: 'البريميوم', icon: Crown },
-  { id: 'exclusive', label: 'حصري', icon: Diamond },
-  { id: 'private', label: 'الخاص', icon: Users },
+  { id: 'new', label: 'الرئيسيه', icon: Zap, href: '/' }, // مثال: صفحة الجديد
+  { id: 'trending', label: 'الرائج', icon: Flame, href: '/trends' },
+  { id: 'influencers', label: 'التصنيفات', icon: Sparkles, href: '/categories' },
+  { id: 'fashion', label: 'الأزياء', icon: Shirt, href: '/products' },
 ];
 
 const CategoryFilterBar = () => {
-  const [activeId, setActiveId] = useState('new');
+  // 4. الحصول على المسار الحالي لتحديد الزر النشط
+  const pathname = usePathname();
 
   return (
-    // الخلفية مثبتة في الأعلى مع تأثير ضبابي خفيف (Glass Effect)
-    <div className=" z-40 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
+    <div className="w-full bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
       <div className="container mx-auto">
-        {/* حاوية التمرير الأفقي */}
         <div className="flex items-center gap-3 px-4 py-3 overflow-x-auto scrollbar-hide scroll-smooth">
           {categories.map((cat) => {
-            const isActive = activeId === cat.id;
             const Icon = cat.icon;
+            
+            // 5. التحقق مما إذا كان الرابط الحالي يطابق رابط الزر
+            const isActive = pathname === cat.href;
 
             return (
-              <button
+              <Link
                 key={cat.id}
-                onClick={() => setActiveId(cat.id)}
+                href={cat.href}
                 className={`
                   relative flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 ease-out flex-shrink-0 select-none
                   ${isActive 
@@ -49,20 +48,17 @@ const CategoryFilterBar = () => {
                   }
                 `}
               >
-                {/* الأيقونة */}
                 <Icon 
                   className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} 
                   strokeWidth={2.5}
                 />
                 
-                {/* النص */}
                 <span>{cat.label}</span>
 
-                {/* نقطة مضيئة للعنصر النشط */}
                 {isActive && (
                   <span className="absolute top-1 left-2 w-1.5 h-1.5 bg-white/40 rounded-full animate-pulse" />
                 )}
-              </button>
+              </Link>
             );
           })}
         </div>

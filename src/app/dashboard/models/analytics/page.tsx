@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/axios';
 import ModelNav from '@/components/dashboards/ModelNav';
-import StatCard from '@/components/dashboards/shared/StatCard';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
@@ -54,7 +53,6 @@ export default function ModelAnalyticsPage() {
   const locale = i18n.language === 'ar' ? 'ar-EG' : 'en-US';
   const currency = 'SAR';
 
-  // Prepare chart data with localized month names
   const chartData = analytics?.requestsOverTime.map((item) => {
     const date = new Date(item.month + '-01');
     const monthName = date.toLocaleDateString(locale, { month: 'short' });
@@ -84,15 +82,13 @@ export default function ModelAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 flex items-center justify-center p-4 overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+        <ModelNav />
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-rose-500 mx-auto mb-4"></div>
-          <p className="text-rose-700 text-lg font-medium">{t('ModelAnalytics.loading')}</p>
-          <div className="flex justify-center space-x-1 mt-4">
-            <div className="w-2 h-2 bg-rose-400 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-rose-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-rose-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          </div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+          <p className="text-gray-600 text-sm">{t('ModelAnalytics.loading')}</p>
         </div>
       </div>
     );
@@ -100,51 +96,53 @@ export default function ModelAnalyticsPage() {
 
   if (!analytics) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 flex items-center justify-center p-4 overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+        <ModelNav />
         <div className="text-center">
-          <BarChart2 className="h-16 w-16 text-rose-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-rose-800 mb-2">{t('ModelAnalytics.error.title')}</h2>
-          <p className="text-rose-600">{t('ModelAnalytics.error.description')}</p>
+          <BarChart2 className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+          <h2 className="text-lg font-bold text-gray-800 mb-1">{t('ModelAnalytics.error.title')}</h2>
+          <p className="text-gray-600 text-sm">{t('ModelAnalytics.error.description')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 p-6 sm:p-8 relative">
-      <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50/20 to-purple-50/20 p-3 sm:p-4 overflow-hidden">
+      <div className="absolute top-0 right-0 w-48 h-48 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10"></div>
 
       <ModelNav />
 
-      <header className="mb-8 text-center relative">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="p-3 bg-white rounded-2xl shadow-lg">
-            <Award className="h-8 w-8 text-rose-500" />
+      <header className="mb-6 text-center px-2">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="p-2 bg-white rounded-xl shadow-sm border border-rose-100">
+            <Award className="h-6 w-6 text-rose-600" />
           </div>
-          <Sparkles className="h-6 w-6 text-rose-300" />
-          <Target className="h-6 w-6 text-rose-300" />
+          <Sparkles className="h-4 w-4 text-rose-300" />
+          <Target className="h-4 w-4 text-rose-300" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-3">
+        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-rose-600 to-purple-600 bg-clip-text text-transparent mb-1.5">
           {t('ModelAnalytics.title')}
         </h1>
-        <p className="text-rose-700 text-lg max-w-2xl mx-auto">
+        <p className="text-gray-600 text-sm max-w-md mx-auto">
           {t('ModelAnalytics.subtitle')}
         </p>
-        <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-4"></div>
       </header>
 
-      <div className="flex justify-center mb-8">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-lg border border-rose-200">
-          <div className="flex space-x-2">
+      <div className="flex justify-center mb-6">
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-gray-200/50">
+          <div className="flex gap-1.5">
             {(['month', 'quarter', 'year'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                   timeRange === range
-                    ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg'
-                    : 'text-rose-700 hover:bg-rose-50'
+                    ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white shadow'
+                    : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 {t(`ModelAnalytics.timeRange.${range}`)}
@@ -154,89 +152,75 @@ export default function ModelAnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="rounded-2xl p-[1px] bg-gradient-to-r from-green-500 to-emerald-500">
-          <div className="bg-white rounded-2xl">
-            <StatCard
-              title={t('ModelAnalytics.stats.totalEarnings')}
-              value={new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2 }).format(analytics.totalEarnings)}
-              icon={DollarSign}
-              description={t('ModelAnalytics.stats.totalEarningsGrowth')}
-            />
-          </div>
-        </div>
-
-        <div className="rounded-2xl p-[1px] bg-gradient-to-r from-blue-500 to-cyan-500">
-          <div className="bg-white rounded-2xl">
-            <StatCard
-              title={t('ModelAnalytics.stats.completedAgreements')}
-              value={analytics.completedAgreements.toString()}
-              icon={CheckCircle}
-              description={t('ModelAnalytics.stats.completedAgreementsGrowth')}
-            />
-          </div>
-        </div>
-
-        <div className="rounded-2xl p-[1px] bg-gradient-to-r from-purple-500 to-pink-500">
-          <div className="bg-white rounded-2xl">
-            <StatCard
-              title={t('ModelAnalytics.stats.averageDealPrice')}
-              value={new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2 }).format(analytics.averageDealPrice)}
-              icon={Handshake}
-              description={t('ModelAnalytics.stats.averageDealPriceGrowth')}
-            />
-          </div>
-        </div>
-
-        <div className="rounded-2xl p-[1px] bg-gradient-to-r from-rose-500 to-pink-500">
-          <div className="bg-white rounded-2xl">
-            <StatCard
-              title={t('ModelAnalytics.stats.engagementRate')}
-              value={`${analytics.performanceMetrics?.engagementRate || 0}%`}
-              icon={TrendingUp}
-              description={t('ModelAnalytics.stats.engagementRateGrowth')}
-            />
-          </div>
-        </div>
+      {/* ✅ Stats Grid - Unified styling */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+        <StatCard 
+          title={t('ModelAnalytics.stats.totalEarnings')}
+          value={new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2 }).format(analytics.totalEarnings)}
+          icon={DollarSign}
+          color="green"
+        />
+        <StatCard 
+          title={t('ModelAnalytics.stats.completedAgreements')}
+          value={analytics.completedAgreements.toString()}
+          icon={CheckCircle}
+          color="blue"
+        />
+        <StatCard 
+          title={t('ModelAnalytics.stats.averageDealPrice')}
+          value={new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2 }).format(analytics.averageDealPrice)}
+          icon={Handshake}
+          color="purple"
+        />
+        <StatCard 
+          title={t('ModelAnalytics.stats.engagementRate')}
+          value={`${analytics.performanceMetrics?.engagementRate || 0}%`}
+          icon={TrendingUp}
+          color="rose"
+        />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8 items-start mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        {/* Chart */}
         <div className="lg:col-span-2">
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <BarChart2 className="h-6 w-6" />
-                </div>
+          <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-2xl">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <BarChart2 className="h-4 w-4" />
                 {t('ModelAnalytics.chart.title')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <ResponsiveContainer width="100%" height={300}>
+            <CardContent className="p-3 sm:p-4">
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#fecdd3" />
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#f0f0f0" />
                   <XAxis
                     dataKey="name"
-                    stroke="#9d174d"
-                    fontSize={12}
+                    stroke="#666"
+                    fontSize={10}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    stroke="#9d174d"
-                    fontSize={12}
+                    stroke="#666"
+                    fontSize={10}
                     axisLine={false}
                     tickLine={false}
+                    width={30}
                   />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'white',
-                      border: '1px solid #fbcfe8',
-                      borderRadius: '12px',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      fontSize: '10px',
+                      padding: '6px 10px'
                     }}
+                    formatter={(value) => [`طلبات: ${value}`, '']}
+                    labelFormatter={(label) => `شهر: ${label}`}
                   />
-                  <Bar dataKey="requests" radius={[8, 8, 0, 0]}>
+                  <Bar dataKey="requests" radius={[4, 4, 0, 0]} barSize={20}>
                     {chartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -247,32 +231,28 @@ export default function ModelAnalyticsPage() {
           </Card>
         </div>
 
+        {/* Performance */}
         <div className="lg:col-span-1">
-          <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden h-full">
-            <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <div className="p-2 bg-white/20 rounded-xl">
-                  <Star className="h-6 w-6" />
-                </div>
+          <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-2xl">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Star className="h-4 w-4" />
                 {t('ModelAnalytics.performance.title')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-6">
+            <CardContent className="p-3 sm:p-4">
+              <div className="space-y-3">
                 {performanceData.map((metric, index) => (
                   <div
                     key={metric.name}
-                    className="flex items-center justify-between p-4 bg-rose-50 rounded-2xl border border-rose-200"
+                    className="flex items-center justify-between p-2.5 bg-gray-50/50 rounded-lg border border-gray-200/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: metric.color }}></div>
-                      <span className="text-rose-800 font-medium">{metric.name}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: metric.color }}></div>
+                      <span className="text-[10px] text-gray-800 font-medium">{metric.name}</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-rose-600">{metric.value}%</div>
-                      <div className="text-xs text-rose-500 mt-1">
-                        {t('ModelAnalytics.performance.growth', { percent: 5 + index * 2 })}
-                      </div>
+                      <div className="text-sm font-bold text-gray-900">{metric.value}%</div>
                     </div>
                   </div>
                 ))}
@@ -282,47 +262,40 @@ export default function ModelAnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <div className="p-2 bg-white/20 rounded-xl">
-                <Crown className="h-6 w-6" />
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Top Offers */}
+        <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-2xl">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Crown className="h-4 w-4" />
               {t('ModelAnalytics.topOffers.title')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-4">
             <Table>
               <TableHeader>
-                <TableRow className="border-rose-200 hover:bg-rose-50/50">
-                  <TableHead className="text-rose-800 font-bold">{t('ModelAnalytics.topOffers.headers.offer')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold">{t('ModelAnalytics.topOffers.headers.price')}</TableHead>
-                  <TableHead className="text-rose-800 font-bold text-left">{t('ModelAnalytics.topOffers.headers.requests')}</TableHead>
+                <TableRow className="bg-gray-50/50">
+                  <TableHead className="text-gray-800 font-bold text-[10px] sm:text-xs">{t('ModelAnalytics.topOffers.headers.offer')}</TableHead>
+                  <TableHead className="text-gray-800 font-bold text-[10px] sm:text-xs">{t('ModelAnalytics.topOffers.headers.price')}</TableHead>
+                  <TableHead className="text-gray-800 font-bold text-[10px] sm:text-xs text-left">{t('ModelAnalytics.topOffers.headers.requests')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {analytics.topOffers.map((offer, index) => (
-                  <TableRow
-                    key={`${offer.title}-${index}`}
-                    className="border-rose-100 hover:bg-rose-50/30 transition-colors"
-                  >
-                    <TableCell className="font-medium text-rose-900">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        ></div>
-                        {offer.title}
+                  <TableRow key={index} className="border-b border-gray-200/50 hover:bg-gray-50/30">
+                    <TableCell className="font-medium text-gray-900 text-[10px] sm:text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                        <span className="truncate max-w-[100px]">{offer.title}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-rose-700">
+                    <TableCell className="text-gray-700 text-[10px] sm:text-xs">
                       {new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 0 }).format(offer.price)}
                     </TableCell>
-                    <TableCell className="text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-rose-600">{offer.requestCount}</span>
-                        <Users className="w-4 h-4 text-rose-400" />
+                    <TableCell className="text-left text-[10px] sm:text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-gray-900">{offer.requestCount}</span>
+                        <Users className="w-3 h-3 text-gray-400" />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -332,39 +305,38 @@ export default function ModelAnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white">
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <div className="p-2 bg-white/20 rounded-xl">
-                <TrendingUp className="h-6 w-6" />
-              </div>
+        {/* Insights */}
+        <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-sm">
+          <CardHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-2xl">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-4 w-4" />
               {t('ModelAnalytics.insights.title')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200">
-                <div className="flex items-center gap-3">
-                  <Eye className="w-5 h-5 text-rose-500" />
-                  <span className="text-rose-800 font-medium">{t('ModelAnalytics.insights.profileViews')}</span>
+          <CardContent className="p-3 sm:p-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-2.5 bg-gray-50/50 rounded-lg border border-gray-200/50">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-3 h-3 text-rose-500" />
+                  <span className="text-[10px] text-gray-800 font-medium">{t('ModelAnalytics.insights.profileViews')}</span>
                 </div>
-                <div className="text-2xl font-bold text-rose-600">
+                <div className="text-sm font-bold text-gray-900">
                   {(analytics.performanceMetrics?.profileViews || 0).toLocaleString(locale)}
                 </div>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200">
-                <div className="flex items-center gap-3">
-                  <Star className="w-5 h-5 text-amber-500" />
-                  <span className="text-rose-800 font-medium">{t('ModelAnalytics.insights.rating')}</span>
+              <div className="flex items-center justify-between p-2.5 bg-gray-50/50 rounded-lg border border-gray-200/50">
+                <div className="flex items-center gap-2">
+                  <Star className="w-3 h-3 text-amber-500" />
+                  <span className="text-[10px] text-gray-800 font-medium">{t('ModelAnalytics.insights.rating')}</span>
                 </div>
-                <div className="text-2xl font-bold text-amber-600">4.8/5</div>
+                <div className="text-sm font-bold text-amber-600">4.8/5</div>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                  <span className="text-rose-800 font-medium">{t('ModelAnalytics.insights.completionRate')}</span>
+              <div className="flex items-center justify-between p-2.5 bg-gray-50/50 rounded-lg border border-gray-200/50">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-3 h-3 text-green-500" />
+                  <span className="text-[10px] text-gray-800 font-medium">{t('ModelAnalytics.insights.completionRate')}</span>
                 </div>
-                <div className="text-2xl font-bold text-green-600">94%</div>
+                <div className="text-sm font-bold text-green-600">94%</div>
               </div>
             </div>
           </CardContent>
@@ -373,3 +345,34 @@ export default function ModelAnalyticsPage() {
     </div>
   );
 }
+
+// ✅ Reusable Stat Card
+const StatCard = ({ title, value, icon: Icon, color }: { 
+  title: string; 
+  value: string; 
+  icon: any; 
+  color: 'green' | 'blue' | 'purple' | 'rose';
+}) => {
+  const colorMap = {
+    green: 'bg-green-50 text-green-600 border-green-200',
+    blue: 'bg-blue-50 text-blue-600 border-blue-200',
+    purple: 'bg-purple-50 text-purple-600 border-purple-200',
+    rose: 'bg-rose-50 text-rose-600 border-rose-200',
+  };
+
+  return (
+    <Card className={`bg-white/90 backdrop-blur-sm border ${colorMap[color]} shadow-sm rounded-xl`}>
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-medium text-gray-600">{title}</p>
+            <div className="text-sm font-bold text-gray-900 mt-0.5">{value}</div>
+          </div>
+          <div className={`p-2 rounded-lg ${colorMap[color].split(' ')[0]}`}>
+            <Icon className="w-4 h-4" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

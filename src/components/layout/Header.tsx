@@ -557,7 +557,7 @@ export default function Header() {
 
   return (
     <>
-      <header dir='ltr' className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200 lg:relative">
+      <header className="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200 lg:relative">
         <nav className="container mx-auto px-3 sm:px-4">
           <div className="flex items-center h-20">
             {/* Logo */}
@@ -694,7 +694,7 @@ export default function Header() {
                     {isUserMenuOpen && (
                       <div
                         className={`absolute top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50 ${
-                          isRTL ? 'right-0' : 'left-0'
+                          isRTL ? 'left-0' : 'right-0'
                         }`}
                       >
                         <div className="p-4 border-b border-gray-100">
@@ -759,7 +759,7 @@ export default function Header() {
             </div>
 
             {/* Mobile Menu Toggle */}
-            <div className={`absolute ${isRTL ? 'right-0' : 'left-0'} flex items-center lg:hidden z-50`}>
+            <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} flex items-center lg:hidden z-50`}>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="relative z-50 h-10 w-10 flex items-center justify-center rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5e3482] hover:bg-gray-100 transition-colors"

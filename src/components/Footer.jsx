@@ -141,7 +141,7 @@ const Footer = () => {
             : '🔥 Get the latest trends & exclusive offers'}
         </p>
 
-        <form onSubmit={''} className="flex flex-col sm:flex-row justify-center gap-3 max-w-md mx-auto">
+        <form onSubmit={(e) => e.preventDefault()} className="flex flex-col sm:flex-row justify-center gap-3 max-w-md mx-auto">
           <input
             type="email"
             value={email}

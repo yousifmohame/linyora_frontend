@@ -78,17 +78,14 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
           api.get('/agreements/active-for-user'),
           api.get(`/reels/${reel.id}`)
         ]);
-        
         setAllProducts(productsResponse.data || []);
         setActiveAgreements(agreementsResponse.data || []);
-
         const reelDetails = reelDetailsResponse.data;
         setTaggedProducts(reelDetails.tagged_products || []);
         setSelectedAgreementId(reelDetails.agreement_id || null);
         form.setValue('caption', reelDetails.caption || "");
-
       } catch (error) {
-        console.error('Failed to fetch data for edit form:', error);
+        console.error('Failed to fetch data:', error);
         toast.error(t('EditReelForm.toast.fetchError'));
       } finally {
         setLoadingData(false);
@@ -126,9 +123,7 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
 
   const onSubmit = async (values: z.infer<ReturnType<typeof editReelSchema>>) => {
     setIsUpdating(true);
-    
     const productIds = taggedProducts.map(p => p.id);
-    
     const payload = {
       caption: values.caption || '',
       tagged_products: JSON.stringify(productIds),
@@ -154,33 +149,32 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
 
   return (
     <Form {...form}>
-      <ScrollArea className="h-[calc(90vh-200px)] pr-4">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">
-          {/* Preview Section */}
-          <Card className="bg-gradient-to-br from-pink-50 to-rose-50 border-pink-200 rounded-2xl overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Video className="h-5 w-5 text-rose-600" />
-                <h3 className="font-bold text-lg text-rose-900">{t('EditReelForm.preview.title')}</h3>
+      <ScrollArea className="h-[calc(90vh-200px)] pr-2">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 pb-4">
+          {/* Preview Card — ✅ Unified styling */}
+          <Card className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2.5 mb-3">
+                <Video className="h-4 w-4 text-rose-500" />
+                <h3 className="font-bold text-gray-900 text-sm">{t('EditReelForm.preview.title')}</h3>
               </div>
-              <div className="flex gap-4 items-start">
-                <div className="relative flex-shrink-0">
+              <div className="flex gap-3 items-start">
+                <div className="relative w-16 h-24 flex-shrink-0">
                   <Image
                     src={reel.thumbnail_url || '/placeholder.png'}
                     alt={t('EditReelForm.preview.alt')}
-                    width={80}
-                    height={120}
-                    className="rounded-xl object-cover border-2 border-rose-200 shadow-sm"
+                    fill
+                    className="rounded-lg object-cover border-2 border-gray-200"
                   />
-                  <div className="absolute inset-0 bg-black/20 rounded-xl flex items-center justify-center">
-                    <Video className="h-6 w-6 text-white" />
+                  <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center">
+                    <Video className="h-4 w-4 text-white" />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <Badge variant="secondary" className="bg-rose-100 text-rose-700 mb-2">
+                  <Badge variant="secondary" className="bg-rose-100 text-rose-700 text-[10px] px-1.5 py-0.5 mb-2">
                     {t('EditReelForm.preview.views', { count: reel.views_count || 0 })}
                   </Badge>
-                  <p className="text-sm text-rose-700 line-clamp-2">
+                  <p className="text-[10px] text-gray-700 line-clamp-2">
                     {reel.caption || t('EditReelForm.preview.noCaption')}
                   </p>
                 </div>
@@ -189,68 +183,67 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
           </Card>
 
           {loadingData ? (
-            <div className="space-y-4 py-4">
-              <Skeleton className="h-10 w-full bg-rose-100" />
-              <Skeleton className="h-24 w-full bg-rose-100" />
-              <Skeleton className="h-40 w-full bg-rose-100" />
+            <div className="space-y-3 py-3">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-32 w-full" />
             </div>
           ) : (
             <>
-              {/* Caption Section */}
+              {/* Caption */}
               <FormField
                 control={form.control}
                 name="caption"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-rose-900 font-semibold flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-rose-600" />
+                    <FormLabel className="text-gray-800 font-medium flex items-center gap-1.5 text-sm">
+                      <Sparkles className="h-3.5 w-3.5 text-rose-500" />
                       {t('EditReelForm.caption.label')}
                     </FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder={t('EditReelForm.caption.placeholder')} 
                         {...field} 
-                        className="min-h-[100px] resize-none border-rose-200 focus:border-rose-300 focus:ring-rose-200 rounded-2xl"
+                        className="min-h-[80px] text-sm border border-gray-200 focus:border-purple-500 rounded-lg"
                       />
                     </FormControl>
-                    <FormDescription className="text-rose-600">
+                    <FormDescription className="text-gray-600 text-[10px]">
                       {t('EditReelForm.caption.chars', { current: field.value?.length || 0, max: 1000 })}
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="text-[10px]" />
                   </FormItem>
                 )}
               />
 
-              {/* Tagged Products Section */}
+              {/* Tagged Products */}
               <div>
-                <FormLabel className="text-rose-900 font-semibold flex items-center gap-2 mb-4">
-                  <Tag className="h-4 w-4 text-rose-600" />
+                <FormLabel className="text-gray-800 font-medium flex items-center gap-1.5 text-sm mb-3">
+                  <Tag className="h-3.5 w-3.5 text-rose-500" />
                   {t('EditReelForm.taggedProducts.title')}
-                  <Badge variant="secondary" className="bg-rose-100 text-rose-700 ml-2">
+                  <Badge variant="secondary" className="bg-rose-100 text-rose-700 text-[10px] px-1.5 py-0.5 ml-1.5">
                     {t('EditReelForm.taggedProducts.count', { count: taggedProducts.length })}
                   </Badge>
                 </FormLabel>
                 
-                {/* Selected Products */}
                 {taggedProducts.length > 0 && (
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-2">
+                  <div className="mb-3">
+                    <div className="flex flex-wrap gap-1.5">
                       {taggedProducts.map(p => (
                         <Badge 
                           key={p.id} 
                           variant="secondary" 
-                          className="bg-gradient-to-r from-rose-500 to-pink-500 text-white border-0 pl-2 pr-1 py-1 rounded-full flex items-center gap-1"
+                          className="bg-gradient-to-r from-rose-500 to-purple-500 text-white border-0 pl-2 pr-1 py-0.5 rounded-full flex items-center gap-1 text-[10px]"
                         >
-                          <span className="max-w-[120px] truncate text-xs">{p.name}</span>
+                          <span className="max-w-[100px] truncate">{p.name}</span>
                           <button
                             type="button"
                             onClick={() => {
                               const originalItem = activeAgreements.find(a => a.product_id === p.id) || allProducts.find(prod => prod.id === p.id);
                               if (originalItem) handleTagProduct(originalItem, false);
                             }}
-                            className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                            className="hover:bg-white/20 rounded-full p-0.5"
                           >
-                            <span className="text-xs">×</span>
+                            <span className="text-[10px]">×</span>
                           </button>
                         </Badge>
                       ))}
@@ -258,35 +251,33 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
                   </div>
                 )}
 
-                {/* Add Products Button */}
                 <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                   <DialogTrigger asChild>
                     <Button 
                       type="button" 
                       variant="outline" 
-                      className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300 rounded-2xl h-12"
+                      className="w-full border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg h-9 text-sm"
                     >
-                      <PlusCircle className="mr-2 h-4 w-4" />
+                      <PlusCircle className="mr-1.5 w-3.5 h-3.5" />
                       {taggedProducts.length === 0 
                         ? t('EditReelForm.taggedProducts.tagProducts') 
                         : t('EditReelForm.taggedProducts.manageProducts')}
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-3xl shadow-lg max-w-md max-h-[80vh] flex flex-col">
-                    <DialogHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-t-2xl p-6 shrink-0">
-                      <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                        <Tag className="h-5 w-5" />
+                  <DialogContent className="bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-xl max-w-md max-h-[80vh] flex flex-col mx-2">
+                    <DialogHeader className="bg-gradient-to-r from-rose-500 to-purple-600 text-white p-4 rounded-t-xl">
+                      <DialogTitle className="text-base font-bold flex items-center gap-2">
+                        <Tag className="h-4 w-4" />
                         {t('EditReelForm.taggedProducts.tagProducts')}
                       </DialogTitle>
                     </DialogHeader>
                     
-                    <ScrollArea className="flex-1 px-6">
-                      <div className="space-y-4 py-4">
-                        {/* Active Agreements Section */}
+                    <ScrollArea className="flex-1 px-4 py-2">
+                      <div className="space-y-3 py-2">
                         {activeAgreements.length > 0 && (
-                          <div className="mb-6 pb-4 border-b border-rose-100">
-                            <h3 className="text-sm font-semibold mb-3 text-rose-800 flex items-center gap-2">
-                              <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> 
+                          <div className="pb-3 border-b border-gray-200/50">
+                            <h3 className="text-[10px] font-bold mb-2 text-gray-800 flex items-center gap-1.5">
+                              <Star className="w-3 h-3 text-amber-500 fill-amber-500" /> 
                               {t('EditReelForm.taggedProducts.activeAgreements')}
                             </h3>
                             <div className="space-y-2">
@@ -296,10 +287,10 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
                                 return (
                                   <div 
                                     key={agreement.agreement_id} 
-                                    className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${
+                                    className={`flex items-start gap-2.5 p-2.5 rounded-lg border ${
                                       isDisabled 
-                                        ? 'bg-rose-50 border-rose-100 opacity-60' 
-                                        : 'bg-white border-rose-100 hover:border-rose-200 hover:shadow-sm'
+                                        ? 'bg-rose-50 border-rose-200/50 opacity-60' 
+                                        : 'bg-white border-gray-200/50 hover:border-gray-300'
                                     }`}
                                   >
                                     <Checkbox
@@ -307,24 +298,23 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
                                       checked={isChecked}
                                       onCheckedChange={(checked) => handleTagProduct(agreement, !!checked)}
                                       disabled={isDisabled}
-                                      className="data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 mt-0.5"
+                                      className="data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 mt-0.5 h-4 w-4"
                                     />
                                     <label 
                                       htmlFor={`edit-agreement-${agreement.agreement_id}`} 
-                                      className={`flex-1 text-sm leading-tight ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                      className={`flex-1 text-[10px] leading-tight ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                     >
-                                      <div className="font-medium text-rose-900">{agreement.product_name}</div>
-                                      <div className="text-xs text-rose-600 mt-1">
+                                      <div className="font-medium text-gray-900">{agreement.product_name}</div>
+                                      <div className="text-gray-600 mt-0.5">
                                         {t('EditReelForm.taggedProducts.fromMerchant', { store: agreement.merchant_store_name })}
                                       </div>
                                     </label>
                                     {agreement.product_image_url && (
-                                      <div className="relative w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden border border-rose-200">
+                                      <div className="relative w-10 h-10 flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
                                         <Image 
                                           src={agreement.product_image_url} 
                                           alt={agreement.product_name} 
                                           fill 
-                                          sizes="48px" 
                                           className="object-cover"
                                         />
                                       </div>
@@ -336,10 +326,9 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
                           </div>
                         )}
 
-                        {/* Other Products Section */}
                         <div>
-                          <h3 className="text-sm font-semibold mb-3 text-rose-800 flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4 text-rose-500" />
+                          <h3 className="text-[10px] font-bold mb-2 text-gray-800 flex items-center gap-1.5">
+                            <ImageIcon className="w-3 h-3 text-rose-500" />
                             {t('EditReelForm.taggedProducts.allProducts')}
                           </h3>
                           <div className="space-y-2">
@@ -350,10 +339,10 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
                               return (
                                 <div 
                                   key={product.id} 
-                                  className={`flex items-start gap-3 p-3 rounded-2xl border transition-all ${
+                                  className={`flex items-start gap-2.5 p-2.5 rounded-lg border ${
                                     isDisabled 
-                                      ? 'bg-rose-50 border-rose-100 opacity-60' 
-                                      : 'bg-white border-rose-100 hover:border-rose-200 hover:shadow-sm'
+                                      ? 'bg-rose-50 border-rose-200/50 opacity-60' 
+                                      : 'bg-white border-gray-200/50 hover:border-gray-300'
                                   }`}
                                 >
                                   <Checkbox
@@ -361,21 +350,20 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
                                     checked={isChecked}
                                     onCheckedChange={(checked) => handleTagProduct(product, !!checked)}
                                     disabled={isDisabled}
-                                    className="data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 mt-0.5"
+                                    className="data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 mt-0.5 h-4 w-4"
                                   />
                                   <label 
                                     htmlFor={`edit-product-${product.id}`} 
-                                    className={`flex-1 text-sm font-medium text-rose-900 leading-tight ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                    className={`flex-1 text-[10px] font-medium text-gray-900 leading-tight ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                   >
                                     {product.name}
                                   </label>
                                   {imageUrl && (
-                                    <div className="relative w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden border border-rose-200">
+                                    <div className="relative w-10 h-10 flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
                                       <Image 
                                         src={imageUrl} 
                                         alt={product.name} 
                                         fill 
-                                        sizes="48px" 
                                         className="object-cover"
                                       />
                                     </div>
@@ -388,11 +376,11 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
                       </div>
                     </ScrollArea>
 
-                    <div className="p-6 border-t border-rose-100 shrink-0">
+                    <div className="p-4 border-t border-gray-200/50">
                       <Button 
                         type="button" 
                         onClick={() => setIsModalOpen(false)}
-                        className="w-full bg-rose-100 text-rose-700 hover:bg-rose-200 border-rose-200 rounded-2xl"
+                        className="w-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 rounded-lg text-sm h-9"
                       >
                         {t('common.done')}
                       </Button>
@@ -405,16 +393,16 @@ export function EditReelForm({ reel, onUpdateSuccess, setOpen }: EditReelFormPro
         </form>
       </ScrollArea>
 
-      <div className="pt-4 border-t border-rose-100 mt-4">
+      <div className="pt-3 border-t border-gray-200/50 mt-3">
         <Button 
           type="submit" 
           disabled={isUpdating || loadingData} 
           onClick={form.handleSubmit(onSubmit)}
-          className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg rounded-2xl h-12 font-bold text-base"
+          className="w-full bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white h-10 rounded-lg text-sm font-medium"
         >
           {isUpdating ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-1.5"></div>
               {t('EditReelForm.actions.saving')}
             </>
           ) : (

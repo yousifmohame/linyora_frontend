@@ -7,18 +7,18 @@ import {
   Zap, 
   Calendar, 
   Plus, 
-  Search, 
   Trash2, 
   Save, 
   Clock, 
-  AlertCircle,
   CheckCircle2,
-  X
+  X,
+  Store
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -39,16 +39,35 @@ import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 
 // --- Types ---
+interface Variant {
+  id: number;
+  color: string;
+  price: number;
+  stock_quantity: number; // المخزون المتوفر
+  images: string[];
+}
+
 interface Product {
   id: number;
   name: string;
-  price: number; // Base price
-  image_url: string;
+  merchant_id: number;
+  merchantName: string;
+  image_url?: string;
+  variants: Variant[];
 }
 
-interface SelectedProduct extends Product {
-  discount_percentage: number;
-  total_quantity: number;
+interface SelectedItem {
+  uid: string;
+  productId: number;
+  variantId: number;
+  merchantId: number;
+  name: string;
+  variantColor: string;
+  image: string;
+  originalPrice: number;
+  discount: number;
+  totalQty: number; // الكمية التي يحددها الأدمن للعرض
+  maxStock: number; // المخزون الأصلي للمرجع
 }
 
 interface FlashSale {
@@ -72,89 +91,109 @@ export default function AdminFlashSalesPage() {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   
-  // Product Selection State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  // Data Selection State
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
 
-  // --- Fetch Data ---
+  // --- Fetch Existing Sales ---
   const fetchSales = async () => {
-  try {
-    setLoading(true);
-    const res = await api.get('/admin/flash-sales'); 
-
-    // Ensure res.data is an array
-    if (Array.isArray(res.data)) {
-      setSales(res.data);
-    } else {
-      console.warn("Unexpected API response format:", res.data);
-      setSales([]); // fallback to empty array
+    try {
+      setLoading(true);
+      const res = await api.get('/admin/flash-sales'); 
+      setSales(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error("Failed to fetch sales", error);
+      setSales([]);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Failed to fetch sales", error);
-    setSales([]); // critical: never leave sales as undefined or null
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchSales();
   }, []);
 
-  // --- Product Search ---
+  // --- Fetch All Products ---
   useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-      if (searchQuery.length < 2) {
-        setSearchResults([]);
-        return;
-      }
-      try {
-        const res = await api.get(`/products/search?term=${searchQuery}`);
-        setSearchResults(res.data);
-      } catch (error) {
-        console.error(error);
-      }
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+    if (isCreateOpen) {
+        const fetchProducts = async () => {
+            setLoadingProducts(true);
+            try {
+                const res = await api.get('/products?limit=100&include_variants=true'); 
+                const productsData = Array.isArray(res.data) ? res.data : (res.data.products || []);
+                setAllProducts(productsData);
+            } catch (error) {
+                console.error("Failed to load products", error);
+                toast.error("Could not load products list");
+            } finally {
+                setLoadingProducts(false);
+            }
+        };
+        fetchProducts();
+    }
+  }, [isCreateOpen]);
 
   // --- Handlers ---
 
-  const handleAddProduct = (product: Product) => {
-    // Prevent duplicates
-    if (selectedProducts.find(p => p.id === product.id)) return;
+  const handleAddVariant = (product: Product, variant: Variant) => {
+    const uid = `${product.id}-${variant.id}`;
+    
+    if (selectedItems.find(i => i.uid === uid)) {
+        toast.info("This item is already selected.");
+        return;
+    }
 
-    setSelectedProducts(prev => [
+    setSelectedItems(prev => [
       ...prev, 
-      { ...product, discount_percentage: 20, total_quantity: 10 } // Defaults
+      { 
+        uid,
+        productId: product.id,
+        variantId: variant.id,
+        merchantId: product.merchant_id,
+        name: product.name,
+        variantColor: variant.color || 'Default',
+        image: variant.images?.[0] || product.image_url || '/placeholder.png',
+        originalPrice: Number(variant.price),
+        discount: 20, // Default discount %
+        totalQty: 5,  // Default quantity for flash sale
+        maxStock: variant.stock_quantity // Store max stock for validation
+      }
     ]);
-    setSearchQuery(''); // Clear search to show added
   };
 
-  const handleRemoveProduct = (productId: number) => {
-    setSelectedProducts(prev => prev.filter(p => p.id !== productId));
+  const handleRemoveItem = (uid: string) => {
+    setSelectedItems(prev => prev.filter(item => item.uid !== uid));
   };
 
-  const updateProductSetting = (id: number, field: 'discount_percentage' | 'total_quantity', value: string) => {
+  const updateItemSetting = (uid: string, field: 'discount' | 'totalQty', value: string) => {
     const numValue = parseFloat(value);
-    setSelectedProducts(prev => prev.map(p => 
-      p.id === id ? { ...p, [field]: isNaN(numValue) ? 0 : numValue } : p
+    
+    // Check stock limit if updating quantity
+    if (field === 'totalQty') {
+       const item = selectedItems.find(i => i.uid === uid);
+       if (item && numValue > item.maxStock) {
+           toast.warning(`Cannot exceed available stock (${item.maxStock})`);
+           return;
+       }
+    }
+
+    setSelectedItems(prev => prev.map(item => 
+      item.uid === uid ? { ...item, [field]: isNaN(numValue) ? 0 : numValue } : item
     ));
   };
 
-  const calculateDiscountedPrice = (price: number, discount: number) => {
+  const calculateFlashPrice = (price: number, discount: number) => {
     return (price - (price * (discount / 100))).toFixed(2);
   };
 
   const handleSubmit = async () => {
     if (!title || !startTime || !endTime) {
-      toast.error("Please fill in all basic details.");
+      toast.error("Please fill in the Campaign Title and Dates.");
       return;
     }
-    if (selectedProducts.length === 0) {
-      toast.error("Please add at least one product.");
+    if (selectedItems.length === 0) {
+      toast.error("Please select at least one product.");
       return;
     }
     if (new Date(startTime) >= new Date(endTime)) {
@@ -166,18 +205,14 @@ export default function AdminFlashSalesPage() {
     try {
       const payload = {
         title,
-        start_time: new Date(startTime).toISOString(), // Convert to MySQL format in backend if needed
+        start_time: new Date(startTime).toISOString(),
         end_time: new Date(endTime).toISOString(),
-        products: selectedProducts.map(p => ({
-          productId: p.id,
-          discount: p.discount_percentage,
-          totalQty: p.total_quantity
-        }))
+        items: selectedItems
       };
 
       await api.post('/admin/flash-sale', payload);
       
-      toast.success("Flash Sale Created Successfully!");
+      toast.success("Flash Sale Created & Merchants Invited!");
       setIsCreateOpen(false);
       resetForm();
       fetchSales();
@@ -189,33 +224,32 @@ export default function AdminFlashSalesPage() {
     }
   };
 
+  const handleDeleteSale = async (id: number) => {
+    if(!confirm("Are you sure?")) return;
+    try {
+        await api.delete(`/admin/flash-sale/${id}`);
+        setSales(prev => prev.filter(s => s.id !== id));
+        toast.success("Campaign deleted");
+    } catch(err) {
+        toast.error("Failed to delete campaign");
+    }
+  }
+
   const resetForm = () => {
     setTitle('');
     setStartTime('');
     setEndTime('');
-    setSelectedProducts([]);
-    setSearchQuery('');
+    setSelectedItems([]);
   };
 
-  const handleDeleteSale = async (id: number) => {
-    if(!confirm("Are you sure you want to delete this sale?")) return;
-    try {
-        await api.delete(`/admin/flash-sale/${id}`);
-        setSales(prev => prev.filter(s => s.id !== id));
-        toast.success("Sale deleted");
-    } catch(err) {
-        toast.error("Failed to delete");
-    }
-  }
-
-  // --- Render Helpers ---
+  // --- UI Helpers ---
   const getStatusBadge = (start: string, end: string) => {
     const now = new Date();
     const startDate = new Date(start);
     const endDate = new Date(end);
 
     if (now > endDate) return <Badge variant="secondary" className="bg-gray-200 text-gray-600">Expired</Badge>;
-    if (now >= startDate && now <= endDate) return <Badge className="bg-rose-500 animate-pulse">Active Now</Badge>;
+    if (now >= startDate && now <= endDate) return <Badge className="bg-rose-500 animate-pulse">Active</Badge>;
     return <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">Scheduled</Badge>;
   };
 
@@ -225,35 +259,36 @@ export default function AdminFlashSalesPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Zap className="w-8 h-8 text-rose-500 fill-rose-500" />
-            Manage Flash Sales
+            <Zap className="w-8 h-8 text-amber-500 fill-amber-500" />
+            Flash Campaigns
           </h1>
-          <p className="text-gray-500 mt-1">Schedule time-limited offers and huge discounts.</p>
+          <p className="text-gray-500 mt-1">Create campaigns, select products, and invite merchants.</p>
         </div>
+        
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button className="bg-gray-900 text-white hover:bg-gray-800 shadow-lg">
-              <Plus className="w-4 h-4 mr-2" /> Create Flash Sale
+              <Plus className="w-4 h-4 mr-2" /> New Campaign
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-7xl lg:max-w-7xl max-h-[90vh] overflow-y-auto flex flex-col">
             <DialogHeader>
-              <DialogTitle>Create New Flash Sale</DialogTitle>
+              <DialogTitle>Create New Campaign</DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-6 py-4">
+            <div className="flex-1 space-y-6 py-4">
               {/* 1. Basic Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-xl border">
                 <div className="space-y-2">
                   <Label>Campaign Title</Label>
                   <Input 
-                    placeholder="e.g. Black Friday Deals" 
+                    placeholder="e.g. Super Friday Sale" 
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Start Date & Time</Label>
+                  <Label>Start Date</Label>
                   <Input 
                     type="datetime-local" 
                     value={startTime}
@@ -261,7 +296,7 @@ export default function AdminFlashSalesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>End Date & Time</Label>
+                  <Label>End Date</Label>
                   <Input 
                     type="datetime-local" 
                     value={endTime}
@@ -270,197 +305,214 @@ export default function AdminFlashSalesPage() {
                 </div>
               </div>
 
-              {/* 2. Product Search */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                    <Search className="w-4 h-4" /> Add Products
-                </Label>
-                <div className="relative">
-                    <Input 
-                        placeholder="Search products by name..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                    />
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    
-                    {/* Search Results Dropdown */}
-                    {searchResults.length > 0 && searchQuery.length >= 2 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
-                            {searchResults.map(prod => (
-                                <div 
-                                    key={prod.id}
-                                    onClick={() => handleAddProduct(prod)}
-                                    className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b last:border-0"
-                                >
-                                    <div className="w-10 h-10 relative rounded overflow-hidden bg-gray-100">
-                                        <Image src={prod.image_url || '/placeholder.png'} alt={prod.name} fill className="object-cover"/>
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium">{prod.name}</p>
-                                        <p className="text-xs text-gray-500">{prod.price} SAR</p>
-                                    </div>
-                                    <Plus className="w-4 h-4 text-green-600" />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-              </div>
-
-              {/* 3. Selected Products Table */}
-              <div className="border rounded-xl overflow-hidden">
-                <div className="bg-gray-100 p-3 font-semibold text-sm border-b flex justify-between">
-                    <span>Selected Products ({selectedProducts.length})</span>
-                    <span className="text-xs text-gray-500 font-normal">Set discount and quantity allocation</span>
-                </div>
-                {selectedProducts.length === 0 ? (
-                    <div className="p-8 text-center text-gray-400 text-sm bg-gray-50/50">
-                        No products added yet. Search above to add.
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
+                {/* 2. Available Products List (Left) */}
+                <div className="border rounded-xl flex flex-col overflow-hidden">
+                    <div className="bg-gray-100 p-3 font-semibold text-sm border-b">
+                        Available Products ({allProducts.length})
                     </div>
-                ) : (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[40%]">Product</TableHead>
-                                <TableHead>Base Price</TableHead>
-                                <TableHead>Discount %</TableHead>
-                                <TableHead>Flash Price</TableHead>
-                                <TableHead>Qty Limit</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {selectedProducts.map((p) => (
-                                <TableRow key={p.id}>
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 relative rounded overflow-hidden bg-gray-100 flex-shrink-0">
-                                                <Image src={p.image_url || '/placeholder.png'} alt={p.name} fill className="object-cover"/>
+                    <ScrollArea className="flex-1 p-0">
+                        {loadingProducts ? (
+                            <div className="p-8 text-center text-gray-500">Loading products...</div>
+                        ) : allProducts.length === 0 ? (
+                            <div className="p-8 text-center text-gray-500">No products found.</div>
+                        ) : (
+                            <div className="divide-y">
+                                {allProducts.map(product => (
+                                    <div key={product.id} className="p-3 hover:bg-gray-50">
+                                        <div className="flex items-start justify-between mb-2">
+                                            <div>
+                                                <p className="font-medium text-sm text-gray-900">{product.name}</p>
+                                                <p className="text-xs text-gray-500 flex items-center gap-1">
+                                                    <Store className="w-3 h-3" /> {product.merchantName}
+                                                </p>
                                             </div>
-                                            <span className="truncate max-w-[150px]" title={p.name}>{p.name}</span>
                                         </div>
-                                    </TableCell>
-                                    <TableCell>{p.price}</TableCell>
-                                    <TableCell>
-                                        <div className="relative w-20">
-                                            <Input 
-                                                type="number" 
-                                                min="1" 
-                                                max="99" 
-                                                className="h-8 pr-6"
-                                                value={p.discount_percentage}
-                                                onChange={(e) => updateProductSetting(p.id, 'discount_percentage', e.target.value)}
-                                            />
-                                            <span className="absolute right-2 top-2 text-xs text-gray-400">%</span>
+                                        {/* Variants Grid */}
+                                        <div className="flex flex-wrap gap-2">
+                                            {product.variants?.map(variant => {
+                                                const isAdded = selectedItems.some(i => i.uid === `${product.id}-${variant.id}`);
+                                                return (
+                                                    <button
+                                                        key={variant.id}
+                                                        onClick={() => handleAddVariant(product, variant)}
+                                                        disabled={isAdded}
+                                                        className={`flex items-center gap-2 text-xs border rounded-lg px-2 py-1.5 transition-all ${
+                                                            isAdded 
+                                                            ? 'bg-green-50 border-green-200 text-green-700 opacity-70 cursor-not-allowed' 
+                                                            : 'bg-white hover:bg-rose-50 hover:border-rose-200'
+                                                        }`}
+                                                    >
+                                                        {isAdded ? <CheckCircle2 className="w-3 h-3"/> : <Plus className="w-3 h-3"/>}
+                                                        <span className="font-medium">{variant.color || 'Std'}</span>
+                                                        <span className="text-gray-500 border-l pl-2 ml-1">
+                                                            {variant.price} SAR | <span className="text-blue-600 font-bold">{variant.stock_quantity} in stock</span>
+                                                        </span>
+                                                    </button>
+                                                )
+                                            })}
                                         </div>
-                                    </TableCell>
-                                    <TableCell className="text-rose-600 font-bold">
-                                        {calculateDiscountedPrice(p.price, p.discount_percentage)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Input 
-                                            type="number" 
-                                            min="1"
-                                            className="h-8 w-20"
-                                            value={p.total_quantity}
-                                            onChange={(e) => updateProductSetting(p.id, 'total_quantity', e.target.value)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleRemoveProduct(p.id)}>
-                                            <X className="w-4 h-4" />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </ScrollArea>
+                </div>
+
+                {/* 3. Selected Items Configuration (Right) - ✅ الجزء المعدل للكميات */}
+                <div className="border rounded-xl flex flex-col overflow-hidden">
+                    <div className="bg-gray-100 p-3 font-semibold text-sm border-b flex justify-between items-center">
+                        <span>Selected Items ({selectedItems.length})</span>
+                        <span className="text-xs text-rose-600">Configure Discounts & Quantities</span>
+                    </div>
+                    <ScrollArea className="flex-1">
+                        {selectedItems.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                <Plus className="w-8 h-8 mb-2 opacity-50" />
+                                <p>Select variants from the left list.</p>
+                            </div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-white sticky top-0 z-10 shadow-sm">
+                                        <TableHead className="w-[150px]">Item</TableHead>
+                                        <TableHead>Price</TableHead>
+                                        <TableHead>Discount %</TableHead>
+                                        <TableHead>Flash $</TableHead>
+                                        <TableHead>Sale Qty</TableHead>
+                                        <TableHead></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {selectedItems.map((item) => (
+                                        <TableRow key={item.uid}>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 relative rounded bg-gray-100 flex-shrink-0">
+                                                        <Image src={item.image} alt="" fill className="object-cover rounded"/>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-medium truncate w-[80px]">{item.name}</span>
+                                                        <span className="text-[10px] text-gray-500">{item.variantColor}</span>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-xs">{item.originalPrice}</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center">
+                                                    <Input 
+                                                        type="number" 
+                                                        className="h-7 w-12 px-1 text-center text-xs" 
+                                                        value={item.discount}
+                                                        onChange={e => updateItemSetting(item.uid, 'discount', e.target.value)}
+                                                    />
+                                                    <span className="text-xs ml-1">%</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-xs font-bold text-rose-600">
+                                                {calculateFlashPrice(item.originalPrice, item.discount)}
+                                            </TableCell>
+                                            {/* ✅ هنا خانة الكمية أصبحت أوضح */}
+                                            <TableCell>
+                                                <div className="flex flex-col gap-1">
+                                                    <Input 
+                                                        type="number" 
+                                                        className="h-7 w-16 px-1 text-center text-xs border-blue-200 focus:border-blue-500" 
+                                                        value={item.totalQty}
+                                                        onChange={e => updateItemSetting(item.uid, 'totalQty', e.target.value)}
+                                                    />
+                                                    <span className="text-[10px] text-gray-400">Max: {item.maxStock}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button size="icon" variant="ghost" className="h-6 w-6 text-red-500" onClick={() => handleRemoveItem(item.uid)}>
+                                                    <X className="w-3 h-3" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </ScrollArea>
+                </div>
               </div>
             </div>
 
-            <DialogFooter className="gap-2">
+            <DialogFooter className="gap-2 border-t pt-4">
                 <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
                 <Button 
                     onClick={handleSubmit} 
-                    disabled={isSubmitting || selectedProducts.length === 0}
-                    className="bg-rose-600 hover:bg-rose-700 text-white"
+                    disabled={isSubmitting || selectedItems.length === 0}
+                    className="bg-rose-600 hover:bg-rose-700 text-white min-w-[150px]"
                 >
-                    {isSubmitting ? (
-                        <>Saving...</>
-                    ) : (
-                        <><Save className="w-4 h-4 mr-2" /> Publish Sale</>
-                    )}
+                    {isSubmitting ? 'Processing...' : 'Create Campaign'}
                 </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Sales List */}
-      <div className="grid grid-cols-1 gap-6">
-        <Card>
-            <CardHeader>
-                <CardTitle>Sales History</CardTitle>
-                <CardDescription>Manage active and past flash sale campaigns.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {loading ? (
-                    <div className="space-y-4">
-                        {[1,2,3].map(i => <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-xl" />)}
-                    </div>
-                // ✅ FIX APPLIED BELOW: Added !sales check
-                ) : (!sales || sales.length === 0) ? (
-                    <div className="text-center py-10 text-gray-500">No flash sales created yet.</div>
-                ) : (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Campaign</TableHead>
-                                <TableHead>Duration</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Products</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+      {/* Sales History List */}
+      <Card>
+        <CardHeader>
+            <CardTitle>Campaign History</CardTitle>
+            <CardDescription>View status of active and past flash sales.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            {loading ? (
+                <div className="space-y-4">
+                    {[1,2,3].map(i => <div key={i} className="h-16 bg-gray-100 animate-pulse rounded-xl" />)}
+                </div>
+            ) : (!sales || sales.length === 0) ? (
+                <div className="text-center py-10 text-gray-500">No campaigns created yet.</div>
+            ) : (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Campaign</TableHead>
+                            <TableHead>Timeframe</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Products</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {sales.map((sale) => (
+                            <TableRow key={sale.id}>
+                                <TableCell className="font-medium">{sale.title}</TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col text-sm text-gray-600">
+                                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> {new Date(sale.start_time).toLocaleDateString()}</span>
+                                        <span className="flex items-center gap-1 text-xs text-gray-400"><Clock className="w-3 h-3"/> {new Date(sale.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(sale.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    {getStatusBadge(sale.start_time, sale.end_time)}
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-1">
+                                        <span className="font-bold">{sale.product_count || 0}</span>
+                                        <span className="text-xs text-gray-500">variants</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="text-red-500 hover:bg-red-50"
+                                        onClick={() => handleDeleteSale(sale.id)}
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                </TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {sales.map((sale) => (
-                                <TableRow key={sale.id}>
-                                    <TableCell className="font-medium text-base">{sale.title}</TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col text-sm text-gray-600">
-                                            <span className="flex items-center gap-1"><Calendar className="w-3 h-3"/> {new Date(sale.start_time).toLocaleDateString()}</span>
-                                            <span className="flex items-center gap-1 text-xs text-gray-400"><Clock className="w-3 h-3"/> {new Date(sale.start_time).toLocaleTimeString()} - {new Date(sale.end_time).toLocaleTimeString()}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        {getStatusBadge(sale.start_time, sale.end_time)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-1">
-                                            <span className="font-bold">{sale.product_count || 0}</span>
-                                            <span className="text-xs text-gray-500">items</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className="text-red-500 hover:bg-red-50"
-                                            onClick={() => handleDeleteSale(sale.id)}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                )}
-            </CardContent>
-        </Card>
-      </div>
+                        ))}
+                    </TableBody>
+                </Table>
+            )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

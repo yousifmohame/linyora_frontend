@@ -175,7 +175,7 @@ export default function DropshippingPage() {
             </header>
 
             {/* ✅ Responsive Stats Grid (2 cols on mobile) */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
                 <StatCard value={stats.total} label={t('DropshippingPage.stats.totalProducts')} color="rose" />
                 <StatCard value={stats.featured} label={t('DropshippingPage.stats.featured')} color="purple" />
                 <StatCard value={stats.suppliers} label={t('DropshippingPage.stats.suppliers')} color="blue" />
@@ -230,79 +230,113 @@ export default function DropshippingPage() {
                         {t('DropshippingPage.results.product', { count: filteredProducts.length })}
                     </div>
                     {/* ✅ Responsive Grid - No Horizontal Scroll */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                         {filteredProducts.map(product => {
-                            const firstVariant = product.variants?.[0];
-                            const imageUrl = firstVariant?.images?.[0] || '/placeholder.png';
-                            const price = firstVariant?.cost_price;
+                    const firstVariant = product.variants?.[0];
+                    const imageUrl = firstVariant?.images?.[0] || '/placeholder.png';
+                    const price = firstVariant?.cost_price;
 
-                            return (
-                                <Card 
-                                    key={product.id} 
-                                    className="flex flex-col overflow-hidden shadow-sm hover:shadow-md rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200/50 transition-shadow"
+                    return (
+                        <Card 
+                        key={product.id} 
+                        className="flex flex-col gap-0 py-0 overflow-hidden group bg-white border border-transparent shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 rounded-lg max-w-[320px] font-sans"
+                        >
+                        <CardHeader className="p-0 relative">
+                            <div className="relative h-[220px] w-full overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50">
+                            {!imageUrl.includes('placeholder') && (
+                                <Image 
+                                src={imageUrl} 
+                                alt={product.name} 
+                                fill 
+                                className="object-cover transition-all duration-500 group-hover:scale-105"
+                                unoptimized
+                                />
+                            )}
+                            {imageUrl.includes('placeholder') && (
+                                <div className="absolute inset-0 bg-gradient-to-br from-pink-50 to-purple-50 flex items-center justify-center">
+                                <Sparkles className="text-gray-300 w-8 h-8" />
+                                </div>
+                            )}
+
+                            {/* Featured Badge (like "Premium" in ProductCard) */}
+                            {product.is_featured && (
+                                <div className="absolute top-2 left-2 flex items-center gap-0.5 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
+                                <Star className="w-2.5 h-2.5 text-amber-500" />
+                                <span className="text-[10px] font-medium text-rose-500 uppercase tracking-wide">
+                                    {t('DropshippingPage.badge.featured')}
+                                </span>
+                                </div>
+                            )}
+
+                            {/* Brand Badge */}
+                            {product.brand && (
+                                <Badge 
+                                variant="outline" 
+                                className="absolute bottom-2 left-2 bg-rose-100 text-rose-700 border-rose-200 text-[10px] px-1.5 py-0.5 rounded-full"
                                 >
-                                    <CardHeader className="p-0 relative">
-                                        <div className="relative h-40 w-full">
-                                            <Image 
-                                                src={imageUrl} 
-                                                alt={product.name} 
-                                                fill 
-                                                className="object-cover" 
-                                                unoptimized
-                                            />
-                                            {product.is_featured && (
-                                                <Badge className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-1 rounded-full text-[10px] font-bold">
-                                                    <Star className="w-2.5 h-2.5 mr-0.5" />
-                                                    {t('DropshippingPage.badge.featured')}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="pt-3 flex-1 flex flex-col">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <Badge variant="outline" className="bg-rose-100 text-rose-700 border-rose-200 text-[10px] px-1.5 py-0.5">
-                                                {product.brand}
-                                            </Badge>
-                                            <span className="text-[10px] text-gray-500 truncate max-w-[100px]">
-                                                {product.categories}
-                                            </span>
-                                        </div>
-                                        <CardTitle className="text-sm font-bold mt-1 line-clamp-2 text-gray-900 flex-grow">
-                                            {product.name}
-                                        </CardTitle>
-                                        {product.supplier_name && (
-                                            <p className="text-[10px] text-gray-600 mt-1">
-                                                {t('DropshippingPage.product.supplier')}: {product.supplier_name}
-                                            </p>
-                                        )}
-                                        <div className="flex items-center justify-between mt-2">
-                                            {price !== undefined ? (
-                                                <p className="font-bold text-sm text-rose-600">
-                                                    {price.toFixed(2)} {t('DropshippingPage.currency')}
-                                                </p>
-                                            ) : (
-                                                <p className="text-[10px] text-gray-500">
-                                                    {t('DropshippingPage.noPrice')}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="pt-2">
-                                        <Button 
-                                            className="w-full bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-lg text-sm h-9"
-                                            onClick={() => handleImport(product.id, price || 0)} 
-                                            disabled={importingId === product.id || price === undefined}
-                                        >
-                                            <Rocket className="ml-1.5 w-3.5 h-3.5" />
-                                            {importingId === product.id 
-                                                ? t('DropshippingPage.actions.importing') 
-                                                : t('DropshippingPage.actions.addToStore')
-                                            }
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            );
-                        })}
+                                {product.brand}
+                                </Badge>
+                            )}
+                            </div>
+                        </CardHeader>
+
+                        <CardContent className="p-2 flex-1 flex flex-col">
+                            <CardTitle className="text-[13px] font-semibold text-gray-900 leading-tight line-clamp-2 mb-2 font-serif">
+                            {product.name}
+                            </CardTitle>
+
+                            {product.supplier_name && (
+                            <p className="text-[10px] text-gray-600 mb-1">
+                                {t('DropshippingPage.product.supplier')}: {product.supplier_name}
+                            </p>
+                            )}
+
+                            {/* Price */}
+                            <div className="mt-1">
+                            {price !== undefined ? (
+                                <div className="flex items-baseline gap-2">
+                                <span className="text-[12px] font-bold text-gray-900">
+                                    {price.toFixed(2)} {t('DropshippingPage.currency')}
+                                </span>
+                                </div>
+                            ) : (
+                                <p className="text-[11px] text-gray-500 italic">
+                                {t('DropshippingPage.noPrice')}
+                                </p>
+                            )}
+                            </div>
+
+                            {/* Categories as tags (compact) */}
+                            {product.categories && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                                {product.categories.split(', ').slice(0, 2).map((cat, idx) => (
+                                <span 
+                                    key={idx} 
+                                    className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded"
+                                >
+                                    {cat}
+                                </span>
+                                ))}
+                            </div>
+                            )}
+                        </CardContent>
+
+                        <CardFooter className="p-2 pt-0">
+                            <Button 
+                            className="w-full bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-lg text-sm h-8"
+                            onClick={() => handleImport(product.id, price || 0)} 
+                            disabled={importingId === product.id || price === undefined}
+                            >
+                            <Rocket className="ml-1.5 w-3.5 h-3.5" />
+                            {importingId === product.id 
+                                ? t('DropshippingPage.actions.importing') 
+                                : t('DropshippingPage.actions.addToStore')
+                            }
+                            </Button>
+                        </CardFooter>
+                        </Card>
+                    );
+                    })}
                     </div>
                     {filteredProducts.length === 0 && (
                         <Card className="text-center py-8 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl mt-6">

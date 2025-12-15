@@ -117,7 +117,6 @@ export default function AdminFlashSalesPage() {
     fetchSales();
   }, [i18n.language]);
 
-  // --- Fetch Available Products (Updated) ---
   // --- Fetch Available Products ---
   useEffect(() => {
     // الجلب يتم فقط عند فتح نافذة "إنشاء حملة جديدة"
@@ -318,139 +317,143 @@ export default function AdminFlashSalesPage() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
-                {/* Available Products */}
-                <div className="border rounded-lg overflow-hidden flex flex-col">
-                  <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-800">
-                      {t('AdminFlashSales.available_products')} <span className="text-gray-500">({allProducts.length})</span>
-                    </h3>
-                  </div>
-                  <ScrollArea className="flex-1 p-0">
-                    {loadingProducts ? (
-                      <div className="p-6 text-center text-gray-500">{t('AdminFlashSales.loading_products')}</div>
-                    ) : allProducts.length === 0 ? (
-                      <div className="p-6 text-center text-gray-500">{t('AdminFlashSales.no_products')}</div>
-                    ) : (
-                      <div className="divide-y divide-gray-100">
-                        {allProducts.map(product => (
-                          <div key={product.id} className="p-3 hover:bg-gray-50 transition-colors">
-                            <div className="flex justify-between items-start mb-2">
-                              <p className="font-medium text-sm text-gray-900">{product.name}</p>
-                              <span className="text-xs text-gray-500 flex items-center gap-1">
-                                <Store className="w-3 h-3" /> {product.merchantName}
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {product.variants?.map(variant => {
-                                const isAdded = selectedItems.some(i => i.uid === `${product.id}-${variant.id}`);
-                                return (
-                                  <button
-                                    key={variant.id}
-                                    onClick={() => handleAddVariant(product, variant)}
-                                    disabled={isAdded}
-                                    className={`text-xs px-2 py-1 rounded-md border font-medium transition-colors flex items-center gap-1 ${
-                                      isAdded 
-                                        ? 'bg-green-100 text-green-800 border-green-300 cursor-not-allowed' 
-                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-amber-50 hover:border-amber-300'
-                                    }`}
-                                  >
-                                    {isAdded ? <CheckCircle2 className="w-3 h-3 text-green-600" /> : <Plus className="w-3 h-3" />}
-                                    <span>{variant.color || 'Std'}</span>
-                                    <span className="text-gray-500 ml-2">({variant.price} SAR | {variant.stock_quantity} {t('AdminFlashSales.in_stock')})</span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </ScrollArea>
-                </div>
-
-                {/* Selected Items */}
-                <div className="border rounded-lg overflow-hidden flex flex-col">
-                  <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200 flex justify-between items-center">
-                    <h3 className="text-sm font-semibold text-gray-800">
-                      {t('AdminFlashSales.selected_items')} <span className="text-gray-500">({selectedItems.length})</span>
-                    </h3>
-                    <span className="text-xs text-amber-600 font-medium">{t('AdminFlashSales.configure_discounts')}</span>
-                  </div>
-                  <ScrollArea className="flex-1">
-                    {selectedItems.length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-gray-400 p-6 text-center">
-                        <Plus className="w-8 h-8 mb-2 opacity-50" />
-                        <p className="text-sm">{t('AdminFlashSales.select_variants_instruction')}</p>
-                      </div>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-gray-50 sticky top-0 z-10">
-                            <TableHead className="w-[120px] text-xs font-semibold text-gray-700">{t('AdminFlashSales.item')}</TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.price')}</TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.discount_percent')}</TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.flash_price')}</TableHead>
-                            <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.sale_qty')}</TableHead>
-                            <TableHead className="w-8"></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {selectedItems.map((item) => (
-                            <TableRow key={item.uid} className="hover:bg-gray-50">
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 relative rounded bg-gray-200 flex-shrink-0 overflow-hidden">
-                                    <Image src={item.image} alt="" fill className="object-cover" />
-                                  </div>
-                                  <div className="flex flex-col w-[90px]">
-                                    <span className="text-xs font-medium text-gray-900 truncate">{item.name}</span>
-                                    <span className="text-[10px] text-gray-500">{item.variantColor}</span>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-xs text-gray-700">{item.originalPrice.toFixed(2)}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center">
-                                  <Input 
-                                    type="number" 
-                                    min="0"
-                                    max="100"
-                                    className="h-7 w-14 px-1 text-center text-xs border-gray-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-200" 
-                                    value={item.discount}
-                                    onChange={e => updateItemSetting(item.uid, 'discount', e.target.value)}
-                                  />
-                                  <span className="text-xs ml-1 text-gray-600">%</span>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-xs font-bold text-amber-700">
-                                {calculateFlashPrice(item.originalPrice, item.discount)}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-col gap-1">
-                                  <Input 
-                                    type="number" 
-                                    min="1"
-                                    max={item.maxStock}
-                                    className="h-7 w-16 px-1 text-center text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-200" 
-                                    value={item.totalQty}
-                                    onChange={e => updateItemSetting(item.uid, 'totalQty', e.target.value)}
-                                  />
-                                  <span className="text-[10px] text-gray-500">{t('AdminFlashSales.max')}: {item.maxStock}</span>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:bg-red-50" onClick={() => handleRemoveItem(item.uid)}>
-                                  <X className="w-3 h-3" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </ScrollArea>
-                </div>
+  {/* Available Products */}
+  <div className="border rounded-lg overflow-hidden flex flex-col">
+    <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200">
+      <h3 className="text-sm font-semibold text-gray-800">
+        {t('AdminFlashSales.available_products')} <span className="text-gray-500">({allProducts.length})</span>
+      </h3>
+    </div>
+    {/* ✅ Replaced ScrollArea with scrollable div */}
+    <div className="flex-1 overflow-y-auto p-0">
+      {loadingProducts ? (
+        <div className="p-6 text-center text-gray-500">{t('AdminFlashSales.loading_products')}</div>
+      ) : allProducts.length === 0 ? (
+        <div className="p-6 text-center text-gray-500">{t('AdminFlashSales.no_products')}</div>
+      ) : (
+        <div className="divide-y divide-gray-100">
+          {allProducts.map(product => (
+            <div key={product.id} className="p-3 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-start mb-2">
+                <p className="font-medium text-sm text-gray-900">{product.name}</p>
+                <span className="text-xs text-gray-500 flex items-center gap-1">
+                  <Store className="w-3 h-3" /> {product.merchantName}
+                </span>
               </div>
+              <div className="flex flex-wrap gap-2">
+                {product.variants?.map(variant => {
+                  const isAdded = selectedItems.some(i => i.uid === `${product.id}-${variant.id}`);
+                  return (
+                    <button
+                      key={variant.id}
+                      onClick={() => handleAddVariant(product, variant)}
+                      disabled={isAdded}
+                      className={`text-xs px-2 py-1 rounded-md border font-medium transition-colors flex items-center gap-1 ${
+                        isAdded 
+                          ? 'bg-green-100 text-green-800 border-green-300 cursor-not-allowed' 
+                          : 'bg-white text-gray-700 border-gray-300 hover:bg-amber-50 hover:border-amber-300'
+                      }`}
+                    >
+                      {isAdded ? <CheckCircle2 className="w-3 h-3 text-green-600" /> : <Plus className="w-3 h-3" />}
+                      <span>{variant.color || 'Std'}</span>
+                      <span className="text-gray-500 ml-2">({variant.price} SAR | {variant.stock_quantity} {t('AdminFlashSales.in_stock')})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+
+  {/* Selected Items */}
+  <div className="border rounded-lg overflow-hidden flex flex-col">
+    <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200 flex justify-between items-center">
+      <h3 className="text-sm font-semibold text-gray-800">
+        {t('AdminFlashSales.selected_items')} <span className="text-gray-500">({selectedItems.length})</span>
+      </h3>
+      <span className="text-xs text-amber-600 font-medium">{t('AdminFlashSales.configure_discounts')}</span>
+    </div>
+    {/* ✅ Replaced ScrollArea */}
+    <div className="flex-1 overflow-y-auto">
+      {selectedItems.length === 0 ? (
+        <div className="h-full flex flex-col items-center justify-center text-gray-400 p-6 text-center">
+          <Plus className="w-8 h-8 mb-2 opacity-50" />
+          <p className="text-sm">{t('AdminFlashSales.select_variants_instruction')}</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto"> {/* ensures table doesn't break layout */}
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50 sticky top-0 z-10">
+                <TableHead className="w-[120px] text-xs font-semibold text-gray-700">{t('AdminFlashSales.item')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.price')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.discount_percent')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.flash_price')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-700">{t('AdminFlashSales.sale_qty')}</TableHead>
+                <TableHead className="w-8"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {selectedItems.map((item) => (
+                <TableRow key={item.uid} className="hover:bg-gray-50">
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 relative rounded bg-gray-200 flex-shrink-0 overflow-hidden">
+                        <Image src={item.image} alt="" fill className="object-cover" />
+                      </div>
+                      <div className="flex flex-col w-[90px]">
+                        <span className="text-xs font-medium text-gray-900 truncate">{item.name}</span>
+                        <span className="text-[10px] text-gray-500">{item.variantColor}</span>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs text-gray-700">{item.originalPrice.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <Input 
+                        type="number" 
+                        min="0"
+                        max="100"
+                        className="h-7 w-14 px-1 text-center text-xs border-gray-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-200" 
+                        value={item.discount}
+                        onChange={e => updateItemSetting(item.uid, 'discount', e.target.value)}
+                      />
+                      <span className="text-xs ml-1 text-gray-600">%</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs font-bold text-amber-700">
+                    {calculateFlashPrice(item.originalPrice, item.discount)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <Input 
+                        type="number" 
+                        min="1"
+                        max={item.maxStock}
+                        className="h-7 w-16 px-1 text-center text-xs border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-200" 
+                        value={item.totalQty}
+                        onChange={e => updateItemSetting(item.uid, 'totalQty', e.target.value)}
+                      />
+                      <span className="text-[10px] text-gray-500">{t('AdminFlashSales.max')}: {item.maxStock}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:bg-red-50" onClick={() => handleRemoveItem(item.uid)}>
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
             </div>
 
             <DialogFooter className="gap-3 pt-4 border-t border-gray-200">

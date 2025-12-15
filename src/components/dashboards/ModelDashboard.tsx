@@ -243,13 +243,13 @@ export default function ModelDashboard() {
             <CardContent className="p-3 sm:p-4">
               <div className="grid grid-cols-2 gap-3">
                 <QuickActionCard 
-                  href="/dashboard/requests"
+                  href="/dashboard/models/requests"
                   icon={Bell}
                   label={t('ModelDashboard.quickActions.requests')}
                   badgeCount={stats?.pendingRequests}
                 />
                 <QuickActionCard 
-                  href="/dashboard/modelsoffers"
+                  href="/dashboard/models/modelsoffers"
                   icon={ShoppingBag}
                   label={t('ModelDashboard.quickActions.offers')}
                 />

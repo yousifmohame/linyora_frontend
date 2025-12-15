@@ -57,6 +57,7 @@ interface SupplierProduct {
 interface Category {
   id: number;
   name: string;
+  children?: Category[]; // أضفنا هذا السطر
 }
 
 interface ProductFormProps {
@@ -89,8 +90,12 @@ export default function SupplierProductForm({ product, onSuccess }: ProductFormP
     const fetchCategories = async () => {
       try {
         setCategoriesLoading(true);
-        const { data } = await api.get('/supplier/form-data/categories');
-        setAvailableCategories(data);
+        // استخدام الـ API العام الذي يرجع الشجرة كاملة
+        const { data } = await api.get('/categories'); 
+        
+        // التعامل مع البيانات سواء كانت مصفوفة مباشرة أو داخل data
+        const categoriesData = Array.isArray(data) ? data : data.data || [];
+        setAvailableCategories(categoriesData);
       } catch {
         toast.error(t('supplierproductform.toasts.categoriesError'));
       } finally {
@@ -203,6 +208,48 @@ export default function SupplierProductForm({ product, onSuccess }: ProductFormP
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const renderCategoryItem = (category: Category, level = 0) => {
+    const isSelected = formData.categoryIds?.includes(category.id);
+    
+    return (
+      <div key={category.id}>
+        <CommandItem
+          value={category.name} // مهم للبحث
+          onSelect={() => handleCategorySelect(category.id)}
+          className="cursor-pointer transition-colors duration-200 hover:bg-blue-50"
+        >
+          <div
+            className={cn(
+              'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-blue-500',
+              isSelected ? 'bg-blue-500 text-white' : 'opacity-50 [&_svg]:invisible'
+            )}
+          >
+            <Check className="h-4 w-4" />
+          </div>
+          
+          {/* إضافة إزاحة (Padding) بناءً على المستوى لتمييز الفرعي */}
+          <span 
+            className={cn(
+                isSelected ? 'text-blue-700 font-medium' : 'text-blue-600',
+                level > 0 ? "text-sm" : "" // تصغير الخط قليلاً للأبناء
+            )}
+            style={{ paddingInlineStart: `${level * 12}px` }} // الإزاحة هنا
+          >
+            {level > 0 && <span className="text-gray-400 mr-1">↳</span>} {/* رمز توضيحي للفرعي */}
+            {category.name}
+          </span>
+        </CommandItem>
+
+        {/* استدعاء النفس للأبناء (Recursion) */}
+        {category.children && category.children.length > 0 && (
+          <>
+            {category.children.map((child) => renderCategoryItem(child, level + 1))}
+          </>
+        )}
+      </div>
+    );
   };
 
   const selectedCategories = availableCategories.filter((cat) =>
@@ -323,35 +370,11 @@ export default function SupplierProductForm({ product, onSuccess }: ProductFormP
                   placeholder={t('supplierproductform.placeholders.categorySearch')}
                   className="border-0"
                 />
-                <CommandList>
+                <CommandList className="max-h-[300px] overflow-y-auto"> {/* تحديد ارتفاع للقائمة */}
                   <CommandEmpty>{t('supplierproductform.category.noResults')}</CommandEmpty>
                   <CommandGroup>
-                    {availableCategories.map((cat) => {
-                      const isSelected = formData.categoryIds?.includes(cat.id);
-                      return (
-                        <CommandItem
-                          key={cat.id}
-                          onSelect={() => handleCategorySelect(cat.id)}
-                          className="cursor-pointer transition-colors duration-200 hover:bg-blue-50"
-                        >
-                          <div
-                            className={cn(
-                              'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-blue-500',
-                              isSelected
-                                ? 'bg-blue-500 text-white'
-                                : 'opacity-50 [&_svg]:invisible'
-                            )}
-                          >
-                            <Check className="h-4 w-4" />
-                          </div>
-                          <span
-                            className={isSelected ? 'text-blue-700 font-medium' : 'text-blue-600'}
-                          >
-                            {cat.name}
-                          </span>
-                        </CommandItem>
-                      );
-                    })}
+                    {/* استخدام الدالة التكرارية هنا بدلاً من الـ map العادي */}
+                    {availableCategories.map((cat) => renderCategoryItem(cat))}
                   </CommandGroup>
                 </CommandList>
               </Command>

@@ -81,6 +81,12 @@ interface ProductOption {
   brand: string;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  children?: Category[]; // هذا السطر مهم جداً
+}
+
 export default function SectionForm({ initialData, onSuccess, onCancel }: SectionFormProps) {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === 'ar';
@@ -88,7 +94,7 @@ export default function SectionForm({ initialData, onSuccess, onCancel }: Sectio
   const [submitting, setSubmitting] = useState(false);
   const [isDataReady, setIsDataReady] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
-  const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [uploadingMedia, setUploadingMedia] = useState<number | null>(null);
 
@@ -125,6 +131,46 @@ export default function SectionForm({ initialData, onSuccess, onCancel }: Sectio
   const watchedColor = form.watch('theme_color');
   const watchedProductId = form.watch('featured_product_id');
   const watchedSlides = form.watch('slides');
+
+  // دالة لعرض التصنيف وأبنائه
+  const renderCategoryItem = (category: Category, level = 0) => {
+    const isSelected = form.watch('category_ids').includes(category.id);
+    
+    return (
+      <div key={category.id} className="space-y-2">
+        {/* عرض التصنيف الحالي */}
+        <div
+          className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all hover:border-primary ${
+            isSelected ? 'border-primary bg-primary/5' : ''
+          }`}
+          // إضافة إزاحة بناءً على المستوى (level) لدعم التصنيفات الفرعية
+          style={{ marginInlineStart: `${level * 24}px` }} 
+          onClick={() => {
+            const current = form.getValues('category_ids');
+            if (current.includes(category.id)) {
+              form.setValue('category_ids', current.filter((id) => id !== category.id));
+            } else {
+              form.setValue('category_ids', [...current, category.id]);
+            }
+          }}
+        >
+          <Label className="cursor-pointer flex-1 flex items-center gap-2">
+            {/* إضافة أيقونة صغيرة لتمييز الفرعي */}
+            {level > 0 && <span className="text-gray-400">↳</span>}
+            {category.name}
+          </Label>
+          {isSelected && <Check className="w-4 h-4 text-primary" />}
+        </div>
+
+        {/* استدعاء نفس الدالة للأبناء إذا وجدوا */}
+        {category.children && category.children.length > 0 && (
+          <div className="space-y-2">
+            {category.children.map((child) => renderCategoryItem(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   useEffect(() => {
     const initForm = async () => {
@@ -687,25 +733,7 @@ export default function SectionForm({ initialData, onSuccess, onCancel }: Sectio
                         <CardContent>
                           <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {categories.map((cat) => (
-                                <div
-                                  key={cat.id}
-                                  className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all hover:border-primary ${form.watch('category_ids').includes(cat.id) ? 'border-primary bg-primary/5' : ''}`}
-                                  onClick={() => {
-                                    const current = form.getValues('category_ids');
-                                    if (current.includes(cat.id)) {
-                                      form.setValue('category_ids', current.filter(id => id !== cat.id));
-                                    } else {
-                                      form.setValue('category_ids', [...current, cat.id]);
-                                    }
-                                  }}
-                                >
-                                  <Label className="cursor-pointer flex-1">{cat.name}</Label>
-                                  {form.watch('category_ids').includes(cat.id) && (
-                                    <Check className="w-4 h-4 text-primary" />
-                                  )}
-                                </div>
-                              ))}
+                              {categories.map((cat) => renderCategoryItem(cat))}
                             </div>
                             {form.watch('category_ids').length > 0 && (
                               <div className="mt-4">

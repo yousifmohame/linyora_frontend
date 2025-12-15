@@ -109,7 +109,7 @@ function adjustHexColor(
 
 
   return (
-    <div className="container mx-auto py-6 mb-0">
+    <div className="container mx-auto px-1 py-6 mb-0">
 
       {/* === Banner with Circles and Content === */}
       <div className="relative overflow-hidden rounded-3xl mb-2">

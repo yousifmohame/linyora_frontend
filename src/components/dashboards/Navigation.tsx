@@ -18,7 +18,8 @@ import {
   User,
   CreditCard,
   Truck,
-  CircleDashed
+  CircleDashed,
+  Banknote
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -55,6 +56,7 @@ const Navigation = () => {
     { key: 'dropshipping', href: '/dashboard/dropshipping', icon: Truck, show: isVerified && canAccessDropshipping },
     { key: 'messages', href: '/dashboard/messages', icon: MessageCircleCode, show: isVerified },
     { key: 'wallet', href: '/dashboard/wallet', icon: Wallet, show: isVerified },
+    { key: 'bank', href: '/dashboard/bank', icon: Banknote, show: isVerified },
     { key: 'settings', href: '/dashboard/settings', icon: Settings, show: isVerified },
   ];
 

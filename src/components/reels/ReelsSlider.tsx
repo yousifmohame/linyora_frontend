@@ -95,7 +95,7 @@ export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels })
                 <div className="flex w-max space-x-4 space-x-reverse pb-2">
                     {loadingSidebars ? (
                         [...Array(6)].map((_, i) => (
-                            <div key={i} className="flex flex-col items-center gap-2 min-w-[100px]">
+                            <div key={i} className="flex flex-col items-center gap-1 min-w-[100px]">
                                 <Skeleton className="h-20 w-20 rounded-full" />
                                 <Skeleton className="h-4 w-16" />
                             </div>
@@ -131,7 +131,7 @@ export const ReelsSlider: React.FC<ReelsSliderProps> = ({ reels: initialReels })
                 <div className="flex w-max space-x-4 space-x-reverse pb-2">
                     {loadingSidebars ? (
                         [...Array(6)].map((_, i) => (
-                            <div key={i} className="flex flex-col items-center gap-2 min-w-[100px]">
+                            <div key={i} className="flex flex-col items-center gap-1 min-w-[100px]">
                                 <Skeleton className="h-20 w-20 rounded-full" />
                                 <Skeleton className="h-4 w-16" />
                             </div>

@@ -62,7 +62,7 @@ export default function ContactPage() {
           >
             تواصلي{" "}
             <span className="bg-gradient-to-r from-rose-400 to-pink-500 bg-clip-text text-transparent">
-              مع لينورا
+              مع لينيورا
             </span>
           </motion.h1>
           <motion.p

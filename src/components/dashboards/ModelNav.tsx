@@ -19,7 +19,8 @@ import {
   CreditCard,
   ShieldCheck,
   Video,
-  CircleDashed
+  CircleDashed,
+  Banknote
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -55,6 +56,7 @@ export default function ModelNav() {
     { key: 'reels', href: '/dashboard/models/reels', icon: Video },
     { key: 'analytics', href: '/dashboard/models/analytics', icon: BarChart2 },
     { key: 'messages', href: '/dashboard/models/messages', icon: MessageCircleCode },
+    { key: 'bank', href: '/dashboard/models/bank', icon: Banknote },
     { key: 'profile', href: '/dashboard/models/profile-settings', icon: User },
   ];
 

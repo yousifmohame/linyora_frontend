@@ -13,6 +13,7 @@ import {
   Truck,
   Wallet,
   CircleDashed,
+  Banknote,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
@@ -33,6 +34,7 @@ export default function SupplierNav() {
     { href: '/dashboard/supplier/orders', icon: ShoppingCart, key: 'Orders' },
     { href: '/dashboard/supplier/shipping', icon: Truck, key: 'Shipping' },
     { href: '/dashboard/supplier/wallet', icon: Wallet, key: 'Wallet' },
+    { href: '/dashboard/supplier/bank', icon: Banknote, key: 'bank'},
     { href: '/dashboard/supplier/settings', icon: Settings, key: 'Settings' },
   ];
 

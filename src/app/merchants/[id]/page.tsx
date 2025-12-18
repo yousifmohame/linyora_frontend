@@ -232,14 +232,14 @@ export default function MerchantProfilePage() {
               {merchant.profile_picture_url ? (
                 <Image
                   src={merchant.profile_picture_url}
-                  alt={merchant.store_name}
+                  alt={merchant.store_name || "Store"}
                   width={128}
                   height={128}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
-                  {merchant.store_name.charAt(0)}
+                  {(merchant.store_name || "M").charAt(0).toUpperCase()}
                 </div>
               )}
             </div>

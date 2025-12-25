@@ -326,38 +326,45 @@ function CheckoutForm() {
               <CardContent className="p-6 bg-gray-50/50">
                 <div className="grid gap-4">
                   {addresses.map((addr) => (
-                    <div
-                      key={addr.id}
-                      onClick={() => setSelectedAddressId(addr.id)}
-                      className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        selectedAddressId === addr.id
-                          ? 'border-purple-600 bg-purple-50/50'
-                          : 'border-white bg-white hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-bold text-gray-900 flex items-center gap-2">
-                            {addr.full_name}
-                            {addr.is_default && (
-                              <Badge variant="secondary" className="text-[10px] h-5">
-                                {t('common.default')}
-                              </Badge>
-                            )}
-                          </p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {addr.address_line_1}, {addr.city}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">{addr.phone_number}</p>
-                        </div>
-                        {selectedAddressId === addr.id && (
-                          <div className="h-5 w-5 bg-purple-600 rounded-full flex items-center justify-center">
-                            <div className="h-2 w-2 bg-white rounded-full" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+  <div
+    key={addr.id}
+    onClick={() => setSelectedAddressId(addr.id)}
+    className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
+      selectedAddressId === addr.id
+        ? 'border-purple-600 bg-purple-50/50'
+        : 'border-white bg-white hover:border-gray-300'
+    }`}
+  >
+    <div className="flex justify-between items-start">
+      <div>
+        <p className="font-bold text-gray-900 flex items-center gap-2">
+          {/* ✅ تعديل 1: قراءة الاسم بالصيغتين (camelCase أو snake_case) */}
+          {addr.fullName || addr.full_name}
+          
+          {/* ✅ تعديل 2: التحقق من حالة الافتراضي */}
+          {(addr.isDefault || addr.is_default) && (
+            <Badge variant="secondary" className="text-[10px] h-5">
+              {t('common.default')}
+            </Badge>
+          )}
+        </p>
+        <p className="text-sm text-gray-600 mt-1">
+          {/* ✅ تعديل 3: قراءة السطر الأول من العنوان */}
+          {addr.addressLine1 || addr.address_line_1}, {addr.city}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">
+          {/* ✅ تعديل 4: قراءة رقم الهاتف */}
+          {addr.phoneNumber || addr.phone_number}
+        </p>
+      </div>
+      {selectedAddressId === addr.id && (
+        <div className="h-5 w-5 bg-purple-600 rounded-full flex items-center justify-center">
+          <div className="h-2 w-2 bg-white rounded-full" />
+        </div>
+      )}
+    </div>
+  </div>
+))}
                   <Dialog open={isAddressFormOpen} onOpenChange={setIsAddressFormOpen}>
                     <DialogTrigger asChild>
                       <Button

@@ -19,7 +19,45 @@ import StoriesFeed from '@/components/stories/StoriesFeed';
 import MainSlider from '@/components/MainSlider';
 import FlashPage from '@/components/FlashSale/flashpage';
 
-// Skeleton Component
+// ------------------------------------------------------------------
+// 1. تعريف الأنواع
+// ------------------------------------------------------------------
+type LayoutItem = {
+  id: string | number;
+  type: 
+    | 'stories' 
+    | 'main_slider' 
+    | 'promoted_products' 
+    | 'flash_sale' 
+    | 'categories' 
+    | 'new_arrivals' 
+    | 'best_sellers' 
+    | 'top_rated' 
+    | 'recently_viewed'
+    | 'reels'
+    | 'custom_section';
+  order: number;
+  isVisible: boolean;
+  section_id?: number; // خاص بالأقسام المخصصة
+};
+
+// ------------------------------------------------------------------
+// 2. الترتيب الافتراضي (Fallback)
+// ------------------------------------------------------------------
+const DEFAULT_LAYOUT: LayoutItem[] = [
+  { id: 'stories', type: 'stories', order: 1, isVisible: true },
+  { id: 'slider', type: 'main_slider', order: 2, isVisible: true },
+  { id: 'promo', type: 'promoted_products', order: 3, isVisible: true },
+  { id: 'flash', type: 'flash_sale', order: 4, isVisible: true },
+  { id: 'cats', type: 'categories', order: 5, isVisible: true },
+  { id: 'reels', type: 'reels', order: 6, isVisible: true },
+  { id: 'new', type: 'new_arrivals', order: 7, isVisible: true },
+  { id: 'best', type: 'best_sellers', order: 8, isVisible: true },
+  { id: 'top', type: 'top_rated', order: 9, isVisible: true },
+  { id: 'recent', type: 'recently_viewed', order: 10, isVisible: true },
+];
+
+// مكون التحميل
 const ProductCarouselSkeleton = () => (
   <div className="container mx-auto px-4 py-8">
     <Skeleton className="h-8 w-1/3 mb-4" />
@@ -39,87 +77,99 @@ export default function HomePage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   
-  // 1. نخزن البيانات كما كنت تفعل تماماً
+  // ------------------------------------------------------------------
+  // 3. إدارة الحالة (State Management)
+  // ------------------------------------------------------------------
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [topRated, setTopRated] = useState<Product[]>([]);
   const [reels, setReels] = useState<Reel[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   
-  // 2. حالة جديدة للترتيب (Layout)
-  const [pageLayout, setPageLayout] = useState<any[]>([]);
+  // خريطة لتخزين الأقسام المخصصة ليسهل الوصول إليها بالـ ID
+  const [sectionsMap, setSectionsMap] = useState<Record<number, Section>>({});
+  
+  // الترتيب النهائي للصفحة
+  const [pageLayout, setPageLayout] = useState<LayoutItem[]>([]);
   
   const [wishlistStatus, setWishlistStatus] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
 
+  // ------------------------------------------------------------------
+  // 4. جلب البيانات (Fetching)
+  // ------------------------------------------------------------------
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
 
-        // جلب البيانات + جلب الترتيب في نفس الوقت
+        // نطلب كل شيء في نفس الوقت لتقليل وقت الانتظار
         const results = await Promise.allSettled([
           api.get('/browse/new-arrivals'),
           api.get('/browse/best-sellers'),
           api.get('/browse/top-rated'),
           api.get('/reels'),
-          api.get('/browse/homepage/layout') // ✅ هذا الرابط يجلب الترتيب + الأقسام المخصصة
+          api.get('/sections/active'),       // جلب الأقسام بمنتجاتها
+          api.get('/browse/homepage/layout') // جلب الترتيب فقط
         ]);
 
-        const getData = (res: any) => res.status === 'fulfilled' ? res.value.data : [];
+        const getData = (res: PromiseSettledResult<any>) => 
+          res.status === 'fulfilled' ? res.value.data : [];
 
-        // تعيين بيانات المنتجات والريلز
-        const fetchedNewArrivals = getData(results[0]) || [];
-        const fetchedBestSellers = getData(results[1]) || [];
-        const fetchedTopRated = getData(results[2]) || [];
-        const fetchedReels = getData(results[3]).reels || getData(results[3]) || [];
+        // توزيع البيانات على المتغيرات
+        setNewArrivals(getData(results[0]) || []);
+        setBestSellers(getData(results[1]) || []);
+        setTopRated(getData(results[2]) || []);
         
-        // تعيين الترتيب (الذي يحتوي بداخله على بيانات الأقسام)
-        const layoutData = getData(results[4]);
+        const reelsData = getData(results[3]);
+        setReels(reelsData?.reels || reelsData || []);
         
-        setNewArrivals(fetchedNewArrivals);
-        setBestSellers(fetchedBestSellers);
-        setTopRated(fetchedTopRated);
-        setReels(fetchedReels);
+        // --- المنطق الذكي: معالجة الأقسام ---
+        const fetchedSections = getData(results[4]) || [];
+        const secMap: Record<number, Section> = {};
         
-        // إذا فشل جلب الترتيب أو كان فارغاً، نستخدم الترتيب الافتراضي محلياً
-        if (Array.isArray(layoutData) && layoutData.length > 0) {
+        if (Array.isArray(fetchedSections)) {
+            fetchedSections.forEach((sec: Section) => {
+                // نخزن القسم باستخدام الـ ID كمفتاح للخريطة
+                secMap[sec.id] = sec;
+            });
+        }
+        setSectionsMap(secMap);
+
+        // --- المنطق الذكي: معالجة الترتيب ---
+        let layoutData = getData(results[5]);
+        
+        // التحقق من صحة الترتيب القادم من الباك إند
+        if (layoutData && Array.isArray(layoutData) && layoutData.length > 0) {
             setPageLayout(layoutData);
         } else {
-            // Fallback Layout (نفس ترتيبك الأصلي)
-            // ملاحظة: الأقسام المخصصة لن تظهر هنا إذا فشل الاتصال لأن بياناتها تأتي من Layout
-            setPageLayout([
-                { type: 'stories', id: 'def1' },
-                { type: 'main_slider', id: 'def2' },
-                { type: 'promoted_products', id: 'def3' },
-                { type: 'flash_sale', id: 'def4' },
-                { type: 'categories', id: 'def5' },
-                { type: 'reels', id: 'def6' },
-                { type: 'new_arrivals', id: 'def7' },
-                { type: 'best_sellers', id: 'def8' },
-                { type: 'top_rated', id: 'def9' },
-                { type: 'recently_viewed', id: 'def10' },
-            ]);
+            // إذا لم يوجد ترتيب محفوظ، نستخدم الافتراضي
+            console.log("Using Default Layout");
+            setPageLayout(DEFAULT_LAYOUT);
         }
 
-        // جلب الأمنيات (نفس كودك)
+        // --- جلب حالة المفضلة (Wishlist) ---
         if (user && user.role_id === 5) {
-             const allProductIds = [
-              ...fetchedNewArrivals.map((p:any) => p.id),
-              ...fetchedBestSellers.map((p:any) => p.id),
-              ...fetchedTopRated.map((p:any) => p.id),
-            ].filter((id, index, self) => self.indexOf(id) === index);
+             const allProducts = [
+              ...(getData(results[0]) || []),
+              ...(getData(results[1]) || []),
+              ...(getData(results[2]) || [])
+            ];
+            
+            const allProductIds = allProducts
+                .map((p: any) => p.id)
+                .filter((id, index, self) => self.indexOf(id) === index);
 
             if (allProductIds.length > 0) {
                try {
                  const ws = await api.post('/customer/wishlist/status', { productIds: allProductIds });
                  setWishlistStatus(ws.data || {});
-               } catch(e) {}
+               } catch(e) { console.error("Wishlist Error:", e); }
             }
         }
 
       } catch (error) {
-        console.error('Failed to fetch data', error);
+        console.error('Failed to fetch homepage data', error);
       } finally {
         setLoading(false);
       }
@@ -129,8 +179,11 @@ export default function HomePage() {
     fetchAllData();
   }, [user]);
 
-  // دالة توزيع المكونات بناءً على النوع
-  const renderBlock = useCallback((block: any) => {
+  // ------------------------------------------------------------------
+  // 5. دالة العرض (Renderer)
+  // ------------------------------------------------------------------
+  const renderBlock = useCallback((block: LayoutItem) => {
+    // عدم عرض العناصر المخفية
     if (block.isVisible === false) return null;
 
     switch (block.type) {
@@ -149,21 +202,34 @@ export default function HomePage() {
       case 'categories':
         return <div key={block.id} className='bg-gray-50 pb-2'><CategorySlider /></div>;
       
-      // ✅ الأقسام المخصصة تأتي بياناتها من الباك إند داخل block.data
+      // ✅ التعامل مع الأقسام المخصصة
       case 'custom_section':
-        if (!block.data) return null;
-        return (
-          <SectionDisplay 
-            key={block.id} 
-            section={block.data} 
-            wishlistStatus={wishlistStatus} 
-          />
-        );
+        // 1. نتأكد أن لدينا ID للقسم
+        if (!block.section_id) return null;
 
-      // باقي المكونات تستخدم البيانات التي جلبناها في الـ State
+        // 2. نبحث عن بيانات القسم في الخريطة التي جلبناها من /sections/active
+        const sectionData = sectionsMap[block.section_id];
+        
+        // 3. إذا وجدنا القسم، نعرضه
+        if (sectionData) {
+            return (
+              <SectionDisplay 
+                key={block.id} 
+                section={sectionData} 
+                wishlistStatus={wishlistStatus} 
+              />
+            );
+        }
+        // إذا كان القسم موجوداً في الترتيب ولكن تم حذفه من قاعدة البيانات، لا نعرض شيئاً
+        return null;
+
       case 'reels':
         if (!reels || reels.length === 0) return null;
-        return <div key={block.id} className="py-0 bg-black/5"><ReelsSlider reels={reels} /></div>;
+        return (
+          <div key={block.id} className="py-0 bg-black/5">
+            <ReelsSlider reels={reels} />
+          </div>
+        );
       
       case 'new_arrivals':
         return (
@@ -212,27 +278,40 @@ export default function HomePage() {
       default:
         return null;
     }
-  }, [newArrivals, bestSellers, topRated, reels, recentlyViewed, wishlistStatus, t]);
+  }, [newArrivals, bestSellers, topRated, reels, recentlyViewed, wishlistStatus, sectionsMap, t]);
 
+  // ------------------------------------------------------------------
+  // 6. واجهة المستخدم (UI)
+  // ------------------------------------------------------------------
   return (
     <main className="min-h-screen px-0 bg-white">
       {loading ? (
         <div className="space-y-8 mt-2">
+          <div className="h-64 bg-gray-200 animate-pulse mb-4"></div>
           <ProductCarouselSkeleton />
           <ProductCarouselSkeleton />
         </div>
       ) : (
         <div className="flex flex-col gap-0">
-          {/* هنا يتم رسم الصفحة بناءً على الترتيب القادم من الباك إند */}
-          {pageLayout.map((block) => renderBlock(block))}
+          {/* التكرار على مصفوفة الترتيب لعرض المكونات */}
+          {pageLayout.length > 0 ? (
+             pageLayout.map((block, index) => {
+                 // إضافة index للمفتاح لضمان التفرد في حال تكرار الكتل
+                 const uniqueKey = `${block.id}-${index}`;
+                 return <div key={uniqueKey}>{renderBlock(block)}</div>;
+             })
+          ) : (
+             <div className="text-center py-10">جاري تحميل المحتوى...</div>
+          )}
         </div>
       )}
 
-      {/* زر تصفح الكل الثابت */}
+      {/* زر تصفح الكل الثابت في الأسفل */}
       <div className="py-12 flex justify-center bg-gray-50 mt-8">
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white font-bold rounded-full 
+                     shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
         >
           {t('HomePage.viewAllProducts', 'تصفح كل المنتجات')}
           <TrendingUp className="w-5 h-5 transform group-hover:translate-x-1 group-hover:scale-110 transition-transform" />

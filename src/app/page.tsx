@@ -9,7 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import PromotedProductsSection from '@/components/promotions/PromotedProductsSection';
 import CategorySlider from '@/components/CategorySlider';
 import Link from 'next/link';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, ArrowUp, ArrowDown, Save, Loader2 } from 'lucide-react'; // ✅ إضافة أيقونات جديدة
 import { ReelsSlider } from '@/components/reels/ReelsSlider';
 import { ProductCarousel } from '@/components/products/ProductCarousel';
 import { getRecentlyViewed } from '@/lib/viewHistory';
@@ -38,12 +38,9 @@ type LayoutItem = {
     | 'custom_section';
   order: number;
   isVisible: boolean;
-  section_id?: number; // خاص بالأقسام المخصصة
+  section_id?: number;
 };
 
-// ------------------------------------------------------------------
-// 2. الترتيب الافتراضي (Fallback)
-// ------------------------------------------------------------------
 const DEFAULT_LAYOUT: LayoutItem[] = [
   { id: 'stories', type: 'stories', order: 1, isVisible: true },
   { id: 'slider', type: 'main_slider', order: 2, isVisible: true },
@@ -57,7 +54,6 @@ const DEFAULT_LAYOUT: LayoutItem[] = [
   { id: 'recent', type: 'recently_viewed', order: 10, isVisible: true },
 ];
 
-// مكون التحميل
 const ProductCarouselSkeleton = () => (
   <div className="container mx-auto px-4 py-8">
     <Skeleton className="h-8 w-1/3 mb-4" />
@@ -77,46 +73,40 @@ export default function HomePage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   
-  // ------------------------------------------------------------------
-  // 3. إدارة الحالة (State Management)
-  // ------------------------------------------------------------------
+  // ✅ التحقق من صلاحية الأدمن
+  const isAdmin = user?.role_id === 1;
+
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [topRated, setTopRated] = useState<Product[]>([]);
   const [reels, setReels] = useState<Reel[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
-  
-  // خريطة لتخزين الأقسام المخصصة ليسهل الوصول إليها بالـ ID
   const [sectionsMap, setSectionsMap] = useState<Record<number, Section>>({});
-  
-  // الترتيب النهائي للصفحة
   const [pageLayout, setPageLayout] = useState<LayoutItem[]>([]);
-  
   const [wishlistStatus, setWishlistStatus] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
 
-  // ------------------------------------------------------------------
-  // 4. جلب البيانات (Fetching)
-  // ------------------------------------------------------------------
+  // ✅ حالات جديدة للحفظ والتحرير
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
 
-        // نطلب كل شيء في نفس الوقت لتقليل وقت الانتظار
         const results = await Promise.allSettled([
           api.get('/browse/new-arrivals'),
           api.get('/browse/best-sellers'),
           api.get('/browse/top-rated'),
           api.get('/reels'),
-          api.get('/sections/active'),       // جلب الأقسام بمنتجاتها
-          api.get('/browse/homepage/layout') // جلب الترتيب فقط
+          api.get('/sections/active'),
+          api.get('/browse/homepage/layout')
         ]);
 
         const getData = (res: PromiseSettledResult<any>) => 
           res.status === 'fulfilled' ? res.value.data : [];
 
-        // توزيع البيانات على المتغيرات
         setNewArrivals(getData(results[0]) || []);
         setBestSellers(getData(results[1]) || []);
         setTopRated(getData(results[2]) || []);
@@ -124,38 +114,29 @@ export default function HomePage() {
         const reelsData = getData(results[3]);
         setReels(reelsData?.reels || reelsData || []);
         
-        // --- المنطق الذكي: معالجة الأقسام ---
         const fetchedSections = getData(results[4]) || [];
         const secMap: Record<number, Section> = {};
-        
         if (Array.isArray(fetchedSections)) {
             fetchedSections.forEach((sec: Section) => {
-                // نخزن القسم باستخدام الـ ID كمفتاح للخريطة
                 secMap[sec.id] = sec;
             });
         }
         setSectionsMap(secMap);
 
-        // --- المنطق الذكي: معالجة الترتيب ---
         let layoutData = getData(results[5]);
-        
-        // التحقق من صحة الترتيب القادم من الباك إند
         if (layoutData && Array.isArray(layoutData) && layoutData.length > 0) {
             setPageLayout(layoutData);
         } else {
-            // إذا لم يوجد ترتيب محفوظ، نستخدم الافتراضي
             console.log("Using Default Layout");
             setPageLayout(DEFAULT_LAYOUT);
         }
 
-        // --- جلب حالة المفضلة (Wishlist) ---
         if (user && user.role_id === 5) {
              const allProducts = [
               ...(getData(results[0]) || []),
               ...(getData(results[1]) || []),
               ...(getData(results[2]) || [])
             ];
-            
             const allProductIds = allProducts
                 .map((p: any) => p.id)
                 .filter((id, index, self) => self.indexOf(id) === index);
@@ -164,7 +145,7 @@ export default function HomePage() {
                try {
                  const ws = await api.post('/customer/wishlist/status', { productIds: allProductIds });
                  setWishlistStatus(ws.data || {});
-               } catch(e) { console.error("Wishlist Error:", e); }
+               } catch(e) { console.error(e); }
             }
         }
 
@@ -180,125 +161,185 @@ export default function HomePage() {
   }, [user]);
 
   // ------------------------------------------------------------------
-  // 5. دالة العرض (Renderer)
+  // ✅ وظائف الأدمن (الترتيب والحفظ)
+  // ------------------------------------------------------------------
+  
+  const moveSection = (index: number, direction: 'up' | 'down') => {
+    const newLayout = [...pageLayout];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    // التحقق من الحدود
+    if (targetIndex < 0 || targetIndex >= newLayout.length) return;
+
+    // تبديل العناصر
+    const temp = newLayout[index];
+    newLayout[index] = newLayout[targetIndex];
+    newLayout[targetIndex] = temp;
+
+    // تحديث الترتيب (order) بناءً على الاندكس الجديد
+    const updatedOrderLayout = newLayout.map((item, idx) => ({
+        ...item,
+        order: idx + 1
+    }));
+
+    setPageLayout(updatedOrderLayout);
+    setHasChanges(true); // تفعيل زر الحفظ
+  };
+
+  const saveLayout = async () => {
+    if (!hasChanges) return;
+    setIsSaving(true);
+    try {
+        // نرسل الترتيب الجديد للباك إند
+        // ملاحظة: نرسل فقط البيانات الضرورية للحفظ (بدون الـ data الضخمة)
+        const layoutToSave = pageLayout.map(({ data, ...rest }: any) => rest);
+        
+        await api.post('/browse/homepage/layout', layoutToSave);
+        
+        setHasChanges(false);
+        // يمكنك إضافة إشعار نجاح هنا (Toast)
+        alert('تم حفظ ترتيب الصفحة بنجاح ✅');
+    } catch (error) {
+        console.error("Failed to save layout", error);
+        alert('فشل حفظ الترتيب ❌');
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
+  // ------------------------------------------------------------------
+  // دالة العرض
   // ------------------------------------------------------------------
   const renderBlock = useCallback((block: LayoutItem) => {
-    // عدم عرض العناصر المخفية
-    if (block.isVisible === false) return null;
+    // للأدمن: نعرض كل شيء حتى لو مخفي لكي يستطيع التحكم به
+    // للمستخدم العادي: نخفي العناصر المخفية
+    if (!isAdmin && block.isVisible === false) return null;
+
+    let content = null;
 
     switch (block.type) {
-      case 'stories':
-        return <StoriesFeed key={block.id} />;
+      case 'stories': content = <StoriesFeed key={block.id} />; break;
+      case 'main_slider': content = <MainSlider key={block.id} />; break;
+      case 'promoted_products': content = <PromotedProductsSection key={block.id} />; break;
+      case 'flash_sale': content = <FlashPage key={block.id} />; break;
+      case 'categories': content = <div key={block.id} className='bg-gray-50 pb-2'><CategorySlider /></div>; break;
       
-      case 'main_slider':
-        return <MainSlider key={block.id} />;
-      
-      case 'promoted_products':
-        return <PromotedProductsSection key={block.id} />;
-      
-      case 'flash_sale':
-        return <FlashPage key={block.id} />;
-      
-      case 'categories':
-        return <div key={block.id} className='bg-gray-50 pb-2'><CategorySlider /></div>;
-      
-      // ✅ التعامل مع الأقسام المخصصة
       case 'custom_section':
-        // 1. نتأكد أن لدينا ID للقسم
         if (!block.section_id) return null;
-
-        // 2. نبحث عن بيانات القسم في الخريطة التي جلبناها من /sections/active
         const sectionData = sectionsMap[block.section_id];
-        
-        // 3. إذا وجدنا القسم، نعرضه
         if (sectionData) {
-            return (
-              <SectionDisplay 
-                key={block.id} 
-                section={sectionData} 
-                wishlistStatus={wishlistStatus} 
-              />
-            );
+            content = <SectionDisplay key={block.id} section={sectionData} wishlistStatus={wishlistStatus} />;
+        } else {
+            // رسالة للأدمن إذا كان القسم مفقوداً
+            content = isAdmin ? <div className="p-4 text-red-500 border border-red-200 bg-red-50 text-center">قسم مخصص مفقود (ID: {block.section_id})</div> : null;
         }
-        // إذا كان القسم موجوداً في الترتيب ولكن تم حذفه من قاعدة البيانات، لا نعرض شيئاً
-        return null;
+        break;
 
       case 'reels':
         if (!reels || reels.length === 0) return null;
-        return (
-          <div key={block.id} className="py-0 bg-black/5">
-            <ReelsSlider reels={reels} />
-          </div>
-        );
+        content = <div key={block.id} className="py-0 bg-black/5"><ReelsSlider reels={reels} /></div>;
+        break;
       
       case 'new_arrivals':
-        return (
-          <ProductCarousel
-            key={block.id}
-            title={t('HomePage.newArrivals', 'وصل حديثاً')}
-            products={newArrivals}
-            wishlistStatus={wishlistStatus}
-            viewAllLink="/products?sort=newest"
-          />
-        );
+        content = <ProductCarousel key={block.id} title={t('HomePage.newArrivals', 'وصل حديثاً')} products={newArrivals} wishlistStatus={wishlistStatus} viewAllLink="/products?sort=newest" />;
+        break;
       
       case 'best_sellers':
-        return (
-          <ProductCarousel
-            key={block.id}
-            title={t('HomePage.bestSellers', 'الأكثر مبيعاً')}
-            products={bestSellers}
-            wishlistStatus={wishlistStatus}
-            viewAllLink="/products?sort=best-selling"
-          />
-        );
+        content = <ProductCarousel key={block.id} title={t('HomePage.bestSellers', 'الأكثر مبيعاً')} products={bestSellers} wishlistStatus={wishlistStatus} viewAllLink="/products?sort=best-selling" />;
+        break;
       
       case 'top_rated':
-        return (
-          <ProductCarousel
-            key={block.id}
-            title={t('HomePage.topRated', 'الأعلى تقييماً')}
-            products={topRated}
-            wishlistStatus={wishlistStatus}
-            viewAllLink="/products?sort=top-rated"
-          />
-        );
+        content = <ProductCarousel key={block.id} title={t('HomePage.topRated', 'الأعلى تقييماً')} products={topRated} wishlistStatus={wishlistStatus} viewAllLink="/products?sort=top-rated" />;
+        break;
       
       case 'recently_viewed':
         if (recentlyViewed.length === 0) return null;
-        return (
-          <ProductCarousel
-            key={block.id}
-            title={t('HomePage.recentlyViewed', 'ما شاهدته مؤخراً')}
-            products={recentlyViewed}
-            wishlistStatus={wishlistStatus}
-          />
-        );
+        content = <ProductCarousel key={block.id} title={t('HomePage.recentlyViewed', 'ما شاهدته مؤخراً')} products={recentlyViewed} wishlistStatus={wishlistStatus} />;
+        break;
 
-      default:
-        return null;
+      default: content = null;
     }
-  }, [newArrivals, bestSellers, topRated, reels, recentlyViewed, wishlistStatus, sectionsMap, t]);
+
+    return content;
+  }, [newArrivals, bestSellers, topRated, reels, recentlyViewed, wishlistStatus, sectionsMap, t, isAdmin]); // أضفنا isAdmin
 
   // ------------------------------------------------------------------
-  // 6. واجهة المستخدم (UI)
+  // واجهة المستخدم
   // ------------------------------------------------------------------
   return (
-    <main className="min-h-screen px-0 bg-white">
+    <main className="min-h-screen px-0 bg-white relative">
+      
+      {/* ✅ زر الحفظ للأدمن (يظهر فقط عند وجود تغييرات) */}
+      {isAdmin && hasChanges && (
+        <div className="fixed bottom-8 right-8 z-50">
+            <button
+                onClick={saveLayout}
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full shadow-2xl hover:bg-gray-800 transition-all animate-bounce"
+            >
+                {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                <span className="font-bold">حفظ الترتيب الجديد</span>
+            </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-8 mt-2">
-          <div className="h-64 bg-gray-200 animate-pulse mb-4"></div>
           <ProductCarouselSkeleton />
           <ProductCarouselSkeleton />
         </div>
       ) : (
         <div className="flex flex-col gap-0">
-          {/* التكرار على مصفوفة الترتيب لعرض المكونات */}
           {pageLayout.length > 0 ? (
              pageLayout.map((block, index) => {
-                 // إضافة index للمفتاح لضمان التفرد في حال تكرار الكتل
                  const uniqueKey = `${block.id}-${index}`;
-                 return <div key={uniqueKey}>{renderBlock(block)}</div>;
+                 const content = renderBlock(block);
+
+                 if (!content) return null;
+
+                 // ✅ إذا كان أدمن، نغلف المكون بأزرار التحكم
+                 if (isAdmin) {
+                     return (
+                         <div key={uniqueKey} className="relative group border-2 border-transparent hover:border-blue-500/30 transition-all">
+                             
+                             {/* شريط التحكم */}
+                             <div className="absolute left-2 top-2 z-40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 bg-white/90 backdrop-blur shadow-lg rounded-lg p-1.5 border border-gray-200">
+                                 {/* زر للأعلى */}
+                                 <button 
+                                    onClick={() => moveSection(index, 'up')}
+                                    disabled={index === 0}
+                                    className="p-2 hover:bg-blue-50 rounded-md text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                    title="تحريك للأعلى"
+                                 >
+                                     <ArrowUp size={20} />
+                                 </button>
+                                 
+                                 <div className="h-px bg-gray-200 w-full"></div>
+
+                                 {/* زر للأسفل */}
+                                 <button 
+                                    onClick={() => moveSection(index, 'down')}
+                                    disabled={index === pageLayout.length - 1}
+                                    className="p-2 hover:bg-blue-50 rounded-md text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                    title="تحريك للأسفل"
+                                 >
+                                     <ArrowDown size={20} />
+                                 </button>
+
+                                 {/* رقم الترتيب */}
+                                 <span className="text-xs font-mono text-center text-gray-400 mt-1">
+                                     {index + 1}
+                                 </span>
+                             </div>
+
+                             {/* المحتوى الفعلي */}
+                             {content}
+                         </div>
+                     );
+                 }
+
+                 // للمستخدم العادي
+                 return <div key={uniqueKey}>{content}</div>;
              })
           ) : (
              <div className="text-center py-10">جاري تحميل المحتوى...</div>
@@ -306,12 +347,10 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* زر تصفح الكل الثابت في الأسفل */}
       <div className="py-12 flex justify-center bg-gray-50 mt-8">
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white font-bold rounded-full 
-                     shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-black text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
         >
           {t('HomePage.viewAllProducts', 'تصفح كل المنتجات')}
           <TrendingUp className="w-5 h-5 transform group-hover:translate-x-1 group-hover:scale-110 transition-transform" />

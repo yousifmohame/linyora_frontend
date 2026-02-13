@@ -50,7 +50,8 @@ import {
   Download,
   Filter,
   Search,
-  Printer, // Added Printer Icon
+  Printer,
+  Crown, // Added Printer Icon
 } from "lucide-react";
 import AdminNav from "@/components/dashboards/AdminNav";
 import { Input } from "@/components/ui/input";
@@ -69,7 +70,7 @@ interface PayoutRequest {
   user_id: number;
   name: string;
   email: string;
-  user_type: "merchant" | "supplier";
+  user_type: "merchant" | "supplier" | "model" | "user";
   bank_name?: string; // Added for Invoice
   iban?: string; // Added for Invoice
 }
@@ -184,17 +185,36 @@ export default function AdminPayoutsPage() {
   };
 
   const getUserTypeBadge = (userType: string) => {
-    return userType === "merchant" ? (
-      <Badge className="bg-blue-100 text-blue-700 border-blue-200 flex items-center gap-1">
-        <User className="w-3 h-3" />
-        {t("PayoutsPage.table.merchant")}
-      </Badge>
-    ) : (
-      <Badge className="bg-purple-100 text-purple-700 border-purple-200 flex items-center gap-1">
-        <Bot className="w-3 h-3" />
-        المورد
-      </Badge>
-    );
+    switch (userType) {
+      case "merchant":
+        return (
+          <Badge className="bg-blue-100 text-blue-700 border-blue-200 flex items-center gap-1">
+            <User className="w-3 h-3" />
+            {t("PayoutsPage.table.merchant")} {/* تاجر */}
+          </Badge>
+        );
+      case "supplier":
+        return (
+          <Badge className="bg-purple-100 text-purple-700 border-purple-200 flex items-center gap-1">
+            <Bot className="w-3 h-3" />
+            مورد
+          </Badge>
+        );
+      case "model":
+        return (
+          <Badge className="bg-pink-100 text-pink-700 border-pink-200 flex items-center gap-1">
+            <Crown className="w-3 h-3" /> {/* أيقونة مختلفة للمودل */}
+            مودل
+          </Badge>
+        );
+      default:
+        return (
+          <Badge className="bg-gray-100 text-gray-700 border-gray-200 flex items-center gap-1">
+            <User className="w-3 h-3" />
+            مستخدم
+          </Badge>
+        );
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -268,7 +288,7 @@ export default function AdminPayoutsPage() {
 
       {/* Hidden Invoice Component */}
       <div style={{ display: "none" }}>
-        <PayoutInvoice ref={invoiceRef} data={printData}/>
+        <PayoutInvoice ref={invoiceRef} data={printData} />
       </div>
 
       <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
@@ -586,7 +606,6 @@ export default function AdminPayoutsPage() {
                           className="text-blue-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl"
                         >
                           <Eye className="w-4 h-4" />
-            
                         </Button>
 
                         {/* 🔥 PRINT BUTTON (NEW) 🔥 */}
@@ -685,13 +704,17 @@ export default function AdminPayoutsPage() {
                   </Card>
                 </div>
 
-                {(selectedRequest.status === "approved" || selectedRequest.status === "cleared") && (
-                <div className="pt-2">
-                    <Button className="w-full gap-2 py-6 text-lg bg-slate-900 hover:bg-slate-800 text-white" onClick={() => triggerPrintInvoice(selectedRequest)}>
-                    <Printer className="w-5 h-5" /> طباعة إيصال التحويل الرسمي
+                {(selectedRequest.status === "approved" ||
+                  selectedRequest.status === "cleared") && (
+                  <div className="pt-2">
+                    <Button
+                      className="w-full gap-2 py-6 text-lg bg-slate-900 hover:bg-slate-800 text-white"
+                      onClick={() => triggerPrintInvoice(selectedRequest)}
+                    >
+                      <Printer className="w-5 h-5" /> طباعة إيصال التحويل الرسمي
                     </Button>
-                </div>
-              )}
+                  </div>
+                )}
 
                 <div>
                   <h4 className="font-semibold text-rose-800 mb-3">
@@ -721,7 +744,6 @@ export default function AdminPayoutsPage() {
                   <Check className="w-4 h-4 ml-2" />
                   {t("PayoutsPage.actions.approve")}
                 </Button>
-                
               </div>
             </Fragment>
           )}

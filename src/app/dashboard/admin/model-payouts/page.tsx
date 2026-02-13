@@ -1,609 +1,868 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import axios from '@/lib/axios';
-import { ModelPayoutRequest } from '@/types';
+import React, { useState, useEffect, useMemo } from "react";
+import axios from "@/lib/axios";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import AdminNav from '@/components/dashboards/AdminNav';
-import { 
-  User, 
-  Mail, 
-  DollarSign, 
-  Calendar, 
-  CheckCircle, 
-  XCircle, 
-  Eye, 
-  Sparkles, 
-  Crown,
-  TrendingUp,
-  Filter,
-  Search,
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import AdminNav from "@/components/dashboards/AdminNav";
+import {
   Download,
-  RefreshCw,
-  Clock,
-  Landmark,
-  FileText,
-  MoreVertical
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import Link from 'next/link';
+  Activity,
+  Filter,
+  AlertTriangle,
+  Search,
+  MoreHorizontal,
+  Lock,
+  Unlock,
+  RefreshCcw,
+  Calendar,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Briefcase,
+  Megaphone,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const AdminModelPayoutsPage = () => {
-    const { t, i18n } = useTranslation();
-    const [requests, setRequests] = useState<ModelPayoutRequest[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedRequest, setSelectedRequest] = useState<ModelPayoutRequest | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [notes, setNotes] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
+// --- Types & Interfaces ---
 
-    const fetchPayouts = async () => {
-        setLoading(true);
-        try {
-            const response = await axios.get('/admin/model-payouts');
-            setRequests(response.data);
-        } catch (error) {
-            toast.error(t('AdminModelPayouts.toast.fetchError'));
-        } finally {
-            setLoading(false);
-        }
-    };
+type TransactionType =
+  | "product_sale"
+  | "subscription_fee"
+  | "promotion_fee"
+  | "withdrawal"
+  | "refund"
+  | "penalty"
+  | "other";
 
-    useEffect(() => {
-        fetchPayouts();
-    }, []);
+type TransactionStatus =
+  | "completed"
+  | "pending"
+  | "on_hold"
+  | "cancelled"
+  | "processing";
 
-    const handleUpdateRequest = async (id: number, status: 'approved' | 'rejected') => {
-        if (status === 'rejected' && !notes.trim()) {
-          toast.error(t('PayoutsPage.prompt.rejectionReason', 'سبب الرفض مطلوب'));
-          return;
-        }
+interface Transaction {
+  id: string; // Display ID (TXN-123)
+  db_id: number; // Real DB ID for API calls
+  reference_id: string;
+  type: TransactionType;
+  amount: number;
+  net_amount: number;
+  currency: string;
+  status: TransactionStatus;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  };
+  description: string;
+  date: string;
+  notes?: string;
+}
 
-        try {
-            const promise = axios.put(`/admin/model-payouts/${id}`, { 
-              status, 
-              notes: notes || (status === 'approved' ? t('PayoutsPage.notes.approved') : t('PayoutsPage.notes.rejectedNoReason'))
-            });
-            
-            toast.promise(promise, {
-                loading: t('common.saving'),
-                success: () => {
-                    fetchPayouts();
-                    setIsModalOpen(false);
-                    return t('AdminModelPayouts.toast.updateSuccess');
-                },
-                error: t('AdminModelPayouts.toast.updateError'),
-            });
-        } catch (error) {
-            console.error("Failed to update request:", error);
-        }
-    };
+interface FinancialStats {
+  total_revenue: number;
+  total_gmv: number;
+  subscriptions_income: number;
+  promotions_income: number;
+  sales_commission: number;
+  held_funds: number;
+}
 
-    const handleViewDetails = (request: ModelPayoutRequest) => {
-        setSelectedRequest(request);
-        setIsModalOpen(true);
-        setNotes('');
-    };
+// --- Helper Functions ---
 
-    const filteredRequests = requests.filter(request => 
-        (request.userName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-        (request.userEmail?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-    );
-
-    const stats = {
-        total: requests.length,
-        pending: requests.filter(r => !r.status || r.status === 'pending').length,
-        approved: requests.filter(r => r.status === 'approved').length,
-        rejected: requests.filter(r => r.status === 'rejected').length,
-        totalAmount: requests.reduce((sum, r) => sum + r.amount, 0),
-        pendingAmount: requests.filter(r => !r.status || r.status === 'pending').reduce((sum, r) => sum + r.amount, 0),
-    };
-
-    const getStatusBadge = (status?: string) => {
-        const statusMap = {
-            pending: { 
-                icon: <Clock className="w-3 h-3" />, 
-                label: t('AdminModelPayouts.status.pending'),
-                className: "bg-amber-100 text-amber-700 border-amber-200" 
-            },
-            approved: { 
-                icon: <CheckCircle className="w-3 h-3" />, 
-                label: t('AdminModelPayouts.status.approved'), 
-                className: "bg-green-100 text-green-700 border-green-200" 
-            },
-            rejected: { 
-                icon: <XCircle className="w-3 h-3" />, 
-                label: t('AdminModelPayouts.status.rejected'),
-                className: "bg-red-100 text-red-700 border-red-200" 
-            },
-        };
-        
-        const actualStatus = status || 'pending';
-        const config = statusMap[actualStatus as keyof typeof statusMap] || { 
-            icon: <Clock className="w-3 h-3" />, 
-            label: "قيد الانتظار", 
-            className: "bg-amber-100 text-amber-700 border-amber-200" 
-        };
-        
-        return <Badge variant="outline" className={`${config.className} flex items-center gap-1`}>{config.icon}{config.label}</Badge>;
-    };
-
-    const locale = i18n.language === 'ar' ? 'ar-EG' : 'en-US';
-    const currency = i18n.language === 'ar' ? t('common.currency') : 'SAR';
-
-    const exportPayouts = () => {
-        toast.info(t('common.system'));
-    };
-
-    // Mobile card component for payout requests
-    const PayoutCard = ({ request }: { request: ModelPayoutRequest }) => (
-        <Card className="bg-white/90 backdrop-blur-sm border-rose-200 shadow-lg rounded-2xl mb-4 p-4">
-            <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                        <User className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-rose-900">{request.userName}</h3>
-                        <p className="text-rose-600 text-sm">{request.userEmail}</p>
-                    </div>
-                </div>
-                <div className="flex gap-2">
-                    <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleViewDetails(request)}
-                        className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
-                    >
-                        <Eye className="w-4 h-4" />
-                    </Button>
-                </div>
-            </div>
-            
-            <div className="mt-4 grid grid-cols-2 gap-3">
-                <div>
-                    <p className="text-xs text-rose-500">{t('AdminModelPayouts.table.amount')}</p>
-                    <p className="font-bold text-rose-600 text-lg">
-                        {request.amount.toLocaleString(locale)} {currency}
-                    </p>
-                </div>
-                <div>
-                    <p className="text-xs text-rose-500">{t('AdminModelPayouts.table.status')}</p>
-                    <div className="mt-1">{getStatusBadge(request.status)}</div>
-                </div>
-                <div>
-                    <p className="text-xs text-rose-500">{t('AdminModelPayouts.table.date')}</p>
-                    <p className="text-rose-600 text-sm">
-                        {new Date(request.created_at).toLocaleDateString(locale, {
-                            year: 'numeric', month: 'short', day: 'numeric'
-                        })}
-                    </p>
-                </div>
-            </div>
-            
-            <div className="mt-4 flex justify-end">
-                <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleViewDetails(request)}
-                    className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl w-full"
-                >
-                    {t('AdminModelPayouts.table.viewDetails')}
-                </Button>
-            </div>
-        </Card>
-    );
-
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white p-4 sm:p-6">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-rose-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse hidden sm:block"></div>
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse hidden sm:block"></div>
-            
-            <AdminNav />
-            
-            <header className="mb-6 text-center relative">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="p-3 bg-white rounded-2xl shadow-lg">
-                        <User className="h-8 w-8 text-rose-500" />
-                    </div>
-                    <Sparkles className="h-6 w-6 text-rose-300" />
-                    <Crown className="h-6 w-6 text-rose-300" />
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent mb-2">
-                    {t('AdminModelPayouts.title')}
-                </h1>
-                <p className="text-rose-700 text-base sm:text-lg max-w-2xl mx-auto px-2">
-                    {t('AdminModelPayouts.subtitle')}
-                </p>
-                <div className="w-24 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto rounded-full mt-3"></div>
-            </header>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-                <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-lg rounded-2xl text-center p-3">
-                    <div className="text-xl font-bold text-rose-600 mb-1">{stats.total}</div>
-                    <div className="text-rose-700 text-xs sm:text-sm">{t('AdminModelPayouts.stats.totalRequests')}</div>
-                </Card>
-                <Card className="bg-white/80 backdrop-blur-sm border-amber-200 shadow-lg rounded-2xl text-center p-3">
-                    <div className="text-xl font-bold text-amber-600 mb-1">{stats.pending}</div>
-                    <div className="text-amber-700 text-xs sm:text-sm">{t('AdminModelPayouts.stats.pendingRequests')}</div>
-                </Card>
-                <Card className="bg-white/80 backdrop-blur-sm border-green-200 shadow-lg rounded-2xl text-center p-3">
-                    <div className="text-xl font-bold text-green-600 mb-1">{stats.approved}</div>
-                    <div className="text-green-700 text-xs sm:text-sm">{t('AdminModelPayouts.stats.approvedRequests')}</div>
-                </Card>
-                <Card className="bg-white/80 backdrop-blur-sm border-red-200 shadow-lg rounded-2xl text-center p-3">
-                    <div className="text-xl font-bold text-red-600 mb-1">{stats.rejected}</div>
-                    <div className="text-red-700 text-xs sm:text-sm">{t('AdminModelPayouts.stats.rejectedRequests')}</div>
-                </Card>
-                <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow-lg rounded-2xl text-center p-3">
-                    <div className="text-xl font-bold text-purple-600 mb-1">
-                        {stats.pendingAmount.toLocaleString(locale)}
-                    </div>
-                    <div className="text-purple-700 text-xs sm:text-sm">{t('AdminModelPayouts.stats.pendingAmount')}</div>
-                </Card>
-            </div>
-
-            <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-2xl mb-6 p-4">
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-rose-400" />
-                        <Input
-                            placeholder={t('AdminModelPayouts.search.placeholder')}
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pr-10 border-rose-200 focus:border-rose-400 rounded-xl"
-                        />
-                    </div>
-                    <div className="flex gap-2">
-                        
-                        <Button 
-                            variant="outline" 
-                            onClick={fetchPayouts}
-                            className="border-rose-200 text-rose-700 hover:bg-rose-50 rounded-xl"
-                        >
-                            <RefreshCw className="w-4 h-4 ml-2" />
-                            <span className="hidden sm:inline">{t('AdminModelPayouts.actions.refresh')}</span>
-                            <span className="sm:hidden">Refresh</span>
-                        </Button>
-                    </div>
-                </div>
-            </Card>
-
-            {/* Mobile View - Cards */}
-            <div className="sm:hidden mb-6">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 mb-3"></div>
-                        <p className="text-rose-700 font-medium">{t('AdminModelPayouts.loading')}</p>
-                    </div>
-                ) : filteredRequests.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12">
-                        <User className="w-16 h-16 text-rose-300 mb-4" />
-                        <h3 className="font-bold text-xl text-rose-800 mb-2">{t('AdminModelPayouts.empty.noRequests')}</h3>
-                        <p className="text-rose-600 text-center">
-                            {searchTerm
-                                ? t('AdminModelPayouts.empty.noResults')
-                                : t('AdminModelPayouts.empty.noRequests')
-                            }
-                        </p>
-                    </div>
-                ) : (
-                    filteredRequests.map((req) => (
-                        <PayoutCard key={req.id} request={req} />
-                    ))
-                )}
-            </div>
-
-            {/* Desktop View - Table */}
-            <div className="hidden sm:block">
-                <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-2xl overflow-hidden">
-                    <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="flex items-center gap-2 text-xl">
-                                    <User className="w-5 h-5" />
-                                    {t('AdminModelPayouts.title')}
-                                </CardTitle>
-                                <CardDescription className="text-pink-100 text-sm">
-                                    {t('PayoutsPage.table.empty').replace('لا توجد طلبات سحب معلقة حاليًا.', `${filteredRequests.length} ${t('common.users')}`)}
-                                </CardDescription>
-                            </div>
-                            <Badge variant="secondary" className="bg-white/20 text-white border-0 text-sm">
-                                {filteredRequests.length} {t('common.users')}
-                            </Badge>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-0 overflow-x-auto">
-                        <Table className="min-w-[800px]">
-                            <TableHeader>
-                                <TableRow className="bg-rose-50/50 hover:bg-rose-50/70">
-                                    <TableHead className="text-rose-800 font-bold">{t('AdminModelPayouts.table.model')}</TableHead>
-                                    <TableHead className="text-rose-800 font-bold">{t('AdminModelPayouts.table.email')}</TableHead>
-                                    <TableHead className="text-rose-800 font-bold">{t('AdminModelPayouts.table.amount')}</TableHead>
-                                    <TableHead className="text-rose-800 font-bold">{t('AdminModelPayouts.table.status')}</TableHead>
-                                    <TableHead className="text-rose-800 font-bold">{t('AdminModelPayouts.table.date')}</TableHead>
-                                    <TableHead className="text-rose-800 font-bold text-left">{t('AdminModelPayouts.table.actions')}</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? (
-                                    <TableRow>
-                                      <TableCell colSpan={6} className="text-center py-12">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 mb-3"></div>
-                                            <p className="text-rose-700 font-medium">{t('AdminModelPayouts.loading')}</p>
-                                        </div>
-                                      </TableCell>
-                                    </TableRow>
-                                ) : filteredRequests.length === 0 ? (
-                                    <TableRow>
-                                      <TableCell colSpan={6} className="text-center py-12">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <User className="w-16 h-16 text-rose-300 mb-4" />
-                                            <h3 className="font-bold text-xl text-rose-800 mb-2">{t('AdminModelPayouts.empty.noRequests')}</h3>
-                                            <p className="text-rose-600">
-                                                {searchTerm
-                                                    ? t('AdminModelPayouts.empty.noResults')
-                                                    : t('AdminModelPayouts.empty.noRequests')
-                                                }
-                                            </p>
-                                        </div>
-                                      </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredRequests.map((req) => (
-                                        <TableRow key={req.id} className="border-rose-100 hover:bg-rose-50/30 transition-colors">
-                                            <TableCell>
-                                              <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                                    <User className="w-4 h-4" />
-                                                </div>
-                                                <div className="font-medium text-rose-900">{req.userName}</div>
-                                              </div>
-                                            </TableCell>
-                                            <TableCell>
-                                              <div className="text-rose-600 text-sm">{req.userEmail}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                              <div className="font-bold text-rose-600 text-lg">
-                                                {req.amount.toLocaleString(locale)} {currency}
-                                              </div>
-                                            </TableCell>
-                                            <TableCell>{getStatusBadge(req.status)}</TableCell>
-                                            <TableCell>
-                                              <div className="text-rose-600 text-sm">
-                                                {new Date(req.created_at).toLocaleDateString(locale, {
-                                                    year: 'numeric', month: 'long', day: 'numeric'
-                                                })}
-                                              </div>
-                                            </TableCell>
-                                            
-                                            <TableCell className="text-left">
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    onClick={() => handleViewDetails(req)}
-                                                    className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
-                                                >
-                                                    <Eye className="w-4 h-4 ml-2" />
-                                                    {t('AdminModelPayouts.table.viewDetails')}
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Mobile View - Scrollable Table */}
-            <div className="sm:hidden">
-                <Card className="bg-white/80 backdrop-blur-sm border-rose-200 shadow-2xl rounded-2xl overflow-x-auto">
-                    <CardHeader className="bg-gradient-to-r from-rose-500 to-pink-500 text-white p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="flex items-center gap-2 text-xl">
-                                    <User className="w-5 h-5" />
-                                    {t('AdminModelPayouts.title')}
-                                </CardTitle>
-                            </div>
-                            <Badge variant="secondary" className="bg-white/20 text-white border-0 text-sm">
-                                {filteredRequests.length} {t('common.users')}
-                            </Badge>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-rose-50/50 hover:bg-rose-50/70">
-                                    <TableHead className="text-rose-800 font-bold">{t('AdminModelPayouts.table.model')}</TableHead>
-                                    <TableHead className="text-rose-800 font-bold">{t('AdminModelPayouts.table.amount')}</TableHead>
-                                    <TableHead className="text-rose-800 font-bold">{t('AdminModelPayouts.table.status')}</TableHead>
-                                    <TableHead className="text-rose-800 font-bold">...</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? (
-                                    <TableRow>
-                                      <TableCell colSpan={4} className="text-center py-12">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-500 mb-3"></div>
-                                            <p className="text-rose-700 font-medium">{t('AdminModelPayouts.loading')}</p>
-                                        </div>
-                                      </TableCell>
-                                    </TableRow>
-                                ) : filteredRequests.length === 0 ? (
-                                    <TableRow>
-                                      <TableCell colSpan={4} className="text-center py-12">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <User className="w-16 h-16 text-rose-300 mb-4" />
-                                            <h3 className="font-bold text-xl text-rose-800 mb-2">{t('AdminModelPayouts.empty.noRequests')}</h3>
-                                            <p className="text-rose-600 text-center">
-                                                {searchTerm
-                                                    ? t('AdminModelPayouts.empty.noResults')
-                                                    : t('AdminModelPayouts.empty.noRequests')
-                                                }
-                                            </p>
-                                        </div>
-                                      </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredRequests.map((req) => (
-                                        <TableRow key={req.id} className="border-rose-100 hover:bg-rose-50/30 transition-colors">
-                                            <TableCell>
-                                              <div className="font-medium text-rose-900 truncate max-w-[100px]">{req.userName}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                              <div className="font-bold text-rose-600 text-lg">
-                                                {req.amount.toLocaleString(locale)} {currency}
-                                              </div>
-                                            </TableCell>
-                                            <TableCell>{getStatusBadge(req.status)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    onClick={() => handleViewDetails(req)}
-                                                    className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
-                                                >
-                                                    <MoreVertical className="w-4 h-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="bg-white/95 backdrop-blur-sm border-rose-200 rounded-2xl shadow-2xl max-w-lg max-h-[90vh] overflow-y-auto">
-                    {selectedRequest && (
-                        <>
-                            <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2 text-rose-800 text-xl">
-                                    <Eye className="w-5 h-5" />
-                                    {t('AdminModelPayouts.dialog.title')}
-                                </DialogTitle>
-                                <DialogDescription className="text-rose-700 text-lg font-bold">
-                                    {t('AdminModelPayouts.dialog.requestAmount', { 
-                                        amount: selectedRequest.amount.toLocaleString(locale), 
-                                        currency 
-                                    })}
-                                </DialogDescription>
-                            </DialogHeader>
-                            
-                            <div className="py-2 space-y-4">
-                                {/* Request details */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                    <div className="space-y-1">
-                                        <p className="font-semibold text-rose-800">{t('PayoutsPage.dialog.name')}:</p>
-                                        <p className="text-rose-600">{selectedRequest.userName}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="font-semibold text-rose-800">{t('PayoutsPage.dialog.email')}:</p>
-                                        <p className="text-rose-600">{selectedRequest.userEmail}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="font-semibold text-rose-800">{t('AdminModelPayouts.dialog.requestDate')}:</p>
-                                        <p className="text-rose-600">
-                                            {new Date(selectedRequest.created_at).toLocaleDateString(locale)}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1">
-                                      <p className="font-semibold text-rose-800">الحالة:</p>
-                                      {getStatusBadge(selectedRequest.status)}
-                                    </div>
-                                </div>
-                                
-                                {/* Bank details */}
-                                <div className="pt-3 border-t border-rose-200 space-y-3">
-                                  <h4 className="font-bold text-rose-800 text-lg flex items-center gap-2">
-                                    <Landmark className="w-4 h-4" />
-                                    {t('AdminModelPayouts.dialog.bankTitle', 'تفاصيل الحساب البنكي')}
-                                  </h4>
-                                  <div className="space-y-3 p-3 bg-rose-50 rounded-xl border border-rose-100">
-                                    <div className="space-y-1">
-                                      <p className="font-semibold text-rose-800">{t('verification.iban', 'رقم الآيبان (IBAN)')}:</p>
-                                      <p className="text-rose-600 font-mono tracking-wide break-all">{selectedRequest.iban || 'غير متوفر'}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                      <p className="font-semibold text-rose-800">{t('verification.accountNumber', 'رقم الحساب')}:</p>
-                                      <p className="text-rose-600 font-mono break-all">{selectedRequest.account_number || 'غير متوفر'}</p>
-                                    </div>
-                                    <div className="space-y-2">
-                                      <p className="font-semibold text-rose-800">{t('verification.ibanCertificate', 'شهادة الآيبان')}:</p>
-                                      {selectedRequest.iban_certificate_url ? (
-                                        <Link href={selectedRequest.iban_certificate_url} target="_blank" rel="noopener noreferrer">
-                                          <Button variant="outline" size="sm" className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-lg w-full">
-                                            <FileText className="w-4 h-4 ml-2" />
-                                            {t('AdminModelPayouts.actions.viewCertificate', 'عرض الشهادة')}
-                                          </Button>
-                                        </Link>
-                                      ) : (
-                                        <p className="text-rose-600">{t('common.notAvailable', 'غير متوفر')}</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Notes field */}
-                                {(!selectedRequest.status || selectedRequest.status === 'pending') && (
-                                    <div className="pt-3 border-t border-rose-200 space-y-3">
-                                        <Label htmlFor="notes" className="font-semibold text-rose-800">
-                                          {t('AdminModelPayouts.dialog.notes', 'ملاحظات (اختياري للقبول، إجباري للرفض)')}
-                                        </Label>
-                                        <Textarea
-                                            id="notes"
-                                            value={notes}
-                                            onChange={(e) => setNotes(e.target.value)}
-                                            placeholder={t('PayoutsPage.prompt.rejectionReason', 'اكتب سبب الرفض هنا...')}
-                                            className="border-rose-200 focus:border-rose-400"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Approval/rejection buttons */}
-                            {(!selectedRequest.status || selectedRequest.status === 'pending') && (
-                              <DialogFooter className="pt-3 border-t border-rose-200 flex flex-col sm:flex-row gap-2">
-                                <Button 
-                                    variant="destructive" 
-                                    className="rounded-xl w-full sm:w-auto"
-                                    onClick={() => handleUpdateRequest(selectedRequest.id, 'rejected')}
-                                >
-                                    <XCircle className="w-4 h-4 ml-2" />
-                                    {t('AdminModelPayouts.table.reject')}
-                                </Button>
-                                <Button 
-                                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl w-full sm:w-auto"
-                                    onClick={() => handleUpdateRequest(selectedRequest.id, 'approved')}
-                                >
-                                    <CheckCircle className="w-4 h-4 ml-2" />
-                                    {t('AdminModelPayouts.table.approve')}
-                                </Button>
-                              </DialogFooter>
-                            )}
-                        </>
-                    )}
-                </DialogContent>
-            </Dialog>
-        </div>
-    );
+const formatCurrency = (amount: number, currency = "SAR") => {
+  return new Intl.NumberFormat("ar-SA", {
+    style: "currency",
+    currency: currency,
+    minimumFractionDigits: 2,
+  }).format(amount);
 };
 
-export default AdminModelPayoutsPage;
+const getTypeLabel = (type: TransactionType) => {
+  const map: Record<
+    TransactionType,
+    { label: string; icon: any; color: string }
+  > = {
+    product_sale: {
+      label: "عمولات مبيعات",
+      icon: Briefcase,
+      color: "text-blue-600",
+    },
+    subscription_fee: {
+      label: "اشتراك شهري",
+      icon: RefreshCcw,
+      color: "text-purple-600",
+    },
+    promotion_fee: {
+      label: "ترويج إعلاني",
+      icon: Megaphone,
+      color: "text-orange-600",
+    },
+    withdrawal: {
+      label: "سحب رصيد",
+      icon: ArrowUpCircle,
+      color: "text-red-600",
+    },
+    refund: {
+      label: "استرداد أموال",
+      icon: ArrowDownCircle,
+      color: "text-gray-600",
+    },
+    penalty: {
+      label: "غرامة / خصم",
+      icon: AlertTriangle,
+      color: "text-rose-600",
+    },
+    other: { label: "عملية أخرى", icon: Activity, color: "text-gray-500" },
+  };
+  return map[type] || map.other;
+};
+
+const getStatusBadge = (status: TransactionStatus) => {
+  switch (status) {
+    case "completed":
+      return (
+        <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200">
+          مكتمل
+        </Badge>
+      );
+    case "pending":
+      return (
+        <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200">
+          معلق
+        </Badge>
+      );
+    case "on_hold":
+      return (
+        <Badge className="bg-rose-100 text-rose-700 hover:bg-rose-100 border-rose-200 animate-pulse">
+          محجوز (نزاع)
+        </Badge>
+      );
+    case "processing":
+      return (
+        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200">
+          قيد المعالجة
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">ملغى</Badge>;
+  }
+};
+
+// --- Mappers (Updated to match Backend V2) ---
+const mapBackendType = (type: string): TransactionType => {
+  if (type === "subscription_payment") return "subscription_fee";
+  if (type === "promotion_fee") return "promotion_fee";
+  if (
+    [
+      "sale_earning",
+      "shipping_earning",
+      "cod_commission_deduction",
+      "commission_deduction",
+      "agreement_fee",
+      "agreement_income",
+    ].includes(type)
+  )
+    return "product_sale";
+  if (type === "payout") return "withdrawal";
+  if (type === "refund") return "refund";
+  return "other";
+};
+
+const mapBackendStatus = (status: string): TransactionStatus => {
+  if (status === "cleared" || status === "paid") return "completed";
+  if (status === "pending_clearance" || status === "pending") return "pending";
+  if (status === "on_hold") return "on_hold";
+  if (status === "cancelled") return "cancelled";
+  return "processing";
+};
+
+export default function AdvancedFinancialReports() {
+  // --- States ---
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<Transaction[]>([]);
+  const [stats, setStats] = useState<FinancialStats | null>(null);
+
+  // Filters
+  const [dateRange, setDateRange] = useState("30_days");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Action Sheet
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // --- Real Data Fetching ---
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const rangeMap: Record<string, string> = {
+          today: "today",
+          "7_days": "week",
+          "30_days": "month",
+          year: "year",
+        };
+        const queryRange = rangeMap[dateRange] || "month";
+
+        // ✅ استدعاء الـ API الحقيقي
+        const response = await axios.get(
+          `/admin/financial-reports?range=${queryRange}`,
+        );
+        const { stats: apiStats, transactions: apiTransactions } =
+          response.data;
+
+        // 1. تهيئة المعاملات
+        const formattedTransactions: Transaction[] = apiTransactions.map(
+          (tx: any) => ({
+            id: `TXN-${tx.id}`,
+            db_id: tx.id, // نحتفظ بالرقم الحقيقي لعمليات التعديل
+            reference_id: tx.reference_id ? `REF-${tx.reference_id}` : "N/A",
+            type: mapBackendType(tx.type),
+            amount: Math.abs(Number(tx.amount)),
+            net_amount: Math.abs(Number(tx.amount)),
+            currency: "SAR",
+            status: mapBackendStatus(tx.status),
+            user: {
+              id: tx.userId,
+              name: tx.user || "مستخدم",
+              email: tx.email || "غير متوفر",
+              role: tx.userType || "user",
+            },
+            description: tx.description,
+            date: tx.date,
+          }),
+        );
+
+        setData(formattedTransactions);
+
+        // 2. تعيين الإحصائيات مباشرة من الباك إند (لأنه أصبح يرسلها مفصلة)
+        setStats({
+          total_revenue: Number(apiStats.revenue) || 0,
+          total_gmv: Number(apiStats.gmv) || 0,
+          subscriptions_income: Number(apiStats.subscriptions_income) || 0,
+          promotions_income: Number(apiStats.promotions_income) || 0,
+          sales_commission: Number(apiStats.sales_commission) || 0,
+          held_funds: Number(apiStats.held_funds) || 0,
+        });
+      } catch (error) {
+        console.error("Error fetching financial reports:", error);
+        toast.error("فشل تحميل البيانات المالية");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [dateRange]);
+
+  // --- Filter Logic ---
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      const matchesSearch =
+        item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.reference_id.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesType = filterType === "all" || item.type === filterType;
+
+      return matchesSearch && matchesType;
+    });
+  }, [data, searchQuery, filterType]);
+
+  // --- Handlers ---
+
+  // 1. PDF Export
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Linyora Financial Report", 105, 20, { align: "center" });
+    doc.setFontSize(12);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 105, 30, {
+      align: "center",
+    });
+
+    const tableColumn = ["ID", "User", "Type", "Amount", "Status", "Date"];
+    const tableRows: any[] = [];
+
+    filteredData.forEach((tx) => {
+      const txData = [
+        tx.id,
+        tx.user.name,
+        tx.type,
+        `${tx.amount} SAR`,
+        tx.status,
+        new Date(tx.date).toLocaleDateString(),
+      ];
+      tableRows.push(txData);
+    });
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      headStyles: { fillColor: [225, 29, 72] },
+    });
+
+    doc.save(`linyora_financial_report_${Date.now()}.pdf`);
+    toast.success("تم تصدير التقرير بنجاح");
+  };
+
+  // 2. Intervention Handlers (Real API)
+  const handleTransactionAction = async (
+    action: "hold" | "release" | "refund",
+  ) => {
+    if (!selectedTx) return;
+    setActionLoading(true);
+
+    try {
+      // ✅ استدعاء الـ API الحقيقي لتنفيذ الإجراء المالي
+      // نستخدم db_id وليس string ID
+      await axios.put(`/admin/transactions/${selectedTx.db_id}/action`, {
+        action: action,
+      });
+
+      let newStatus: TransactionStatus = selectedTx.status;
+      if (action === "hold") newStatus = "on_hold";
+      if (action === "release") newStatus = "completed";
+      if (action === "refund") newStatus = "cancelled";
+
+      // تحديث الحالة محلياً في الجدول
+      const updatedData = data.map((t) =>
+        t.id === selectedTx.id ? { ...t, status: newStatus } : t,
+      );
+      setData(updatedData);
+
+      // تحديث الحالة في النافذة المفتوحة
+      setSelectedTx({ ...selectedTx, status: newStatus });
+
+      toast.success(
+        action === "hold"
+          ? "تم تعليق الأموال بنجاح"
+          : action === "release"
+            ? "تم فك تعليق الأموال"
+            : "تم استرداد الأموال وإعادتها للمحفظة",
+      );
+    } catch (error: any) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || "فشل تنفيذ الإجراء، تأكد من الصلاحيات",
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50/50 p-4 md:p-8" dir="rtl">
+      <AdminNav />
+
+      {/* --- Top Bar --- */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            الرقابة المالية المركزية
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            تتبع كافة التدفقات النقدية، الاشتراكات، والنزاعات.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger className="w-[140px] bg-white">
+              <Calendar className="w-4 h-4 ml-2 text-gray-400" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">اليوم</SelectItem>
+              <SelectItem value="7_days">آخر 7 أيام</SelectItem>
+              <SelectItem value="30_days">آخر 30 يوم</SelectItem>
+              <SelectItem value="year">هذا العام</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            className="bg-white gap-2"
+            onClick={handleExportPDF}
+          >
+            <Download className="w-4 h-4" />
+            تصدير PDF
+          </Button>
+        </div>
+      </div>
+
+      {/* --- KPI Stats --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <Card className="bg-gradient-to-br from-gray-900 to-gray-800 text-white border-none shadow-lg">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-300">
+              صافي دخل المنصة
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats ? formatCurrency(stats.total_revenue) : "..."}
+            </div>
+            <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+              <Activity className="w-3 h-3 text-emerald-400" />
+              محدث مباشرة
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              إيرادات الاشتراكات
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">
+              {stats ? formatCurrency(stats.subscriptions_income) : "..."}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">من التجار والمودلز</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              إيرادات الترويج
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              {stats ? formatCurrency(stats.promotions_income) : "..."}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">
+              حملات إعلانية مدفوعة
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`${stats?.held_funds! > 0 ? "border-rose-200 bg-rose-50" : ""}`}
+        >
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
+              أموال محجوزة (نزاعات)
+              {stats?.held_funds! > 0 && (
+                <AlertTriangle className="w-4 h-4 text-rose-500 animate-pulse" />
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-rose-600">
+              {stats ? formatCurrency(stats.held_funds) : "..."}
+            </div>
+            <div className="text-xs text-rose-600/80 mt-1">
+              تتطلب تدخلاً إدارياً
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Chart 1: Revenue Breakdown */}
+        <Card className="lg:col-span-2 shadow-sm">
+          <CardHeader>
+            <CardTitle>تحليل مصادر الدخل</CardTitle>
+            <CardDescription>
+              توزيع الإيرادات بين الاشتراكات، العمولات، والترويج
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[
+                  {
+                    name: "عمولات المبيعات",
+                    value: stats?.sales_commission || 0,
+                    fill: "#2563eb",
+                  },
+                  {
+                    name: "الاشتراكات",
+                    value: stats?.subscriptions_income || 0,
+                    fill: "#7c3aed",
+                  },
+                  {
+                    name: "الترويج",
+                    value: stats?.promotions_income || 0,
+                    fill: "#ea580c",
+                  },
+                ]}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip
+                  cursor={{ fill: "#f3f4f6" }}
+                  contentStyle={{ borderRadius: "8px" }}
+                />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={60} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Chart 2: Transaction Status */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>حالة المعاملات</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px] flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    {
+                      name: "مكتمل",
+                      value: data.filter((t) => t.status === "completed")
+                        .length,
+                    },
+                    {
+                      name: "معلق",
+                      value: data.filter((t) => t.status === "pending").length,
+                    },
+                    {
+                      name: "نزاع",
+                      value: data.filter((t) => t.status === "on_hold").length,
+                    },
+                  ]}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  <Cell fill="#10b981" />
+                  <Cell fill="#f59e0b" />
+                  <Cell fill="#f43f5e" />
+                </Pie>
+                <Tooltip />
+                <Legend verticalAlign="bottom" height={36} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* --- Main Data Table --- */}
+      <Card className="shadow-sm border-none overflow-hidden">
+        <div className="p-4 border-b flex flex-col sm:flex-row justify-between gap-4 bg-white">
+          <div className="flex items-center gap-2">
+            <h2 className="font-bold text-lg text-gray-800">
+              سجل الحركات المالية
+            </h2>
+            <Badge variant="secondary" className="text-xs">
+              {filteredData.length} عملية
+            </Badge>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="بحث (ID، اسم، مرجع)..."
+                className="pr-9 w-full sm:w-[250px] bg-gray-50"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* Filter */}
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-[160px] bg-gray-50">
+                <Filter className="w-4 h-4 ml-2 text-gray-500" />
+                <SelectValue placeholder="تصفية حسب" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">كل العمليات</SelectItem>
+                <SelectItem value="subscription_fee">اشتراكات</SelectItem>
+                <SelectItem value="product_sale">مبيعات / عمولات</SelectItem>
+                <SelectItem value="promotion_fee">ترويج</SelectItem>
+                <SelectItem value="withdrawal">سحوبات</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-gray-50">
+              <TableRow>
+                <TableHead className="text-right">المعرف</TableHead>
+                <TableHead className="text-right">النوع</TableHead>
+                <TableHead className="text-right">المستخدم</TableHead>
+                <TableHead className="text-right">المبلغ</TableHead>
+                <TableHead className="text-right">الحالة</TableHead>
+                <TableHead className="text-right">التاريخ</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell
+                      colSpan={7}
+                      className="h-12 animate-pulse bg-gray-50/50"
+                    />
+                  </TableRow>
+                ))
+              ) : filteredData.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center h-32 text-gray-500"
+                  >
+                    لا توجد بيانات مطابقة
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredData.map((item) => {
+                  const typeMeta = getTypeLabel(item.type);
+                  return (
+                    <TableRow
+                      key={item.id}
+                      className="hover:bg-gray-50 cursor-pointer group"
+                      onClick={() => {
+                        setSelectedTx(item);
+                        setIsSheetOpen(true);
+                      }}
+                    >
+                      <TableCell className="font-mono text-xs text-gray-500">
+                        {item.id}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`p-1.5 rounded-full bg-opacity-10 ${typeMeta.color.replace("text-", "bg-")}`}
+                          >
+                            <typeMeta.icon
+                              className={`w-4 h-4 ${typeMeta.color}`}
+                            />
+                          </div>
+                          <span className="text-sm font-medium">
+                            {typeMeta.label}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-900">
+                            {item.user.name}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {item.user.role}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          dir="ltr"
+                          className={`font-bold ${item.amount < 0 ? "text-red-600" : "text-gray-900"}`}
+                        >
+                          {formatCurrency(item.amount)}
+                        </span>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(item.status)}</TableCell>
+                      <TableCell className="text-xs text-gray-500">
+                        {new Date(item.date).toLocaleDateString("en-GB")}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100"
+                        >
+                          <MoreHorizontal className="w-4 h-4 text-gray-500" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
+
+      {/* --- Action Details Sheet (Intervention) --- */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader className="text-right border-b pb-4">
+            <div className="flex items-center gap-2 mb-2">
+              {selectedTx && getStatusBadge(selectedTx.status)}
+              <span className="text-xs text-gray-400 font-mono">
+                {selectedTx?.id}
+              </span>
+            </div>
+            <SheetTitle>تفاصيل المعاملة</SheetTitle>
+            <SheetDescription>
+              مراجعة التفاصيل واتخاذ إجراءات التدخل المالي.
+            </SheetDescription>
+          </SheetHeader>
+
+          {selectedTx && (
+            <div className="space-y-6 mt-6">
+              {/* Summary Card */}
+              <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
+                <div className="flex justify-between items-center border-b pb-2">
+                  <span className="text-gray-500 text-sm">نوع العملية</span>
+                  <span className="font-medium flex items-center gap-1">
+                    {getTypeLabel(selectedTx.type).label}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center border-b pb-2">
+                  <span className="text-gray-500 text-sm">المبلغ الإجمالي</span>
+                  <span className="font-bold text-lg">
+                    {formatCurrency(selectedTx.amount)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500 text-sm">
+                    المستخدم المستفيد
+                  </span>
+                  <div className="text-left">
+                    <p className="font-medium text-sm">
+                      {selectedTx.user.name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {selectedTx.user.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description & Meta */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-gray-900">
+                  الوصف / المرجع
+                </h4>
+                <p className="text-sm text-gray-600 bg-white border p-3 rounded-md">
+                  {selectedTx.description}
+                  <br />
+                  <span className="text-xs text-gray-400 mt-1 block font-mono">
+                    Ref ID: {selectedTx.reference_id}
+                  </span>
+                </p>
+              </div>
+
+              {/* Intervention Actions */}
+              <div className="border-t pt-6 space-y-4">
+                <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-500" />
+                  منطقة التدخل (إجراءات حساسة)
+                </h4>
+
+                {selectedTx.status === "completed" ||
+                selectedTx.status === "pending" ? (
+                  <Button
+                    variant="destructive"
+                    className="w-full justify-start gap-3 bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
+                    onClick={() => handleTransactionAction("hold")}
+                    disabled={actionLoading}
+                  >
+                    <Lock className="w-4 h-4" />
+                    تعليق الأموال (تجميد الرصيد)
+                  </Button>
+                ) : null}
+
+                {selectedTx.status === "on_hold" ? (
+                  <Button
+                    variant="default"
+                    className="w-full justify-start gap-3 bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => handleTransactionAction("release")}
+                    disabled={actionLoading}
+                  >
+                    <Unlock className="w-4 h-4" />
+                    فك التعليق (إتاحة الأموال)
+                  </Button>
+                ) : null}
+
+                {(selectedTx.status === "completed" ||
+                  selectedTx.status === "on_hold") && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleTransactionAction("refund")}
+                    disabled={actionLoading}
+                  >
+                    <RefreshCcw className="w-4 h-4" />
+                    عكس العملية (Refund)
+                  </Button>
+                )}
+
+                {actionLoading && (
+                  <p className="text-center text-xs text-gray-400">
+                    جاري تنفيذ الإجراء...
+                  </p>
+                )}
+              </div>
+
+              <SheetFooter className="mt-8">
+                <Button variant="ghost" onClick={() => setIsSheetOpen(false)}>
+                  إغلاق
+                </Button>
+              </SheetFooter>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
